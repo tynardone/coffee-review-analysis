@@ -31,10 +31,9 @@ def main() -> None:
     csv_filepath = create_filepath('reviews', 'csv')
     json_filepath = create_filepath('reviews', 'json')
     pickle_filepath = create_filepath('review_urls', 'pkl')
-    
 
     # TODO: async scrape urls then async scrape reviews from those urls
-    
+
     df = pd.DataFrame(data)
     df.to_csv(csv_filepath, index=False)
     df.to_json(json_filepath, orient='records', indent=4)

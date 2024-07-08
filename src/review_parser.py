@@ -7,8 +7,11 @@ logger = logging.getLogger(__name__)
 
 
 def _parse_element(soup: BeautifulSoup, element: str, class_: str = None,
-                  string: str = None, next_element: str = None) -> str:
-    found_element = soup.find(element, class_=class_, string=re.compile(string) if string else None)
+                   string: str = None, next_element: str = None) -> str:
+    found_element = soup.find(
+        element,
+        class_=class_,
+        string=re.compile(string) if string else None)
     if found_element:
         if next_element:
             found_next_element = found_element.find_next(next_element)
@@ -16,7 +19,8 @@ def _parse_element(soup: BeautifulSoup, element: str, class_: str = None,
                 return found_next_element.get_text().strip()
         else:
             return found_element.get_text().strip()
-    logging.warning(f"No data found for {element} with class {class_ or string}.")
+    logging.warning(
+        f"No data found for {element} with class {class_ or string}.")
     return None
 
 

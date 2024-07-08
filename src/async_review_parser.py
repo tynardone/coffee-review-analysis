@@ -61,6 +61,6 @@ async def parse_html(text):
                                            next_element='p')
     }
 
-    data.update(await parse_tables(soup))
+    data.update(await _parse_tables(soup))
 
     return data

@@ -20,7 +20,9 @@ from bs4 import BeautifulSoup
 
 from htmlparser import parse_html
 
-logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.ERROR,
+    format='%(asctime)s - %(levelname)s - %(message)s')
 
 USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36\
              (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
@@ -32,6 +34,7 @@ FEATURE_LIST = ['Roaster Location', 'Coffee Origin', 'Roast Level', 'Aroma',
 DATA_INPUT = Path('data/raw/roast_urls.pkl')
 DATA_OUTPUT = Path('data/raw/raw_roasts_reviews.json')
 
+
 def parse_args():
     """Parse command-line arguments."""
     parser = argparse.ArgumentParser(description="URL file.")
@@ -39,7 +42,9 @@ def parse_args():
     parser.add_argument("-o", "--output", type=str, help="Output directory")
     return parser.parse_args()
 
-async def fetch_roast_review(session: AsyncHTMLSession, url: str, progress: tqdm) -> dict:
+
+async def fetch_roast_review(
+        session: AsyncHTMLSession, url: str, progress: tqdm) -> dict:
 
     r = await session.get(url)
     if r.status_code in (429, 504):
@@ -59,12 +64,14 @@ async def fetch_roast_review(session: AsyncHTMLSession, url: str, progress: tqdm
             progress.update()
             return data
     progress.update()
-    return None 
+    return None
+
 
 async def gather_tasks(urls: list[str], progress: tqdm):
     session = AsyncHTMLSession()
     tasks = [fetch_roast_review(session, url, progress) for url in urls]
     return await asyncio.gather(*tasks)
+
 
 def main():
     args = parse_args()
@@ -87,6 +94,7 @@ def main():
 
     with open(output_file, 'w', encoding="utf-8") as fout:
         json.dump(results, fout)
+
 
 if __name__ == '__main__':
     main()

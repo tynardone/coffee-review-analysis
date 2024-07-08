@@ -24,13 +24,15 @@ with open(file, 'rb') as file:
 print(f"Loaded {len(review_urls)} review URLs.")
 
 
-async def fetch(url: str, session: aiohttp.ClientSession, semaphore: asyncio.Semaphore, retries: int = 3) -> str:
+async def fetch(url: str, session: aiohttp.ClientSession,
+                semaphore: asyncio.Semaphore, retries: int = 3) -> str:
     async with semaphore:
         for attempt in range(retries):
             try:
                 async with session.get(url, timeout=aiohttp.ClientTimeout(total=10)) as response:
                     if response.status != 200:
-                        logging.warning(f"Failed to fetch {url} with status {response.status}. Retrying...")
+                        logging.warning(
+                            f"Failed to fetch {url} with status {response.status}. Retrying...")
                         await asyncio.sleep(1)
                         continue
                     return await response.text()
@@ -41,7 +43,8 @@ async def fetch(url: str, session: aiohttp.ClientSession, semaphore: asyncio.Sem
         return None
 
 
-async def scrape_review(url: str, session: aiohttp.ClientSession, semaphore: asyncio.Semaphore) -> str:
+async def scrape_review(url: str, session: aiohttp.ClientSession,
+                        semaphore: asyncio.Semaphore) -> str:
     review_page = await fetch(url, session, semaphore)
     if review_page:
         data = await parse_html(review_page)
@@ -52,7 +55,8 @@ async def scrape_review(url: str, session: aiohttp.ClientSession, semaphore: asy
 async def main():
     semaphore = asyncio.Semaphore(20)
     async with aiohttp.ClientSession(headers=config.HEADERS) as session:
-        tasks = [scrape_review(url, session, semaphore) for url in review_urls[0:300]]
+        tasks = [scrape_review(url, session, semaphore)
+                 for url in review_urls[0:300]]
         results = []
         for f in tqdm(asyncio.as_completed(tasks), total=len(tasks)):
             result = await f
@@ -60,6 +64,8 @@ async def main():
     return results
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s')
     review_data = asyncio.run(main())
     print(review_data)

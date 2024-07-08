@@ -14,10 +14,12 @@ class AsyncScraper:
     Asynchronous web scraper to fetch review links from
     Coffeereview.com.
     """
+
     def __init__(self):
         self.base_url = 'https://www.coffeereview.com/review/'
         self.session = aiohttp.ClientSession()
-        self.headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
+        self.headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
 
     async def fetch(self, url):
         async with self.session.get(url, headers=self.headers) as response:

@@ -8,7 +8,9 @@ from bs4 import BeautifulSoup
 # parse_html imported into async_scrape_roast_reviews.py
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.WARNING, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.WARNING,
+    format='%(asctime)s - %(levelname)s - %(message)s')
 
 current_file = Path(__file__)
 root_dir = current_file.parent.parent
@@ -31,12 +33,16 @@ def _parse_class(soup: BeautifulSoup, element: str, class_: str) -> str:
     found_element = soup.find(element, class_=class_)
     if found_element:
         return found_element.string.strip()
-    logger.warning("No data found for %s with class %s.", found_element, class_)
+    logger.warning(
+        "No data found for %s with class %s.",
+        found_element,
+        class_)
     return None
 
 
-def _parse_string_next(soup: BeautifulSoup, find_element: str, next_element:str, string: str, ) -> str:
-    element = soup.find(find_element, string= re.compile(string))
+def _parse_string_next(soup: BeautifulSoup, find_element: str,
+                       next_element: str, string: str, ) -> str:
+    element = soup.find(find_element, string=re.compile(string))
     if element:
         found_next_element = element.find_next(next_element)
         if found_next_element:
@@ -58,7 +64,7 @@ def _parse_notes_section(soup: BeautifulSoup) -> str:
     return None
 
 
-def parse_html(html: str) -> dict: 
+def parse_html(html: str) -> dict:
     data = {}
     soup = BeautifulSoup(html, 'html.parser')
 
@@ -78,8 +84,13 @@ def parse_html(html: str) -> dict:
     data['bottom line'] = bottom_line
     data.update(table_data)
     n_fields = len(data)
-    logging.info("Parsed %s data fields for %s - %s.", n_fields, roaster, title)
+    logging.info(
+        "Parsed %s data fields for %s - %s.",
+        n_fields,
+        roaster,
+        title)
     return data
+
 
 if __name__ == '__main__':
     html_files = list(html_dir.glob('*.html'))

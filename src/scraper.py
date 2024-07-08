@@ -85,7 +85,8 @@ class ReviewScraper:
         response.raise_for_status()
         return BeautifulSoup(response.text, 'html.parser')
 
-    def get_review_urls(self, url: str = None, visited: set = None, limit: int = None) -> set[str]:
+    def get_review_urls(self, url: str = None,
+                        visited: set = None, limit: int = None) -> set[str]:
         """Fetch a page and extract all relevant review links, recursively
         fetching additional review pages.
 
@@ -146,8 +147,6 @@ class ReviewScraper:
                 review_data.append(data)
                 print(f'Error fetching page: {e}')
         return review_data
-                
-            
 
 
 def main():
