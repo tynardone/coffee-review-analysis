@@ -3,10 +3,6 @@ from bs4 import BeautifulSoup
 import re
 import logging
 
-async def fetch_html(url):
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url) as response:
-            return await response.text()
 
 async def parse_element(soup: BeautifulSoup, element: str, class_: str = None,
                         string: str = None, next_element: str = None) -> str:
@@ -21,6 +17,7 @@ async def parse_element(soup: BeautifulSoup, element: str, class_: str = None,
     logging.warning(f"No data found for {element} with class {class_ or string}.")
     return None
 
+
 async def parse_notes_section(soup: BeautifulSoup) -> str:
     notes = soup.find('h2', string=re.compile('Notes'))
     if notes:
@@ -32,6 +29,7 @@ async def parse_notes_section(soup: BeautifulSoup) -> str:
         return re.sub(r'\s+', ' ', notes_text)
     logging.warning("No notes section found.")
     return None
+
 
 async def parse_tables(soup: BeautifulSoup) -> dict:
     data = {}
@@ -48,6 +46,7 @@ async def parse_tables(soup: BeautifulSoup) -> dict:
     # drop ':' from keys
     data = {key.lower().replace(':', ''): value for key, value in data.items()}
     return data
+
 
 async def parse_html(text):
     soup = BeautifulSoup(text, 'html.parser')
