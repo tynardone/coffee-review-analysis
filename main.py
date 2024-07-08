@@ -3,8 +3,6 @@
 import logging
 from datetime import datetime
 from pathlib import Path
-import json
-import pickle
 
 import asyncio
 import pandas as pd
@@ -30,7 +28,7 @@ def create_filepath(filename: str, filetype: str) -> Path:
 def main() -> None:
     csv_filepath = create_filepath('reviews', 'csv')
     json_filepath = create_filepath('reviews', 'json')
-    pickle_filepath = create_filepath('review_urls', 'pkl')
+    
 
     # TODO: async scrape urls then async scrape reviews from those urls
 
