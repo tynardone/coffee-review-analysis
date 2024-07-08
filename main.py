@@ -32,21 +32,12 @@ def main() -> None:
     json_filepath = create_filepath('reviews', 'json')
     pickle_filepath = create_filepath('review_urls', 'pkl')
     
-    with ReviewScraper(base_url=BASE_URL, headers=HEADERS) as scraper:
-        review_urls = scraper.get_review_urls()
-        # write review urls to a pickle file
-        
-        with open(pickle_filepath, 'wb') as file:
-            pickle.dump(review_urls, file)
-            logging.info(f'Writing review URLs to {pickle_filepath}')
-            
-        data = scraper.fetch_and_parse_review(review_urls)
 
-    with open(json_filepath, 'w') as file:
-        file.write(json.dumps(data, indent=4))
-
+    # TODO: async scrape urls then async scrape reviews from those urls
+    
     df = pd.DataFrame(data)
     df.to_csv(csv_filepath, index=False)
+    df.to_json(json_filepath, orient='records', indent=4)
     print('Scraping complete. Writing data to file.')
 
 
