@@ -1,10 +1,9 @@
-import aiohttp
 from bs4 import BeautifulSoup
 import re
 import logging
 
 
-async def parse_element(soup: BeautifulSoup, element: str, class_: str = None,
+async def _parse_element(soup: BeautifulSoup, element: str, class_: str = None,
                         string: str = None, next_element: str = None) -> str:
     found_element = soup.find(element, class_=class_, string=re.compile(string) if string else None)
     if found_element:
@@ -18,7 +17,7 @@ async def parse_element(soup: BeautifulSoup, element: str, class_: str = None,
     return None
 
 
-async def parse_notes_section(soup: BeautifulSoup) -> str:
+async def _parse_notes_section(soup: BeautifulSoup) -> str:
     notes = soup.find('h2', string=re.compile('Notes'))
     if notes:
         notes_text = ''
@@ -31,7 +30,7 @@ async def parse_notes_section(soup: BeautifulSoup) -> str:
     return None
 
 
-async def parse_tables(soup: BeautifulSoup) -> dict:
+async def _parse_tables(soup: BeautifulSoup) -> dict:
     data = {}
     for table in soup.find_all('table'):
         if table:
@@ -52,13 +51,13 @@ async def parse_html(text):
     soup = BeautifulSoup(text, 'html.parser')
 
     data = {
-        'rating': await parse_element(soup, 'span', 'review-template-rating'),
-        'roaster': await parse_element(soup, 'p', 'review-roaster'),
-        'title': await parse_element(soup, 'h1', 'review-title'),
-        'blind_assessment': await parse_element(soup, 'h2', string='Blind Assessment',
+        'rating': await _parse_element(soup, 'span', 'review-template-rating'),
+        'roaster': await _parse_element(soup, 'p', 'review-roaster'),
+        'title': await _parse_element(soup, 'h1', 'review-title'),
+        'blind_assessment': await _parse_element(soup, 'h2', string='Blind Assessment',
                                                 next_element='p'),
-        'notes': await parse_notes_section(soup),
-        'bottom_line': await parse_element(soup, 'h2', string='Bottom Line',
+        'notes': await _parse_notes_section(soup),
+        'bottom_line': await _parse_element(soup, 'h2', string='Bottom Line',
                                            next_element='p')
     }
 
