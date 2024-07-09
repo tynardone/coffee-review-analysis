@@ -32,12 +32,14 @@ async def main() -> None:
     scraper = AsyncScraper(BASE_URL, HEADERS)
     urls = await scraper.get_urls()
     await scraper.close()
-
-    # TODO: async scrape urls then async scrape reviews from those urls
-
     print(len(urls))
     print(list(urls)[:5])
-    print('Scraping complete. Writing data to file.')
+    
+    # TODO make url and review scrapers each a separate async function each in a separate file
+    # to be called from this main function. Each taking an ClientSession as an argument. Use 
+    # context manager to create the session in the main function and pass it to the scrapers.
+    # run the url scraper first, then the review scraper. Save the results to a file.
+    # Each function will be asynchronous, but they will be run sequentially.
 
 
 if __name__ == '__main__':
