@@ -8,20 +8,9 @@ from tqdm.asyncio import tqdm
 
 import config
 
-
 from async_review_parser import parse_html
-root_dir = Path(__file__).parent.parent
-data_dir = root_dir / 'data' / 'raw'
 
-# Find all pickle files in the data directory
-files = [file for file in data_dir.iterdir() if file.suffix == '.pkl']
-file = files[0]
 
-# Load review URLs from the pickle file
-with open(file, 'rb') as file:
-    review_urls = pickle.load(file)
-
-print(f"Loaded {len(review_urls)} review URLs.")
 
 
 async def fetch(url: str, session: aiohttp.ClientSession,
@@ -67,5 +56,18 @@ if __name__ == '__main__':
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s - %(levelname)s - %(message)s')
+    root_dir = Path(__file__).parent.parent
+    data_dir = root_dir / 'data' / 'raw'
+
+    # Find all pickle files in the data directory
+    files = [file for file in data_dir.iterdir() if file.suffix == '.pkl']
+    file = files[0]
+
+    # Load review URLs from the pickle file
+    with open(file, 'rb') as file:
+        review_urls = pickle.load(file)
+
+    print(f"Loaded {len(review_urls)} review URLs.")
+
     review_data = asyncio.run(main())
     print(review_data)
