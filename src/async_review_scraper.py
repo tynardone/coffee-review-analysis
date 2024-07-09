@@ -6,10 +6,7 @@ import asyncio
 import aiohttp
 from tqdm.asyncio import tqdm
 
-import config
-
-from async_review_parser import parse_html
-
+from .async_review_parser import parse_html
 
 async def fetch(url: str, session: aiohttp.ClientSession,
                 semaphore: asyncio.Semaphore, retries: int = 3) -> str:
@@ -35,10 +32,22 @@ async def scrape_review(url: str, session: aiohttp.ClientSession,
     review_page = await fetch(url, session, semaphore)
     if review_page:
         data = await parse_html(review_page)
+        data['url'] = url
         return data or "No data found"
     return "Failed to fetch page"
 
 
+async def scrape_reviews(urls: list[str], session: aiohttp.ClientSession,
+                         semaphore: asyncio.Semaphore) -> list[dict]:
+    all_data = []
+    for url in urls:
+        data = await scrape_review(url)
+        data['url'] = url
+        all_data.append(data)
+    return all_data
+        
+                         
+                         
 async def main():
     semaphore = asyncio.Semaphore(20)
     async with aiohttp.ClientSession(headers=config.HEADERS) as session:

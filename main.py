@@ -1,14 +1,17 @@
 """Main script to scrape reviews from the website and save them to a file."""
-
 import logging
 from datetime import datetime
 from pathlib import Path
+import time
 
 import asyncio
+import aiohttp
+from tqdm.asyncio import tqdm
 import pandas as pd
 
-from src.async_url_scraper import AsyncScraper
-from src.config import HEADERS, BASE_URL
+from src.async_url_scraper import get_urls
+from src.async_review_scraper import scrape_review
+import src.config as config
 
 
 def create_filename(filename: str, filetype: str) -> str:
@@ -26,21 +29,33 @@ def create_filepath(filename: str, filetype: str) -> Path:
 
 
 async def main() -> None:
+    # Create the filepaths for saving the data
     csv_filepath = create_filepath('reviews', 'csv')
     json_filepath = create_filepath('reviews', 'json')
-    
-    scraper = AsyncScraper(BASE_URL, HEADERS)
-    urls = await scraper.get_urls()
-    await scraper.close()
-    print(len(urls))
-    print(list(urls)[:5])
-    
-    # TODO make url and review scrapers each a separate async function each in a separate file
-    # to be called from this main function. Each taking an ClientSession as an argument. Use 
-    # context manager to create the session in the main function and pass it to the scrapers.
-    # run the url scraper first, then the review scraper. Save the results to a file.
-    # Each function will be asynchronous, but they will be run sequentially.
 
+    # Initialize the results list
+    results = []
+
+    # Create an aiohttp ClientSession.
+    # Uses Semaphore to limit the number of concurrent requests while scraping reviews, while
+    # still allowing speed improvements over pure synchronous scraping
+    semaphore = asyncio.Semaphore(20) 
+    async with aiohttp.ClientSession(headers=config.HEADERS) as session:
+        start = time.time()
+        urls = await get_urls(base_url=config.BASE_URL, session=session)
+        end = time.time()
+        print(f"Time elapsed: {end - start:.2f} seconds")
+        print(f"Total review links found: {len(urls)}")
+
+        tasks = [scrape_review(url, session, semaphore) for url in list(urls)[:300]]
+        for f in tqdm(asyncio.as_completed(tasks), total=len(tasks)):
+            result = await f
+            results.append(result)
+
+    # Use pandas to save the results to a CSV and JSON file
+    df = pd.DataFrame(results)
+    df.to_csv(csv_filepath, index=False)
+    df.to_json(json_filepath, orient='records')
 
 if __name__ == '__main__':
     asyncio.run(main())
