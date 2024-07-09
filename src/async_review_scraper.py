@@ -11,8 +11,6 @@ import config
 from async_review_parser import parse_html
 
 
-
-
 async def fetch(url: str, session: aiohttp.ClientSession,
                 semaphore: asyncio.Semaphore, retries: int = 3) -> str:
     async with semaphore:

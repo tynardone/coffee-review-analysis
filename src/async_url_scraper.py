@@ -6,20 +6,19 @@ import asyncio
 import aiohttp
 from bs4 import BeautifulSoup
 
-import config
+from src import config
 
 
-class AsyncScraper:
+class AsyncScraper():
     """
     Asynchronous web scraper to fetch review links from
     Coffeereview.com.
     """
 
-    def __init__(self):
-        self.base_url = 'https://www.coffeereview.com/review/'
+    def __init__(self, url: str, headers: dict = None):
+        self.base_url = url
         self.session = aiohttp.ClientSession()
-        self.headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
+        self.headers = headers
 
     async def fetch(self, url):
         async with self.session.get(url, headers=self.headers) as response:
@@ -30,8 +29,9 @@ class AsyncScraper:
                 logging.error(f'Error fetching {url}: {e}')
                 return None
 
-    async def get_urls(self, url: str, visited=None) -> set[str]:
+    async def get_urls(self, url: str = None, visited: set = None) -> set[str]:
         if visited is None:
+            url = self.base_url
             visited = set()
             logging.info(f'Starting to fetch links from {url}')
 
@@ -70,7 +70,7 @@ class AsyncScraper:
 async def main():
     start_time = time.time()
 
-    scraper = AsyncScraper()
+    scraper = AsyncScraper(url=config.BASE_URL, headers=config.HEADERS)
     review_links = await scraper.get_urls(url=config.BASE_URL)
     print(f"Total review links found: {len(review_links)}")
 

@@ -7,7 +7,7 @@ from pathlib import Path
 import asyncio
 import pandas as pd
 
-from src.scraper import ReviewScraper
+from src.async_url_scraper import AsyncScraper
 from src.config import HEADERS, BASE_URL
 
 
@@ -25,18 +25,21 @@ def create_filepath(filename: str, filetype: str) -> Path:
     return data_dir / create_filename(filename, filetype)
 
 
-def main() -> None:
+async def main() -> None:
     csv_filepath = create_filepath('reviews', 'csv')
     json_filepath = create_filepath('reviews', 'json')
     
+    scraper = AsyncScraper(BASE_URL, HEADERS)
+    urls = await scraper.get_urls()
+    
+    await scraper.close()
 
     # TODO: async scrape urls then async scrape reviews from those urls
 
-    df = pd.DataFrame(data)
-    df.to_csv(csv_filepath, index=False)
-    df.to_json(json_filepath, orient='records', indent=4)
+    print(len(urls))
+    print(list(urls)[:5])
     print('Scraping complete. Writing data to file.')
 
 
 if __name__ == '__main__':
-    main()
+    asyncio.run(main())
