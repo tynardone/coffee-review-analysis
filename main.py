@@ -31,7 +31,6 @@ async def main() -> None:
     
     scraper = AsyncScraper(BASE_URL, HEADERS)
     urls = await scraper.get_urls()
-    
     await scraper.close()
 
     # TODO: async scrape urls then async scrape reviews from those urls
