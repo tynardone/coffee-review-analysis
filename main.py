@@ -39,7 +39,7 @@ async def main() -> None:
     # Create an aiohttp ClientSession.
     # Uses Semaphore to limit the number of concurrent requests while scraping reviews, while
     # still allowing speed improvements over pure synchronous scraping
-    semaphore = asyncio.Semaphore(20) 
+    semaphore = asyncio.Semaphore(10) 
     async with aiohttp.ClientSession(headers=config.HEADERS) as session:
         start = time.time()
         urls = await get_urls(base_url=config.BASE_URL, session=session)
@@ -47,7 +47,7 @@ async def main() -> None:
         print(f"Time elapsed: {end - start:.2f} seconds")
         print(f"Total review links found: {len(urls)}")
 
-        tasks = [scrape_review(url, session, semaphore) for url in list(urls)[:300]]
+        tasks = [scrape_review(url, session, semaphore) for url in list(urls)[:100]]
         for f in tqdm(asyncio.as_completed(tasks), total=len(tasks)):
             result = await f
             results.append(result)

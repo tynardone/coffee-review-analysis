@@ -9,20 +9,17 @@ from tqdm.asyncio import tqdm
 from .async_review_parser import parse_html
 
 async def fetch(url: str, session: aiohttp.ClientSession,
-                semaphore: asyncio.Semaphore, retries: int = 3) -> str:
+                semaphore: asyncio.Semaphore, retries: int = 10) -> str:
     async with semaphore:
         for attempt in range(retries):
             try:
-                async with session.get(url, timeout=aiohttp.ClientTimeout(total=10)) as response:
+                async with session.get(url, timeout=aiohttp.ClientTimeout(total=20)) as response:
                     if response.status != 200:
-                        logging.warning(
-                            f"Failed to fetch {url} with status {response.status}. Retrying...")
-                        await asyncio.sleep(1)
+                        await asyncio.sleep(5)
                         continue
                     return await response.text()
             except (aiohttp.ClientError, asyncio.TimeoutError) as e:
-                logging.error(f"Error fetching {url}: {e}. Retrying...")
-                await asyncio.sleep(1)
+                await asyncio.sleep(5)
         logging.error(f"Failed to fetch {url} after {retries} attempts.")
         return None
 
@@ -34,7 +31,8 @@ async def scrape_review(url: str, session: aiohttp.ClientSession,
         data = await parse_html(review_page)
         data['url'] = url
         return data or "No data found"
-    return "Failed to fetch page"
+    else:
+        pass
 
 
 async def scrape_reviews(urls: list[str], session: aiohttp.ClientSession,
@@ -46,7 +44,6 @@ async def scrape_reviews(urls: list[str], session: aiohttp.ClientSession,
         all_data.append(data)
     return all_data
         
-                         
                          
 async def main():
     semaphore = asyncio.Semaphore(20)
