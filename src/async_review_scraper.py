@@ -9,7 +9,7 @@ from tqdm.asyncio import tqdm
 from .async_review_parser import parse_html
 
 async def fetch(url: str, session: aiohttp.ClientSession,
-                semaphore: asyncio.Semaphore, retries: int = 10) -> str:
+                semaphore: asyncio.Semaphore, retries: int) -> str:
     async with semaphore:
         for attempt in range(retries):
             try:
@@ -25,7 +25,7 @@ async def fetch(url: str, session: aiohttp.ClientSession,
 
 
 async def scrape_review(url: str, session: aiohttp.ClientSession,
-                        semaphore: asyncio.Semaphore, retries: int = 3) -> str:
+                        semaphore: asyncio.Semaphore, retries: int = 10) -> str:
     review_page = await fetch(url, session, semaphore, retries=retries)
     if review_page:
         data = await parse_html(review_page)
@@ -35,16 +35,6 @@ async def scrape_review(url: str, session: aiohttp.ClientSession,
         pass
 
 
-async def scrape_reviews(urls: list[str], session: aiohttp.ClientSession,
-                         semaphore: asyncio.Semaphore) -> list[dict]:
-    all_data = []
-    for url in urls:
-        data = await scrape_review(url)
-        data['url'] = url
-        all_data.append(data)
-    return all_data
-        
-                         
 async def main():
     semaphore = asyncio.Semaphore(20)
     async with aiohttp.ClientSession(headers=config.HEADERS) as session:
