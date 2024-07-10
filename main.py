@@ -47,7 +47,7 @@ async def main() -> None:
         print(f"Time elapsed: {end - start:.2f} seconds")
         print(f"Total review links found: {len(urls)}")
 
-        tasks = [scrape_review(url, session, semaphore) for url in list(urls)[:100]]
+        tasks = [scrape_review(url, session, semaphore) for url in list(urls)[:1000]]
         for f in tqdm(asyncio.as_completed(tasks), total=len(tasks)):
             result = await f
             results.append(result)
