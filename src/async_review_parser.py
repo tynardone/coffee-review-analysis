@@ -13,7 +13,6 @@ async def _parse_element(soup: BeautifulSoup, element: str, class_: str = None,
                 return found_next_element.get_text().strip()
         else:
             return found_element.get_text().strip()
-    logging.warning(f"No data found for {element} with class {class_ or string}.")
     return None
 
 
