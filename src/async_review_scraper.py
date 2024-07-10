@@ -8,6 +8,7 @@ from tqdm.asyncio import tqdm
 
 from .async_review_parser import parse_html
 
+
 async def fetch(url: str, session: aiohttp.ClientSession,
                 semaphore: asyncio.Semaphore, retries: int) -> str:
     async with semaphore:
@@ -18,7 +19,7 @@ async def fetch(url: str, session: aiohttp.ClientSession,
                         await asyncio.sleep(5)
                         continue
                     return await response.text()
-            except (aiohttp.ClientError, asyncio.TimeoutError) as e:
+            except (aiohttp.ClientError, asyncio.TimeoutError):
                 await asyncio.sleep(5)
         logging.error(f"Failed to fetch {url} after {retries} attempts.")
         return None
@@ -45,23 +46,3 @@ async def main():
             result = await f
             results.append(result)
     return results
-
-if __name__ == '__main__':
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(levelname)s - %(message)s')
-    root_dir = Path(__file__).parent.parent
-    data_dir = root_dir / 'data' / 'raw'
-
-    # Find all pickle files in the data directory
-    files = [file for file in data_dir.iterdir() if file.suffix == '.pkl']
-    file = files[0]
-
-    # Load review URLs from the pickle file
-    with open(file, 'rb') as file:
-        review_urls = pickle.load(file)
-
-    print(f"Loaded {len(review_urls)} review URLs.")
-
-    review_data = asyncio.run(main())
-    print(review_data)

@@ -11,7 +11,7 @@ from src import config
 
 async def fetch(url, session: aiohttp.ClientSession):
     try:
-        response = await session.get(url) 
+        response = await session.get(url)
         response.raise_for_status()
         return await response.text()
     except aiohttp.ClientResponseError as e:
@@ -19,7 +19,8 @@ async def fetch(url, session: aiohttp.ClientSession):
         return None
 
 
-async def get_urls(base_url: str, session: aiohttp.ClientSession, url: str = None, visited: set = None) -> set[str]:
+async def get_urls(base_url: str, session: aiohttp.ClientSession,
+                   url: str = None, visited: set = None) -> set[str]:
     if visited is None:
         url = base_url
         visited = set()
@@ -40,7 +41,12 @@ async def get_urls(base_url: str, session: aiohttp.ClientSession, url: str = Non
                     continue
                 if '/review/page/' in href:
                     visited.add(full_url)
-                    tasks.append(get_urls(base_url=base_url, session=session, url=full_url, visited=visited))
+                    tasks.append(
+                        get_urls(
+                            base_url=base_url,
+                            session=session,
+                            url=full_url,
+                            visited=visited))
                 elif '/review/' in href and not href.endswith('/page') and href != base_url:
                     review_links.add(full_url)
 
@@ -52,19 +58,3 @@ async def get_urls(base_url: str, session: aiohttp.ClientSession, url: str = Non
         logging.error(f'Error fetching {url}: {e}')
 
     return review_links
-
-async def main():
-    start_time = time.time()
-
-    scraper = AsyncScraper(url=config.BASE_URL, headers=config.HEADERS)
-    review_links = await scraper.get_urls(url=config.BASE_URL)
-    print(f"Total review links found: {len(review_links)}")
-
-    await scraper.close()
-
-    end_time = time.time()
-    elapsed_time = end_time - start_time
-    print(f"Elapsed time: {elapsed_time:.2f} seconds")
-
-if __name__ == "__main__":
-    asyncio.run(main())

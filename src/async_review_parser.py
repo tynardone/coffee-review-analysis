@@ -4,8 +4,11 @@ import logging
 
 
 async def _parse_element(soup: BeautifulSoup, element: str, class_: str = None,
-                        string: str = None, next_element: str = None) -> str:
-    found_element = soup.find(element, class_=class_, string=re.compile(string) if string else None)
+                         string: str = None, next_element: str = None) -> str:
+    found_element = soup.find(
+        element,
+        class_=class_,
+        string=re.compile(string) if string else None)
     if found_element:
         if next_element:
             found_next_element = found_element.find_next(next_element)
@@ -54,10 +57,10 @@ async def parse_html(text):
         'roaster': await _parse_element(soup, 'p', 'review-roaster'),
         'title': await _parse_element(soup, 'h1', 'review-title'),
         'blind_assessment': await _parse_element(soup, 'h2', string='Blind Assessment',
-                                                next_element='p'),
+                                                 next_element='p'),
         'notes': await _parse_notes_section(soup),
         'bottom_line': await _parse_element(soup, 'h2', string='Bottom Line',
-                                           next_element='p')
+                                            next_element='p')
     }
 
     data.update(await _parse_tables(soup))

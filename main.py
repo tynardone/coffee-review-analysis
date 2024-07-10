@@ -39,7 +39,7 @@ async def main() -> None:
     # Create an aiohttp ClientSession.
     # Uses Semaphore to limit the number of concurrent requests while scraping reviews, while
     # still allowing speed improvements over pure synchronous scraping
-    semaphore = asyncio.Semaphore(10) 
+    semaphore = asyncio.Semaphore(10)
     async with aiohttp.ClientSession(headers=config.HEADERS) as session:
         start = time.time()
         urls = await get_urls(base_url=config.BASE_URL, session=session)
