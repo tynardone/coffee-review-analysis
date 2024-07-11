@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 import logging
 from pathlib import Path
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__) 
 
 
 def _parse_element(soup: BeautifulSoup, element: str, class_: str = None,
