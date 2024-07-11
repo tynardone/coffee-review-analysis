@@ -1,10 +1,7 @@
 import logging
-from pathlib import Path
-import pickle
 
 import asyncio
 import aiohttp
-from tqdm.asyncio import tqdm
 
 from .async_review_parser import parse_html
 
@@ -42,6 +39,8 @@ async def scrape_review(
     else:
         pass
 
+"""
+Just for reference.
 
 async def main():
     semaphore = asyncio.Semaphore(20)
@@ -52,3 +51,4 @@ async def main():
             result = await f
             results.append(result)
     return results
+"""

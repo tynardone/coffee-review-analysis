@@ -1,12 +1,9 @@
 import logging
 from urllib.parse import urljoin
 
-import time
 import asyncio
 import aiohttp
 from bs4 import BeautifulSoup
-
-from src import config
 
 
 async def fetch(url, session: aiohttp.ClientSession):
