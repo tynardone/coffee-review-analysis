@@ -1,4 +1,5 @@
 """Main script to scrape reviews from the website and save them to a file."""
+
 import logging
 from datetime import datetime
 from pathlib import Path
@@ -16,22 +17,22 @@ import src.config as config
 
 def create_filename(filename: str, filetype: str) -> str:
     """Creates a filename of format 'ddmmyyyy_filename.filetype'"""
-    assert filetype in ['csv', 'json', 'pkl'], 'Invalid file type'
-    date = datetime.now().strftime('%d%m%Y')
-    filename = f'{date}_{filename}.{filetype}'
+    assert filetype in ["csv", "json", "pkl"], "Invalid file type"
+    date = datetime.now().strftime("%d%m%Y")
+    filename = f"{date}_{filename}.{filetype}"
     return filename
 
 
 def create_filepath(filename: str, filetype: str) -> Path:
     """Creates a filepath for the file in the 'data/raw' directory."""
-    data_dir = Path('data/raw/')
+    data_dir = Path("data/raw/")
     return data_dir / create_filename(filename, filetype)
 
 
 async def main() -> None:
     # Create the filepaths for saving the data
-    csv_filepath = create_filepath('reviews', 'csv')
-    json_filepath = create_filepath('reviews', 'json')
+    csv_filepath = create_filepath("reviews", "csv")
+    json_filepath = create_filepath("reviews", "json")
 
     # Initialize the results list
     results = []
@@ -55,7 +56,8 @@ async def main() -> None:
     # Use pandas to save the results to a CSV and JSON file
     df = pd.DataFrame(results)
     df.to_csv(csv_filepath, index=False)
-    df.to_json(json_filepath, orient='records')
+    df.to_json(json_filepath, orient="records")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     asyncio.run(main())
