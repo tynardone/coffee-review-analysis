@@ -10,15 +10,16 @@ from . import config
 from .review_parser import parse_html
 from tqdm import tqdm
 
-logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 
 def save_html(html: str, url: str):
     root_dir = Path(__file__).parent.parent
-    html_dir = root_dir / 'src' / 'test_html'
-    url_part = url.split('/')[-2].replace('-', '_')
-    with open(html_dir / f'review_{url_part}.html', 'w') as f:
+    html_dir = root_dir / "src" / "test_html"
+    url_part = url.split("/")[-2].replace("-", "_")
+    with open(html_dir / f"review_{url_part}.html", "w") as f:
         f.write(html)
 
 
@@ -83,10 +84,11 @@ class ReviewScraper:
         """
         response = self.session.get(url, headers=self.headers)
         response.raise_for_status()
-        return BeautifulSoup(response.text, 'html.parser')
+        return BeautifulSoup(response.text, "html.parser")
 
-    def get_review_urls(self, url: str = None,
-                        visited: set = None, limit: int = None) -> set[str]:
+    def get_review_urls(
+        self, url: str = None, visited: set = None, limit: int = None
+    ) -> set[str]:
         """Fetch a page and extract all relevant review links, recursively
         fetching additional review pages.
 
@@ -102,68 +104,68 @@ class ReviewScraper:
             url = self.base_url
         if visited is None:
             visited = set()
-            logging.info(f'Starting to fetch links from {url}')
+            logging.info(f"Starting to fetch links from {url}")
 
         review_links = set()
-        logging.info('Fetching links from %s', url)
+        logging.info("Fetching links from %s", url)
         try:
             soup = self.fetch_html(url)
 
             # Find links of the form '/reviews/'
-            for a_tag in soup.find_all('a', href=True):
-                href = a_tag['href']
+            for a_tag in soup.find_all("a", href=True):
+                href = a_tag["href"]
                 full_url = urljoin(self.base_url, href)
 
                 if full_url in visited:
                     continue
                 # if a link to a pagination page fetch links from it
-                if '/review/page/' in href:
+                if "/review/page/" in href:
                     # Recursively fetch links from pagination pages
                     visited.add(full_url)
-                    review_links.update(
-                        self.get_review_urls(full_url, visited))
+                    review_links.update(self.get_review_urls(full_url, visited))
 
                 # if a link to a review page add it to the set
-                elif ('/review/' in href and
-                      not href.endswith('/page') and
-                      href != self.base_url):
+                elif (
+                    "/review/" in href
+                    and not href.endswith("/page")
+                    and href != self.base_url
+                ):
                     review_links.add(full_url)
         except requests.RequestException as e:
-            print(f'Error fetching page: {e}')
+            print(f"Error fetching page: {e}")
             return None
         return review_links
 
     def fetch_and_parse_review(self, urls: Iterable[str]) -> Iterable[dict]:
         """Fetch and parse multiple review pages and return a list of extracted data."""
         review_data = []
-        for url in tqdm(urls, desc='Fetching reviews'):
+        for url in tqdm(urls, desc="Fetching reviews"):
             try:
                 soup = self.fetch_html(url)
                 data.update(parse_review(soup))
-                data['url'] = url
+                data["url"] = url
                 review_data.append(data)
             except requests.RequestException as e:
-                data['url'] = url
+                data["url"] = url
                 review_data.append(data)
-                print(f'Error fetching page: {e}')
+                print(f"Error fetching page: {e}")
         return review_data
 
 
 def main():
     start_time = time.time()
 
-    with ReviewScraper(base_url=config.BASE_URL,
-                       headers=config.HEADERS) as scraper:
+    with ReviewScraper(base_url=config.BASE_URL, headers=config.HEADERS) as scraper:
         review_urls = scraper.get_review_urls(limit=10)
-        logging.info('Total review links found: %s', len(review_urls))
+        logging.info("Total review links found: %s", len(review_urls))
         review_data = scraper.fetch_and_parse_review(review_urls)
     end_time = time.time()
 
     elapsed_time = end_time - start_time
-    logging.info('Time elapsed: %.2f seconds', elapsed_time)
+    logging.info("Time elapsed: %.2f seconds", elapsed_time)
 
     print(review_data)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
