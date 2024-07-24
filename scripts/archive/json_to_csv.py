@@ -9,8 +9,8 @@ import pandas as pd
 # Set up logging
 logger = logging.getLogger(__name__)
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s')
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 
 def parse_args():
@@ -23,23 +23,25 @@ def parse_args():
 
 def clean_data(df: pd.DataFrame) -> pd.DataFrame:
     """Clean column names."""
-    df.columns = (df.columns.str.lower()
-                  .str.replace(' ', '_', regex=False)
-                  .str.replace(':', '', regex=False)
-                  .str.replace('.', '', regex=False))
+    df.columns = (
+        df.columns.str.lower()
+        .str.replace(" ", "_", regex=False)
+        .str.replace(":", "", regex=False)
+        .str.replace(".", "", regex=False)
+    )
     return df
 
 
 def create_csv_filepath(json_filepath: Path, output_dir: Path) -> Path:
     """Create the output CSV filepath."""
-    csv_filepath = output_dir / json_filepath.with_suffix('.csv').name
+    csv_filepath = output_dir / json_filepath.with_suffix(".csv").name
     output_dir.mkdir(parents=True, exist_ok=True)
     return csv_filepath
 
 
 def validate_input_file(filepath: Path) -> bool:
     """Check if the file exists and is a JSON file."""
-    if not filepath.exists() or filepath.suffix.lower() != '.json':
+    if not filepath.exists() or filepath.suffix.lower() != ".json":
         logging.error("Input file must be a valid JSON file.")
         return False
     return True
