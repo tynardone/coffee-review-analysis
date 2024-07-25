@@ -17,7 +17,8 @@ load_dotenv()
 API_URL = "https://openexchangerates.org/api/historical/"
 HEADERS = {
     "accept": "application/json",
-    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
 }
 
 # Define base paths
@@ -64,7 +65,7 @@ def main():
 
     for d in tqdm(dates, desc="Fetching exchange rates..."):
         exchange_rates[str(d)] = fetch_rate_for_date(
-            date=, api_url=API_URL, headers=HEADERS, params=params
+            date=d, api_url=API_URL, headers=HEADERS, params=params
         )
 
     output_json_path.parent.mkdir(parents=True, exist_ok=True)
