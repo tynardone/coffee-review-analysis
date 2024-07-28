@@ -10,9 +10,9 @@ import aiohttp
 from tqdm.asyncio import tqdm
 import pandas as pd
 
-from scraper.async_url_scraper import get_urls
-from scraper.async_review_scraper import scrape_review
-import scraper.config as config
+from src.async_url_scraper import get_urls
+from src.async_review_scraper import scrape_review
+import src.config as config
 
 
 def create_filename(filename: str, filetype: str) -> str:

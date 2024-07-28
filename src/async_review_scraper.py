@@ -38,18 +38,3 @@ async def scrape_review(
         return data or "No data found"
     else:
         pass
-
-
-"""
-Just for reference.
-
-async def main():
-    semaphore = asyncio.Semaphore(20)
-    async with aiohttp.ClientSession(headers=config.HEADERS) as session:
-        tasks = [scrape_review(url, session, semaphore) for url in review_urls[0:300]]
-        results = []
-        for f in tqdm(asyncio.as_completed(tasks), total=len(tasks)):
-            result = await f
-            results.append(result)
-    return results
-"""

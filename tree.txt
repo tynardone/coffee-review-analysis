@@ -1,0 +1,44 @@
+.
+├── LICENSE
+├── README.md
+├── __pycache__
+│   ├── html_parse.cpython-311.pyc
+│   └── review_parse.cpython-311.pyc
+├── data
+│   ├── intermediate
+│   ├── processed
+│   ├── raw
+│   └── reviews.json
+├── docs
+├── imgs
+│   └── cup-beans.jpeg
+├── main.py
+├── notebooks
+│   ├── 1_data_cleaning.ipynb
+│   └── 2_data_EDA.ipynb
+├── notes
+│   └── how_coffee_review_works.md
+├── requirements.txt
+├── scraper
+│   ├── __init__.py
+│   ├── __pycache__
+│   ├── archive
+│   ├── async_review_parser.py
+│   ├── async_review_scraper.py
+│   ├── async_url_scraper.py
+│   ├── config.py
+│   └── test_html
+├── scripts
+│   ├── __pycache__
+│   ├── archive
+│   └── openex.py
+├── tree.txt
+└── venv
+    ├── bin
+    ├── etc
+    ├── include
+    ├── lib
+    ├── pyvenv.cfg
+    └── share
+
+23 directories, 19 files
