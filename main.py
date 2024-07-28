@@ -10,9 +10,9 @@ import aiohttp
 from tqdm.asyncio import tqdm
 import pandas as pd
 
-from src.async_url_scraper import get_urls
-from src.async_review_scraper import scrape_review
-import src.config as config
+from scraper.async_url_scraper import get_urls
+from scraper.async_review_scraper import scrape_review
+import scraper.config as config
 
 
 def create_filename(filename: str, filetype: str) -> str:
@@ -38,16 +38,16 @@ async def main() -> None:
     results = []
 
     # Create an aiohttp ClientSession.
-    # Uses Semaphore to limit the number of concurrent requests while scraping reviews, while
-    # still allowing speed improvements over pure synchronous scraping
     semaphore = asyncio.Semaphore(10)
     async with aiohttp.ClientSession(headers=config.HEADERS) as session:
         start = time.time()
+        # Scrape website for review urls
         urls = await get_urls(base_url=config.BASE_URL, session=session)
         end = time.time()
         print(f"Time elapsed: {end - start:.2f} seconds")
         print(f"Total review links found: {len(urls)}")
-
+        # Uses Semaphore to limit the number of concurrent requests while scraping reviews,
+        # while still allowing speed improvements over pure synchronous scraping
         tasks = [scrape_review(url, session, semaphore) for url in urls]
         for f in tqdm(asyncio.as_completed(tasks), total=len(tasks)):
             result = await f
