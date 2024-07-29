@@ -25,6 +25,8 @@ def create_filename(filename: str, filetype: str) -> str:
 
 def create_filepath(filename: str, filetype: str) -> Path:
     """Creates a filepath for the file in the 'data/raw' directory."""
+    if filetype not in ("csv", "json"):
+        raise ValueError("Invalid file type. Only 'csv' and 'json' are supported.")
     data_dir = Path("data/raw/")
     return data_dir / create_filename(filename, filetype)
 
