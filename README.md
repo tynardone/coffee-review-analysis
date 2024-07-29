@@ -16,4 +16,10 @@
 
 ## US Consumer Price Index
 
-# TODO: Find source
+Consumer Price Index for All Urban Consumers (CPI-U)
+Not Seasonally Adjusted CPI for All Urban Consumers (CPI-U): U.S. city average
+All items in U.S. city average, all urban consumers, not seasonally adjusted
+
+consumer_price_index.csv
+
+<https://www.bls.gov/cpi/data.htm>
