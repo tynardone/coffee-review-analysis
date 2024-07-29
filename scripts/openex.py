@@ -1,4 +1,5 @@
-"""Fetches historical exchange rates from the OpenExchangeRates API."""
+"""Fetches historical exchange rates from the OpenExchangeRates API.
+For free tier users, your have a monthly allowance of 1000 requests."""
 
 import json
 import os
@@ -21,12 +22,12 @@ HEADERS = {
     "(KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
 }
 
-DATA_IN = "raw/25072024_reviews.csv""
+DATA_IN = "raw/25072024_reviews.csv"
 DATA_OUT = "external/openex_exchange_rates.json"
 
 
 # Define project root
-data_dir = Path(__file__).resolve().parent / "data"
+data_dir = Path(__file__).resolve().parent.parent / "data"
 
 # Define directory paths from base path
 dates_csv_path = data_dir / DATA_IN
@@ -45,8 +46,10 @@ def load_date_list(file_path: Path) -> list[date]:
     """Loads scraped data and returns a list of unique dates.
     Filepath should point to recent scraped data."""
     if file_path.suffix not in (".csv", ".json"):
-        raise ValueError("Invalid file format. Only CSV and JSON files are supported. Enter" \
-                         "filename ending in .csv or .json.")
+        raise ValueError(
+            "Invalid file format. Only CSV and JSON files are supported. Enter"
+            "filename ending in .csv or .json."
+        )
     if not file_path.exists():
         raise FileNotFoundError(f"{file_path} does not exist.")
 
@@ -57,9 +60,10 @@ def load_date_list(file_path: Path) -> list[date]:
 
     # Convert review date to datetime and filter dates from 1999 onwards,
     # this is the earliest date available in the OpenExchangeRates API
-    dates = df.assign(review_date=pd.to_datetime(df['review date'])).query(
-        'review_date >= "1999-01-01"')
-    return dates['review date'].dt.date.unique().tolist()
+    dates = df.assign(review_date=pd.to_datetime(df["review date"])).query(
+        'review_date >= "1999-01-01"'
+    ).sort_values("review_date")
+    return dates["review_date"].dt.date.unique().tolist()
 
 
 def fetch_rate_for_date(date: str, api_url: str, headers: dict, params: dict) -> dict:
@@ -80,8 +84,7 @@ def main():
         exchange_rates[str(d)] = fetch_rate_for_date(
             date=d, api_url=API_URL, headers=HEADERS, params=params
         )
-    
-    
+
     output_json_path.parent.mkdir(parents=True, exist_ok=True)
 
     with open(output_json_path, "w", encoding="utf-8") as f:
