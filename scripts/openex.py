@@ -60,9 +60,11 @@ def load_date_list(file_path: Path) -> list[date]:
 
     # Convert review date to datetime and filter dates from 1999 onwards,
     # this is the earliest date available in the OpenExchangeRates API
-    dates = df.assign(review_date=pd.to_datetime(df["review date"])).query(
-        'review_date >= "1999-01-01"'
-    ).sort_values("review_date")
+    dates = (
+        df.assign(review_date=pd.to_datetime(df["review date"]))
+        .query('review_date >= "1999-01-01"')
+        .sort_values("review_date")
+    )
     return dates["review_date"].dt.date.unique().tolist()
 
 
