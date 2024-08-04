@@ -23,3 +23,8 @@ All items in U.S. city average, all urban consumers, not seasonally adjusted
 consumer_price_index.csv
 
 <https://www.bls.gov/cpi/data.htm>
+
+1. Scrape and parse
+2. Data cleaning
+3. Cleaning and reconciliation in OpenRefine
+4. Feature engineering from text
