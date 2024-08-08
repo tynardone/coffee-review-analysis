@@ -1,3 +1,5 @@
+"""Module to scrape coffee review URLs asynchronously."""
+
 import logging
 from urllib.parse import urljoin
 
@@ -6,7 +8,7 @@ import aiohttp
 from bs4 import BeautifulSoup
 
 
-async def fetch(url, session: aiohttp.ClientSession):
+async def fetch(url: str, session: aiohttp.ClientSession):
     try:
         response = await session.get(url)
         response.raise_for_status()
@@ -17,21 +19,25 @@ async def fetch(url, session: aiohttp.ClientSession):
 
 
 async def get_urls(
-    base_url: str, session: aiohttp.ClientSession, url: str = None, visited: set = None
+    base_url: str,
+    session: aiohttp.ClientSession,
+    url: str | None = None,
+    visited: set | None = None,
 ) -> set[str]:
+
     if visited is None:
         url = base_url
-        visited = set()
+        visited: set = set()
         logging.info(f"Starting to fetch links from {url}")
 
-    review_links = set()
+    review_links: set = set()
 
     try:
         html = await fetch(url, session)
         if html:
             soup = BeautifulSoup(html, "html.parser")
 
-            tasks = []
+            tasks: list[asyncio.Task] = []
             for a_tag in soup.find_all("a", href=True):
                 href = a_tag["href"]
                 full_url = urljoin(base_url, href)

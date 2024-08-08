@@ -1,9 +1,11 @@
+"""Module for scraping coffee review page asynchronously."""
+
 import logging
 
 import asyncio
 import aiohttp
 
-from .async_review_parser import parse_html
+from .async_parser import parse_html
 
 
 async def fetch(
