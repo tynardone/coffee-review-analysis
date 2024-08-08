@@ -1,6 +1,8 @@
 # CoffeeReview.com web scraping and data analysis project
 
+[![Python Version](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ## Scripts
 
@@ -28,3 +30,7 @@ consumer_price_index.csv
 2. Data cleaning
 3. Cleaning and reconciliation in OpenRefine
 4. Feature engineering from text
+
+# t-SNE
+
+<https://distill.pub/2016/misread-tsne/>
