@@ -1,6 +1,5 @@
-"""Main script to scrape reviews from the website and save them to a file."""
+"""Main script."""
 
-import logging
 from datetime import datetime
 from pathlib import Path
 import time
@@ -17,35 +16,36 @@ import src.config as config
 
 def create_filename(filename: str, filetype: str) -> str:
     """Creates a filename of format 'ddmmyyyy_filename.filetype'"""
-    assert filetype in ["csv", "json", "pkl"], "Invalid file type"
-    date = datetime.now().strftime("%d%m%Y")
-    filename = f"{date}_{filename}.{filetype}"
+    current_date: str = datetime.now().strftime("%d%m%Y")
+    filename = f"{current_date}_{filename}.{filetype}"
     return filename
 
 
 def create_filepath(filename: str, filetype: str) -> Path:
     """Creates a filepath for the file in the 'data/raw' directory."""
-    if filetype not in ("csv", "json"):
-        raise ValueError("Invalid file type. Only 'csv' and 'json' are supported.")
+    if filetype not in ("csv", "json", "pkl"):
+        raise ValueError(
+            "Invalid file type. Only 'csv', 'json', and 'pkl' are supported."
+        )
     data_dir = Path("data/raw/")
     return data_dir / create_filename(filename, filetype)
 
 
 async def main() -> None:
     # Create the filepaths for saving the data
-    csv_filepath = create_filepath("reviews", "csv")
-    json_filepath = create_filepath("reviews", "json")
+    csv_filepath: Path = create_filepath("reviews", "csv")
+    json_filepath: Path = create_filepath("reviews", "json")
 
     # Initialize the results list
-    results = []
+    results: list[dict] = []
 
     # Create an aiohttp ClientSession.
     semaphore = asyncio.Semaphore(10)
     async with aiohttp.ClientSession(headers=config.HEADERS) as session:
-        start = time.time()
+        start: float = time.time()
         # Scrape website for review urls
-        urls = await get_urls(base_url=config.BASE_URL, session=session)
-        end = time.time()
+        urls: list[str] = await get_urls(base_url=config.BASE_URL, session=session)
+        end: float = time.time()
         print(f"Time elapsed: {end - start:.2f} seconds")
         print(f"Total review links found: {len(urls)}")
         # Uses Semaphore to limit the number of concurrent requests while scraping reviews,
