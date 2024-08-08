@@ -1,5 +1,5 @@
 """Fetches historical exchange rates from the OpenExchangeRates API.
-For free tier users, your have a monthly allowance of 1000 requests."""
+For free tier users there's a monthly allowance of 1000 requests."""
 
 import json
 import os
