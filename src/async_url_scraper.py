@@ -2,6 +2,7 @@
 
 import logging
 from urllib.parse import urljoin
+from typing import Coroutine, Any
 
 import asyncio
 import aiohttp
@@ -21,13 +22,13 @@ async def fetch(url: str, session: aiohttp.ClientSession):
 async def get_urls(
     base_url: str,
     session: aiohttp.ClientSession,
-    url: str | None = None,
+    url: str = "",
     visited: set | None = None,
 ) -> set[str]:
 
     if visited is None:
         url = base_url
-        visited: set = set()
+        visited = set()
         logging.info(f"Starting to fetch links from {url}")
 
     review_links: set = set()
@@ -37,7 +38,7 @@ async def get_urls(
         if html:
             soup = BeautifulSoup(html, "html.parser")
 
-            tasks: list[asyncio.Task] = []
+            tasks: list[Coroutine[Any, Any, set[str]]] = []
             for a_tag in soup.find_all("a", href=True):
                 href = a_tag["href"]
                 full_url = urljoin(base_url, href)

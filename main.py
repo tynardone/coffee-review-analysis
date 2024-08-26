@@ -3,6 +3,7 @@
 from datetime import datetime
 from pathlib import Path
 import time
+from typing import Any
 
 import asyncio
 import aiohttp
@@ -37,14 +38,14 @@ async def main() -> None:
     json_filepath: Path = create_filepath("reviews", "json")
 
     # Initialize the results list
-    results: list[dict] = []
+    results: list[dict[Any, Any] | None] = []
 
     # Create an aiohttp ClientSession.
     semaphore = asyncio.Semaphore(10)
     async with aiohttp.ClientSession(headers=config.HEADERS) as session:
         start: float = time.time()
         # Scrape website for review urls
-        urls: list[str] = await get_urls(base_url=config.BASE_URL, session=session)
+        urls: set[str] = await get_urls(base_url=config.BASE_URL, session=session)
         end: float = time.time()
         print(f"Time elapsed: {end - start:.2f} seconds")
         print(f"Total review links found: {len(urls)}")

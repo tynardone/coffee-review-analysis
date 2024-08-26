@@ -10,7 +10,7 @@ from .async_parser import parse_html
 
 async def fetch(
     url: str, session: aiohttp.ClientSession, semaphore: asyncio.Semaphore, retries: int
-) -> str:
+) -> str | None:
     async with semaphore:
         for attempt in range(retries):
             try:
@@ -32,11 +32,11 @@ async def scrape_review(
     session: aiohttp.ClientSession,
     semaphore: asyncio.Semaphore,
     retries: int = 10,
-) -> str:
+) -> dict | None:
     review_page = await fetch(url, session, semaphore, retries=retries)
     if review_page:
         data = await parse_html(review_page)
         data["url"] = url
-        return data or "No data found"
+        return data
     else:
-        pass
+        return None

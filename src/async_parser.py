@@ -1,8 +1,10 @@
 """Contains logic for parsing coffee review HTML."""
 
-from bs4 import BeautifulSoup
 import re
 import logging
+
+from bs4 import BeautifulSoup
+from bs4.element import Tag
 
 
 async def _parse_element(
@@ -26,10 +28,15 @@ async def _parse_element(
 
 
 async def _parse_notes_section(soup: BeautifulSoup) -> str | None:
+    """The notes section structure is not consistent, but is generally all the text
+    content between the Notes h2 header and the next h2 header. So this function
+    extracts all text content between these two headers."""
     notes = soup.find("h2", string=re.compile("Notes"))
     if notes:
         notes_text: str = ""
+        # Extract all text from notes h2 header until the next h2 header
         for element in notes.find_next_siblings():
+            assert isinstance(element, Tag)
             if element.name == "h2":
                 break
             notes_text += element.get_text().strip()
@@ -39,7 +46,7 @@ async def _parse_notes_section(soup: BeautifulSoup) -> str | None:
         return None
 
 
-async def _parse_tables(soup: BeautifulSoup) -> dict:
+async def _parse_tables(soup: BeautifulSoup) -> dict | None:
     data: dict = {}
     for table in soup.find_all("table"):
         if table:

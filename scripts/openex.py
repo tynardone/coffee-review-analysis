@@ -33,7 +33,7 @@ output_json_path: Path = data_dir / DATA_OUT
 
 def load_api_id() -> str:
     """Loads the OpenExchangeRates API ID from the environment"""
-    api_id: str = os.getenv("OPENEXCHANGERATES_API_ID")
+    api_id: str | None = os.getenv("OPENEXCHANGERATES_API_ID")
     if not api_id:
         raise ValueError("API ID not found.")
     return api_id
@@ -87,7 +87,6 @@ def fetch_exchange_rates(
             date=str(d),
             api_url=api_url,
             params=params,
-            timeout=timeout,
         )
     return exchange_rates
 
