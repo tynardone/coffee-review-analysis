@@ -10,8 +10,8 @@ from bs4.element import Tag
 async def _parse_element(
     soup: BeautifulSoup,
     element: str,
-    class_: str,
-    string: str,
+    class_: str | None = None,
+    string: str | None = None,
     next_element: str | None = None,
 ) -> str | None:
     found_element = soup.find(
@@ -62,7 +62,7 @@ async def _parse_tables(soup: BeautifulSoup) -> dict | None:
     return data
 
 
-async def parse_html(text):
+async def parse_html(text: str) -> dict[str, str | None]:
     soup: BeautifulSoup = BeautifulSoup(text, "html.parser")
     data: dict[str, str | None] = {
         "rating": await _parse_element(soup, "span", "review-template-rating"),
@@ -77,6 +77,8 @@ async def parse_html(text):
         ),
     }
 
-    data.update(await _parse_tables(soup))
+    table_data = await _parse_tables(soup)
+    if table_data:
+        data.update(table_data)
 
     return data
