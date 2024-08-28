@@ -5,33 +5,38 @@
 │   ├── html_parse.cpython-311.pyc
 │   └── review_parse.cpython-311.pyc
 ├── data
+│   ├── external
 │   ├── intermediate
 │   ├── processed
-│   ├── raw
-│   └── reviews.json
+│   └── raw
 ├── docs
 ├── imgs
-│   └── cup-beans.jpeg
+│   ├── blind_assessment_tfidf_wordcloud.png
+│   ├── blind_assessment_tfidf_wordcloud_spacy.png
+│   ├── cup-beans.jpeg
+│   └── wordcloud.png
 ├── main.py
+├── mypy.ini
 ├── notebooks
 │   ├── 1_data_cleaning.ipynb
-│   └── 2_data_EDA.ipynb
+│   ├── 2_data_EDA.ipynb
+│   ├── 2_text_features.ipynb
+│   └── wordcloud.png
 ├── notes
 │   └── how_coffee_review_works.md
 ├── requirements.txt
-├── scraper
-│   ├── __init__.py
-│   ├── __pycache__
-│   ├── archive
-│   ├── async_review_parser.py
-│   ├── async_review_scraper.py
-│   ├── async_url_scraper.py
-│   ├── config.py
-│   └── test_html
 ├── scripts
 │   ├── __pycache__
 │   ├── archive
 │   └── openex.py
+├── src
+│   ├── __init__.py
+│   ├── __pycache__
+│   ├── async_parser.py
+│   ├── async_review_scraper.py
+│   ├── async_url_scraper.py
+│   ├── config.py
+│   └── test_html
 ├── tree.txt
 └── venv
     ├── bin
@@ -41,4 +46,4 @@
     ├── pyvenv.cfg
     └── share
 
-23 directories, 19 files
+23 directories, 24 files
