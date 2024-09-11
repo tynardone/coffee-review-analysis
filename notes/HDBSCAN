@@ -24,3 +24,10 @@ UMAP
 
 How To Use UMAP and HDBScan To Surface Insights and Discover Issues
 <https://www.youtube.com/watch?v=g5DZuRDnOGY>
+
+TUNING HDBSCAN
+<https://towardsdatascience.com/tuning-with-hdbscan-149865ac2970>
+
+<https://github.com/awslabs/amazon-denseclus>
+
+<https://hdbscan.readthedocs.io/en/latest/how_hdbscan_works.html>

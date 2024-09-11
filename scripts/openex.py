@@ -14,6 +14,8 @@ from tqdm import tqdm
 # Load environment variables from .env file
 load_dotenv()
 
+print(dadio)
+
 # Configuration
 API_URL: str = "https://openexchangerates.org/api/historical/"
 HEADERS: dict = {
