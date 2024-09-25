@@ -1,7 +1,7 @@
 """Fetches historical exchange rates from the OpenExchangeRates API.
 For free tier users there's a monthly allowance of 1000 requests."""
 
-import json
+import jsons
 import os
 from pathlib import Path
 from datetime import date
