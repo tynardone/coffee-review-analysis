@@ -1,11 +1,10 @@
 """Contains logic for parsing coffee review HTML."""
 
+import logging
 import re
 
 from bs4 import BeautifulSoup
 from bs4.element import Tag
-
-import logging
 
 
 async def _parse_element(

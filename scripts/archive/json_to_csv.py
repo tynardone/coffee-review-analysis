@@ -4,6 +4,7 @@ Need to provide the path to the JSON file as the first argument."""
 import argparse
 import logging
 from pathlib import Path
+
 import pandas as pd
 
 # Set up logging

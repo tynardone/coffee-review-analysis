@@ -1,10 +1,10 @@
 """Module to scrape coffee review URLs asynchronously."""
 
-import logging
-from urllib.parse import urljoin
-from typing import Coroutine, Any
-
 import asyncio
+import logging
+from typing import Any, Coroutine
+from urllib.parse import urljoin
+
 import aiohttp
 from bs4 import BeautifulSoup
 

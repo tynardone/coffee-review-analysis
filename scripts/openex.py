@@ -2,11 +2,11 @@
 For free tier users there's a monthly allowance of 1000 requests."""
 
 import json
-from pathlib import Path
 from datetime import date
+from pathlib import Path
 
-import requests
 import pandas as pd
+import requests
 from tqdm import tqdm
 
 from src.config import OpenExConfig

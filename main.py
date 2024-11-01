@@ -1,18 +1,18 @@
 """Main script."""
 
+import asyncio
+import time
 from datetime import datetime
 from pathlib import Path
-import time
 from typing import Any
 
-import asyncio
 import aiohttp
-from tqdm.asyncio import tqdm
 import pandas as pd
+from tqdm.asyncio import tqdm
 
-from src.async_url_scraper import get_urls
+from src.config import Config
 from src.async_review_scraper import scrape_review
-import src.config as config
+from src.async_url_scraper import get_urls
 
 
 def create_filename(filename: str, filetype: str) -> str:
@@ -42,10 +42,10 @@ async def main() -> None:
 
     # Create an aiohttp ClientSession.
     semaphore = asyncio.Semaphore(10)
-    async with aiohttp.ClientSession(headers=config.HEADERS) as session:
+    async with aiohttp.ClientSession(headers=Config.HEADERS) as session:
         start: float = time.time()
         # Scrape website for review urls
-        urls: set[str] = await get_urls(base_url=config.BASE_URL, session=session)
+        urls: set[str] = await get_urls(base_url=Config.BASE_URL, session=session)
         end: float = time.time()
         print(f"Time elapsed: {end - start:.2f} seconds")
         print(f"Total review links found: {len(urls)}")
