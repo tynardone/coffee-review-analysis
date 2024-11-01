@@ -9,7 +9,7 @@ import requests
 import pandas as pd
 from tqdm import tqdm
 
-from config import OpenExConfig
+from src.config import OpenExConfig
 
 # Project directories
 data_dir: Path = Path(OpenExConfig.BASEDIR) / "data"

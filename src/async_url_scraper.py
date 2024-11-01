@@ -25,7 +25,6 @@ async def get_urls(
     url: str = "",
     visited: set | None = None,
 ) -> set[str]:
-
     if visited is None:
         url = base_url
         visited = set()

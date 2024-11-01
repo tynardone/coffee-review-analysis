@@ -6,9 +6,19 @@
 │   └── review_parse.cpython-311.pyc
 ├── data
 │   ├── external
+│   │   ├── consumer_price_index.csv
+│   │   └── openex_exchange_rates.json
 │   ├── intermediate
+│   │   ├── 05052024_roast_review_openrefine.csv
+│   │   ├── 25072024_reviews_intermediate.csv
+│   │   └── 25072024_reviews_openrefine.csv
 │   ├── processed
+│   │   ├── 05052024_roast_review_cleaned.csv
+│   │   ├── openex_exchange_rates.json
+│   │   └── review_dates.csv
 │   └── raw
+│       ├── 25072024_reviews.csv
+│       └── 25072024_reviews.json
 ├── docs
 ├── imgs
 │   ├── blind_assessment_tfidf_wordcloud.png
@@ -23,27 +33,127 @@
 │   ├── 2_text_features.ipynb
 │   └── wordcloud.png
 ├── notes
+│   ├── HDBSCAN
 │   └── how_coffee_review_works.md
 ├── requirements.txt
 ├── scripts
 │   ├── __pycache__
+│   │   ├── htmlparser.cpython-311.pyc
+│   │   ├── openex.cpython-311.pyc
+│   │   └── review_parse.cpython-311.pyc
 │   ├── archive
+│   │   └── json_to_csv.py
 │   └── openex.py
 ├── src
 │   ├── __init__.py
 │   ├── __pycache__
+│   │   ├── __init__.cpython-311.pyc
+│   │   ├── async_review_parser.cpython-311.pyc
+│   │   ├── async_review_scraper.cpython-311.pyc
+│   │   ├── async_url_scraper.cpython-311.pyc
+│   │   ├── asyncscraper.cpython-311.pyc
+│   │   ├── config.cpython-311.pyc
+│   │   ├── review_parser.cpython-311.pyc
+│   │   └── scraper.cpython-311.pyc
 │   ├── async_parser.py
 │   ├── async_review_scraper.py
 │   ├── async_url_scraper.py
 │   ├── config.py
 │   └── test_html
+│       ├── review_burundi_kayanza_cima_yeast_natural.html
+│       ├── review_espresso_blend_29.html
+│       ├── review_ethiopia_guji_floral_blueberry_natural_g1.html
+│       ├── review_ethiopia_sidama_berry_gummies_74158_natural_g1.html
+│       ├── review_ethiopia_sidama_orange_blossom_washed_g1.html
+│       ├── review_ethiopia_washed_guji_uraga_tome_variety_74110.html
+│       ├── review_ethiopia_washed_sidama_bensa_single_variety_74158.html
+│       ├── review_guatemala_bella_carmona_5.html
+│       ├── review_putra_gayo_sumatra_2.html
+│       └── review_wilton_benitez_sidra_2.html
+├── tests
 ├── tree.txt
 └── venv
     ├── bin
+    │   ├── Activate.ps1
+    │   ├── activate
+    │   ├── activate.csh
+    │   ├── activate.fish
+    │   ├── autopep8
+    │   ├── black
+    │   ├── blackd
+    │   ├── dmypy
+    │   ├── dotenv
+    │   ├── f2py
+    │   ├── fonttools
+    │   ├── httpx
+    │   ├── ipython
+    │   ├── ipython3
+    │   ├── jlpm
+    │   ├── jsonpointer
+    │   ├── jsonschema
+    │   ├── jupyter
+    │   ├── jupyter-console
+    │   ├── jupyter-dejavu
+    │   ├── jupyter-events
+    │   ├── jupyter-execute
+    │   ├── jupyter-kernel
+    │   ├── jupyter-kernelspec
+    │   ├── jupyter-lab
+    │   ├── jupyter-labextension
+    │   ├── jupyter-labhub
+    │   ├── jupyter-migrate
+    │   ├── jupyter-nbconvert
+    │   ├── jupyter-notebook
+    │   ├── jupyter-qtconsole
+    │   ├── jupyter-run
+    │   ├── jupyter-server
+    │   ├── jupyter-troubleshoot
+    │   ├── jupyter-trust
+    │   ├── markdown-it
+    │   ├── mypy
+    │   ├── mypyc
+    │   ├── nbqa
+    │   ├── nltk
+    │   ├── normalizer
+    │   ├── numba
+    │   ├── pip
+    │   ├── pip3
+    │   ├── pip3.11
+    │   ├── pybabel
+    │   ├── pycodestyle
+    │   ├── pyftmerge
+    │   ├── pyftsubset
+    │   ├── pygmentize
+    │   ├── pyjson5
+    │   ├── python -> /Users/tylernardone/.pyenv/versions/3.11.7/bin/python
+    │   ├── python3 -> python
+    │   ├── python3.11 -> python
+    │   ├── qtpy
+    │   ├── send2trash
+    │   ├── spacy
+    │   ├── stubgen
+    │   ├── stubtest
+    │   ├── tokenize-rt
+    │   ├── tqdm
+    │   ├── ttx
+    │   ├── typer
+    │   ├── unidecode
+    │   ├── weasel
+    │   ├── wheel
+    │   ├── wordcloud_cli
+    │   └── wsdump
+    ├── dist_metrics.pxd
     ├── etc
+    │   └── jupyter
     ├── include
+    │   └── python3.11
     ├── lib
+    │   └── python3.11
     ├── pyvenv.cfg
     └── share
+        ├── applications
+        ├── icons
+        ├── jupyter
+        └── man
 
-23 directories, 24 files
+31 directories, 126 files

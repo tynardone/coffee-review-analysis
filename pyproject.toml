@@ -1,0 +1,16 @@
+
+[project]
+name = "coffee-review-analysis"
+version = "1.0.0"
+authors = [{ name = "Tyler Nardone", email = "tynardone@gmail.com" }]
+description = "Project for web scraping and analysis of data from Coffeereview.com"
+readme = "README.md"
+
+[tool.mypy]
+disable_error_code = "import-untyped"
+exclude = "venv/"
+python_version = "3.11"
+ignore_missing_imports = true
+
+[tool.black]
+line-length = 88
