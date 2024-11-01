@@ -18,3 +18,8 @@ class Config:
             "(KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36"
         )
     }
+
+
+class OpenExConfig(Config):
+    API_URL: str = "https://openexchangerates.org/api/historical/"
+    TIMEOUT: int = 10

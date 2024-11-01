@@ -2,41 +2,19 @@
 For free tier users there's a monthly allowance of 1000 requests."""
 
 import json
-import os
 from pathlib import Path
 from datetime import date
 
 import requests
 import pandas as pd
-from dotenv import load_dotenv
 from tqdm import tqdm
 
-# Load environment variables from .env file
-load_dotenv()
-
-# Configuration
-API_URL: str = "https://openexchangerates.org/api/historical/"
-HEADERS: dict = {
-    "accept": "application/json",
-    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
-    "(KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
-}
-DATA_IN: str = "raw/25072024_reviews.csv"
-DATA_OUT: str = "external/openex_exchange_rates.json"
-TIMEOUT: int = 10
+from config import OpenExConfig
 
 # Project directories
-data_dir: Path = Path(__file__).resolve().parent.parent / "data"
-dates_csv_path: Path = data_dir / DATA_IN
-output_json_path: Path = data_dir / DATA_OUT
-
-
-def load_api_id() -> str:
-    """Loads the OpenExchangeRates API ID from the environment"""
-    api_id: str | None = os.getenv("OPENEXCHANGERATES_API_ID")
-    if not api_id:
-        raise ValueError("API ID not found.")
-    return api_id
+data_dir: Path = Path(OpenExConfig.BASEDIR) / "data"
+dates_csv_path: Path = data_dir / "raw/25072024_reviews.csv"
+output_json_path: Path = data_dir / "external/openex_exchange_rates.json"
 
 
 def load_date_list(file_path: Path) -> list[date]:
@@ -66,7 +44,12 @@ def fetch_rate_for_date(date: str, api_url: str, params: dict) -> dict:
     """Fetches historical exchange rates for a given date."""
     url = f"{api_url}{date}.json"
     try:
-        response = requests.get(url, headers=HEADERS, params=params, timeout=TIMEOUT)
+        response = requests.get(
+            url,
+            headers=OpenExConfig.HEADERS,
+            params=params,
+            timeout=OpenExConfig.TIMEOUT,
+        )
         response.raise_for_status()
         return response.json().get("rates", {})
     except requests.RequestException as e:
@@ -99,9 +82,11 @@ def save_exchange_rates(exchange_rates: dict[str, dict[str, float]], output_path
 
 
 def main():
-    params = {"app_id": load_api_id()}
+    params = {"app_id": OpenExConfig.OPENEXCHANGERATES_API_ID}
     dates = load_date_list(dates_csv_path)
-    exchange_rates = fetch_exchange_rates(dates, API_URL, params, TIMEOUT)
+    exchange_rates = fetch_exchange_rates(
+        dates, OpenExConfig.API_URL, params, OpenExConfig.TIMEOUT
+    )
     save_exchange_rates(exchange_rates, output_json_path)
 
 
