@@ -1,7 +1,7 @@
 """Fetches historical exchange rates from the OpenExchangeRates API.
 For free tier users there's a monthly allowance of 1000 requests."""
 
-import jsons
+import json
 import os
 from pathlib import Path
 from datetime import date
@@ -13,8 +13,6 @@ from tqdm import tqdm
 
 # Load environment variables from .env file
 load_dotenv()
-
-print(dadio)
 
 # Configuration
 API_URL: str = "https://openexchangerates.org/api/historical/"
