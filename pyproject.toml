@@ -11,6 +11,3 @@ disable_error_code = "import-untyped"
 exclude = "venv/"
 python_version = "3.11"
 ignore_missing_imports = true
-
-[tool.black]
-line-length = 88
