@@ -15,11 +15,11 @@ ignore_missing_imports = true
 
 [tool.ruff]
 lint.select = [
-    "I",  # isort
-    "F",  # pyflakes
-    "E",  # pycodestyle
-    "W",  # pycodestyle
-    "B",  # flake8-bugbear
-    "N",  # pep8-naming
-    "PL", # Pylint
+    "I", # isort
+    "F", # pyflakes
+    "E", # pycodestyle
+    "W", # pycodestyle
+    "B", # flake8-bugbear
+    "N", # pep8-naming
 ]
+line-length = 88

@@ -10,9 +10,9 @@ import aiohttp
 import pandas as pd
 from tqdm.asyncio import tqdm
 
-from src.config import Config
 from src.async_review_scraper import scrape_review
 from src.async_url_scraper import get_urls
+from src.config import Config
 
 
 def create_filename(filename: str, filetype: str) -> str:
@@ -49,8 +49,9 @@ async def main() -> None:
         end: float = time.time()
         print(f"Time elapsed: {end - start:.2f} seconds")
         print(f"Total review links found: {len(urls)}")
-        # Uses Semaphore to limit the number of concurrent requests while scraping reviews,
-        # while still allowing speed improvements over pure synchronous scraping
+        # Uses Semaphore to limit the number of concurrent requests while scraping
+        # reviews, while still allowing speed improvements
+        # over pure synchronous scraping
         tasks = [scrape_review(url, session, semaphore) for url in urls]
         for f in tqdm(asyncio.as_completed(tasks), total=len(tasks)):
             result = await f
