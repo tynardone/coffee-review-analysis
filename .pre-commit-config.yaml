@@ -15,7 +15,6 @@ repos:
   hooks:
     # Run the linter.
     - id: ruff
-      types_or: [python, pyi]
       args: [ --fix ]
     # Run the formatter (similar to black)
     - id: ruff-format
