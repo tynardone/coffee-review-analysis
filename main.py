@@ -1,6 +1,7 @@
 """Main script."""
 
 import asyncio
+import logging
 import time
 from pathlib import Path
 from typing import Any
@@ -16,6 +17,8 @@ from src.utils import create_filename
 
 DATA_DIR: Path = Config.BASEDIR / Path("data/raw/")
 SEMAPHORE_COUNT: int = 10
+
+logger = logging.getLogger(__name__)
 
 
 async def main() -> None:
@@ -33,8 +36,8 @@ async def main() -> None:
         # Scrape website for review urls
         urls: set[str] = await get_urls(base_url=Config.BASE_URL, session=session)
         end: float = time.time()
-        print(f"Time elapsed: {end - start:.2f} seconds")
-        print(f"Total review links found: {len(urls)}")
+        logger.info(f"Time elapsed: {end - start:.2f} seconds")
+        logger.info(f"Total review links found: {len(urls)}")
         # Uses Semaphore to limit the number of concurrent requests while scraping
         # reviews, while still allowing speed improvements
         # over pure synchronous scraping
