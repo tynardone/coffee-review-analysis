@@ -18,7 +18,11 @@ from src.utils import create_filename
 DATA_DIR: Path = Config.BASEDIR / Path("data/raw/")
 SEMAPHORE_COUNT: int = 10
 
-logger = logging.getLogger(__name__)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
+logger = logging.getLogger()
 
 
 async def main() -> None:
