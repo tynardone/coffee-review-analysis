@@ -23,3 +23,4 @@ lint.select = [
     "N", # pep8-naming
 ]
 line-length = 88
+lint.ignore = ["E402"]
