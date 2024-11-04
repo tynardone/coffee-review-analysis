@@ -2,7 +2,6 @@
 
 import asyncio
 import time
-from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -13,35 +12,22 @@ from tqdm.asyncio import tqdm
 from src.async_review_scraper import scrape_review
 from src.async_url_scraper import get_urls
 from src.config import Config
+from src.utils import create_filename
 
-
-def create_filename(filename: str, filetype: str) -> str:
-    """Creates a filename of format 'ddmmyyyy_filename.filetype'"""
-    current_date: str = datetime.now().strftime("%d%m%Y")
-    filename = f"{current_date}_{filename}.{filetype}"
-    return filename
-
-
-def create_filepath(filename: str, filetype: str) -> Path:
-    """Creates a filepath for the file in the 'data/raw' directory."""
-    if filetype not in ("csv", "json", "pkl"):
-        raise ValueError(
-            "Invalid file type. Only 'csv', 'json', and 'pkl' are supported."
-        )
-    data_dir = Path("data/raw/")
-    return data_dir / create_filename(filename, filetype)
+DATA_DIR: Path = Config.BASEDIR / Path("data/raw/")
+SEMAPHORE_COUNT: int = 10
 
 
 async def main() -> None:
     # Create the filepaths for saving the data
-    csv_filepath: Path = create_filepath("reviews", "csv")
-    json_filepath: Path = create_filepath("reviews", "json")
+    csv_filepath: Path = DATA_DIR / create_filename("reviews", "csv")
+    json_filepath: Path = DATA_DIR / create_filename("reviews", "json")
 
     # Initialize the results list
     results: list[dict[Any, Any] | None] = []
 
     # Create an aiohttp ClientSession.
-    semaphore = asyncio.Semaphore(10)
+    semaphore = asyncio.Semaphore(SEMAPHORE_COUNT)
     async with aiohttp.ClientSession(headers=Config.HEADERS) as session:
         start: float = time.time()
         # Scrape website for review urls
