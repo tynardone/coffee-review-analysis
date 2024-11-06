@@ -20,11 +20,11 @@ This project is a complete data pipeline for scraping coffee reviews from [Coffe
 
 The project involves:
 
-1. **Web Scraping**: Using Python to collect coffee reviews and associated metadata.
-2. **Data Cleaning**: Processing the scraped data, handling missing values, and enriching it with additional information.
+1. **Web Scraping**: Using Python to scrape coffee reviews and associated metadata and save to CSV.
+2. **Data Cleaning**: Processing the scraped data, handling missing values, extensive cleaning and normalization, and augmenting with additional information.
 3. **Analysis**: Generating visualizations and insights into coffee characteristics, quality scores, and tasting notes.
 
-The goal is to provide insights into the coffee market, with a particular focus on flavor trends, price indexes, and overall quality.
+The goal is to provide insights into the boutique coffee market, with a focus on origin, price, flavor notes and quality metrics.
 
 ## Directory Structure
 
@@ -32,28 +32,36 @@ The goal is to provide insights into the coffee market, with a particular focus 
 .
 ├── LICENSE
 ├── README.md
+├── coffee
+│   ├── __init__.py
+│   ├── async_parser.py
+│   ├── async_review_scraper.py
+│   ├── async_url_scraper.py
+│   ├── config.py
+│   ├── data_cleaning.py
+│   ├── test_html
+│   └── utils.py
 ├── data
-│   ├── external               # External datasets (e.g., CPI, exchange rates)
-│   ├── intermediate           # Partially cleaned datasets
-│   ├── processed              # Fully cleaned, ready-to-analyze datasets
-│   └── raw                    # Raw, unprocessed scraped data
-├── docs                       # Project documentation
-├── imgs                       # Images for analysis results (e.g., word clouds)
-├── main.py                    # Main entry point for the project
-├── mypy.ini                   # Configuration for type checking
+│   ├── external
+│   ├── intermediate
+│   ├── processed
+│   └── raw
+├── docs
+├── imgs
+├── main.py
 ├── notebooks
-│   ├── 1_data_cleaning.ipynb  # Notebook for initial data cleaning
-│   ├── 2_data_EDA.ipynb       # Exploratory Data Analysis (EDA)
-│   ├── 2_text_features.ipynb  # Text feature extraction and analysis
-├── notes                      # Notes and research on related topics
-├── requirements.txt           # Python package requirements
-├── scripts                    # Utility scripts for data fetching and processing
-├── src                        # Source code for the project
-│   ├── async_parser.py        # Asynchronous parsers for reviews
-│   ├── async_review_scraper.py # Asynchronous scraper for reviews
-│   ├── async_url_scraper.py   # URL scraping logic
-│   ├── config.py              # Project configuration settings
-└── tests                      # Unit tests
+│   ├── 1-data-cleaning.ipynb
+│   ├── 2-data-EDA.ipynb
+│   ├── 3-text-features.ipynb
+│   └── wordcloud.png
+├── notes
+├── pyproject.toml
+├── requirement-dev.txt
+├── requirements.txt
+├── scripts
+│   ├── archive
+│   └── openex.py
+├── tests
 ```
 
 ## Installation
