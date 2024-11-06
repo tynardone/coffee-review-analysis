@@ -12,7 +12,7 @@ async def fetch(
     url: str, session: aiohttp.ClientSession, semaphore: asyncio.Semaphore, retries: int
 ) -> str | None:
     async with semaphore:
-        for attempt in range(retries):
+        for _attempt in range(retries):
             try:
                 async with session.get(
                     url, timeout=aiohttp.ClientTimeout(total=20)

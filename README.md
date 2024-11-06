@@ -1,16 +1,103 @@
-# CoffeeReview.com web scraping and data analysis project
+
+# Coffee Review Scraper and Analysis
 
 [![Python Version](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Code style: Ruff](https://img.shields.io/badge/code%20style-Ruff-000000.svg)](https://github.com/astral-sh/ruff)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
+This project is a complete data pipeline for scraping coffee reviews from [CoffeeReview.com](https://www.coffeereview.com/), followed by data cleaning, transformation, and analysis. The data is augmented with additional external datasets (e.g., consumer price index, exchange rates) and analyzed to explore trends in coffee quality.
+
+## Table of Contents
+
+- [Project Overview](#project-overview)
+- [Directory Structure](#directory-structure)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Data Sources](#data-sources)
+- [Data Cleaning and Analysis](#data-cleaning-and-analysis)
+- [License](#license)
+
+## Project Overview
+
+The project involves:
+
+1. **Web Scraping**: Using Python to collect coffee reviews and associated metadata.
+2. **Data Cleaning**: Processing the scraped data, handling missing values, and enriching it with additional information.
+3. **Analysis**: Generating visualizations and insights into coffee characteristics, quality scores, and tasting notes.
+
+The goal is to provide insights into the coffee market, with a particular focus on flavor trends, price indexes, and overall quality.
+
+## Directory Structure
+
+```plaintext
+.
+├── LICENSE
+├── README.md
+├── data
+│   ├── external               # External datasets (e.g., CPI, exchange rates)
+│   ├── intermediate           # Partially cleaned datasets
+│   ├── processed              # Fully cleaned, ready-to-analyze datasets
+│   └── raw                    # Raw, unprocessed scraped data
+├── docs                       # Project documentation
+├── imgs                       # Images for analysis results (e.g., word clouds)
+├── main.py                    # Main entry point for the project
+├── mypy.ini                   # Configuration for type checking
+├── notebooks
+│   ├── 1_data_cleaning.ipynb  # Notebook for initial data cleaning
+│   ├── 2_data_EDA.ipynb       # Exploratory Data Analysis (EDA)
+│   ├── 2_text_features.ipynb  # Text feature extraction and analysis
+├── notes                      # Notes and research on related topics
+├── requirements.txt           # Python package requirements
+├── scripts                    # Utility scripts for data fetching and processing
+├── src                        # Source code for the project
+│   ├── async_parser.py        # Asynchronous parsers for reviews
+│   ├── async_review_scraper.py # Asynchronous scraper for reviews
+│   ├── async_url_scraper.py   # URL scraping logic
+│   ├── config.py              # Project configuration settings
+└── tests                      # Unit tests
+```
+
+## Installation
+
+### Prerequisites
+
+- Python 3.11+
+- Virtual environment (e.g. `venv` or `pyenv`)
+- Git (optional)
+
+### Setup
+
+1. **Clone this repository**:
+
+    ```bash
+    git clone https://github.com/tynardone/coffee-review-scraper.git
+    cd coffee-review-scraper
+    ```
+
+    Or just download files from [repository](https://github.com/tynardone/coffee-review-analysis.git).
+
+2. **Create and activate a virtual environment**:
+
+    ```bash
+    python -m venv venv
+    source venv/bin/activate
+    ```
+
+3. **Install dependencies**:
+
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+4. **Obtain free API Keys**:
 
 ## Scripts
 
-* async_scrape_roast_reviews.py
-* asynce_scrape_roast_urls.py
-* json_to_csv.py
-* openex.py
-* review_parse.py
+- async_scrape_roast_reviews.py
+- asynce_scrape_roast_urls.py
+- json_to_csv.py
+- openex.py
+- review_parse.py
 
 ## Historical Exchange Rates
 
