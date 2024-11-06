@@ -1,13 +1,8 @@
 .
 ├── LICENSE
 ├── README.md
-├── Untitled.ipynb
-├── __pycache__
-│   ├── html_parse.cpython-311.pyc
-│   └── review_parse.cpython-311.pyc
 ├── coffee
 │   ├── __init__.py
-│   ├── __pycache__
 │   ├── async_parser.py
 │   ├── async_review_scraper.py
 │   ├── async_url_scraper.py
@@ -15,11 +10,6 @@
 │   ├── data_cleaning.py
 │   ├── test_html
 │   └── utils.py
-├── coffee.egg-info
-│   ├── PKG-INFO
-│   ├── SOURCES.txt
-│   ├── dependency_links.txt
-│   └── top_level.txt
 ├── data
 │   ├── external
 │   ├── intermediate
@@ -27,10 +17,6 @@
 │   └── raw
 ├── docs
 ├── imgs
-│   ├── blind_assessment_tfidf_wordcloud.png
-│   ├── blind_assessment_tfidf_wordcloud_spacy.png
-│   ├── cup-beans.jpeg
-│   └── wordcloud.png
 ├── main.py
 ├── notebooks
 │   ├── 1-data-cleaning.ipynb
@@ -38,24 +24,12 @@
 │   ├── 3-text-features.ipynb
 │   └── wordcloud.png
 ├── notes
-│   ├── HDBSCAN
-│   └── how_coffee_review_works.md
 ├── pyproject.toml
 ├── requirement-dev.txt
-├── requirements-dev.backup
 ├── requirements.txt
 ├── scripts
-│   ├── __pycache__
 │   ├── archive
 │   └── openex.py
 ├── tests
-├── tree.txt
-└── venv
-    ├── bin
-    ├── etc
-    ├── include
-    ├── lib
-    ├── pyvenv.cfg
-    └── share
 
 25 directories, 34 files
