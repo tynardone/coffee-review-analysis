@@ -1,15 +1,22 @@
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
 
 [project]
-name = "coffee-review-analysis"
+name = "coffee"
 version = "1.0.0"
-authors = [{ name = "Tyler Nardone", email = "tynardone@gmail.com" }]
 description = "Project for web scraping and analysis of data from Coffeereview.com"
 readme = "README.md"
+requires-python = ">= 3.12"
+authors = [{ name = "Tyler Nardone", email = "tynardone@gmail.com" }]
+license = { file = "LICENSE" }
+
+[project.urls]
+Repository = "https://github.com/tynardone/coffee-review-analysis"
 
 [tool.mypy]
 disable_error_code = "import-untyped"
 exclude = "venv/"
-python_version = "3.11"
 ignore_missing_imports = true
 
 
