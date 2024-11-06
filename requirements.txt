@@ -11,6 +11,7 @@ bs4==0.0.2
 certifi==2024.8.30
 charset-normalizer==3.4.0
 click==8.1.7
+-e git+https://github.com/tynardone/coffee-review-analysis.git@dbe73d96f6909c56b4d4198ff9decc4d75b848d9#egg=coffee
 comm==0.2.2
 contourpy==1.3.0
 cycler==0.12.1
@@ -77,6 +78,7 @@ rpds-py==0.21.0
 scikit-learn==1.5.2
 scipy==1.14.1
 seaborn==0.13.2
+setuptools==75.3.0
 six==1.16.0
 soupsieve==2.6
 stack-data==0.6.3
@@ -88,6 +90,7 @@ tqdm==4.67.0
 traitlets==5.14.3
 tzdata==2024.2
 umap-learn==0.5.6
+Unidecode==1.3.8
 urllib3==2.2.3
 wcwidth==0.2.13
 webencodings==0.5.1

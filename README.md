@@ -12,7 +12,6 @@ This project is a complete data pipeline for scraping coffee reviews from [Coffe
 - [Project Overview](#project-overview)
 - [Directory Structure](#directory-structure)
 - [Installation](#installation)
-- [Usage](#usage)
 - [Data Sources](#data-sources)
 - [Data Cleaning and Analysis](#data-cleaning-and-analysis)
 - [License](#license)
@@ -91,10 +90,38 @@ The goal is to provide insights into the coffee market, with a particular focus 
 
 4. **Obtain free API Keys**:
 
+    If you want to run data cleaning you will need two API keys, both available with free tiers.
+
+    - [OpenExchangeRates](https://openexchangerates.org/signup/free)
+    - [GeoCodingAPI](https://geocode.maps.co/)
+
+    Add API keys to environment or .env file
+
+    ```plaintext
+    OPENEXCHANGERATES_API_KEY =
+    GEOCODE_API_KEY =
+    ```
+
+## Data Sources
+
+- **CoffeeReview.com**
+
+    Source of the dataset of coffee roast reviews and target of webscraper.
+    Operating since 1997 and amassing 1000s of blind-taste reviews of coffee roasts from around the world.
+    The raw scraped data requires significant cleanup.
+
+- **OpenExchangeRates**
+
+    Provider of historical and up-to-date currency exchange rates. Used to convert price data to a single currency. They offer free API access limited to 1000 requests per month.
+
+- **Geocoding API**
+
+    A free geocoding API from [Map Maker](https://maps.co/). Geocoding is the process of converting addresses into latitude and longitude coordinates. This is done to provide coordinates of roasters and origin locations for potential future spatial analysis or visualization.
+
 ## Scripts
 
 - async_scrape_roast_reviews.py
-- asynce_scrape_roast_urls.py
+- async_scrape_roast_urls.py
 - json_to_csv.py
 - openex.py
 - review_parse.py
