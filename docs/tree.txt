@@ -1,0 +1,37 @@
+.
+├── LICENSE
+├── README.md
+├── coffee
+│   ├── __init__.py
+│   ├── async_parser.py
+│   ├── async_review_scraper.py
+│   ├── async_url_scraper.py
+│   ├── config.py
+│   ├── data_cleaning.py
+│   └── utils.py
+├── data
+│   ├── external
+│   ├── intermediate
+│   ├── processed
+│   └── raw
+├── docs
+├── imgs
+├── loggingconfig.json
+├── logs
+├── main.py
+├── notebooks
+│   ├── 1-data-cleaning.ipynb
+│   ├── 2-data-EDA.ipynb
+│   ├── 3-text-features.ipynb
+├── notes
+│   ├── HDBSCAN
+│   └── how_coffee_review_works.md
+├── pyproject.toml
+├── requirements.txt
+├── scripts
+│   └── openex.py
+├── tests
+├── tree.txt
+└── venv
+
+23 directories, 30 files
