@@ -28,9 +28,9 @@ async def _parse_element(
 
 
 async def _parse_notes_section(soup: BeautifulSoup) -> str | None:
-    """The notes section structure is not consistent, but is generally all the text
-    content between the Notes h2 header and the next h2 header. So this function
-    extracts all text content between these two headers."""
+    """The notes section structure is not consistent, but generally consists of all text
+    between the Notes h2 header and the next h2 header. This function extracts all text
+    between these two h2 headers."""
     notes = soup.find("h2", string=re.compile("Notes"))
     if notes:
         notes_text: str = ""
