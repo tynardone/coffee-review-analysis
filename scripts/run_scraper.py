@@ -10,19 +10,18 @@ import aiohttp
 import pandas as pd
 from tqdm.asyncio import tqdm
 
-from coffee.async_review_scraper import scrape_review
-from coffee.async_url_scraper import get_urls
-from coffee.config import Config
-from coffee.utils import create_filename
+from log import setup_logging
+from src.async_review_scraper import scrape_review
+from src.async_url_scraper import get_urls
+from src.config import Config
+from src.utils import create_filename
 
 DATA_DIR: Path = Config.BASEDIR / Path("data/raw/")
 SEMAPHORE_COUNT: int = 10
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-)
-logger = logging.getLogger()
+
+logger = logging.getLogger(__name__)
+setup_logging()
 
 
 async def main() -> None:
