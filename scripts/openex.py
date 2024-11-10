@@ -9,7 +9,7 @@ import pandas as pd
 import requests
 from tqdm import tqdm
 
-from coffee.config import OpenExConfig
+from src.config import OpenExConfig
 
 # Project directories
 data_dir: Path = Path(OpenExConfig.BASEDIR) / "data"
