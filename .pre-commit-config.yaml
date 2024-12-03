@@ -4,6 +4,7 @@ repos:
     hooks:
     -   id: check-yaml
     -   id: end-of-file-fixer
+    -   id: check-added-large-files
     -   id: trailing-whitespace
 -   repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.8.0
@@ -16,5 +17,7 @@ repos:
     # Run the linter.
     - id: ruff
       args: [ --fix ]
+    - id: ruff
+      args: ["check", "--select", "I", "--fix"]
     # Run the formatter (similar to black)
     - id: ruff-format
