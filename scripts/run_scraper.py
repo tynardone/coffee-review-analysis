@@ -28,7 +28,7 @@ json_filepath: Path = DATA_DIR / create_filename("reviews", "json")
 
 
 async def main() -> None:
-    # Initialize the results list
+    # Initialize the ressults list
     results: list[dict[Any, Any] | None] = []
 
     # Create an aiohttp ClientSession.
