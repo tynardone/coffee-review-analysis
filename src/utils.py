@@ -3,7 +3,11 @@ from datetime import datetime
 
 def create_filename(filename: str, filetype: str) -> str:
     """
-    Creates a filename of format 'ddmmyyyy_filename.filetype
+     Generates a filename prefixed with the current date.
+
+    This function takes a base filename and file type, validates the file type, and
+    returns a formatted filename with the current date (in `ddmmyyyy` format) as
+    a prefix.
 
     Args:
         filename (str): Name of file after date prefix
@@ -12,6 +16,9 @@ def create_filename(filename: str, filetype: str) -> str:
     Returns:
         filename (str): Returns a filename of form
                         {current date ddmmyyyy}_{filename}.{filetype}
+
+    Raises:
+        ValueError: If the provided fieltype is not "csv" or "json".
     '"""
     if filetype not in ("csv", "json"):
         raise ValueError("filetype must be one of: csv, json")
