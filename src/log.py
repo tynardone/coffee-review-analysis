@@ -30,3 +30,21 @@ def setup_logging() -> None:
         atexit.register(handler.listener.stop)  # type: ignore[attr-defined]
     else:
         raise TypeError(f"Handler {handler_name} not loaded from config properly")
+
+
+def main():
+    setup_logging()
+
+    # Test logging at different levels
+    logger.debug("This is a DEBUG message")
+    logger.info("This is an INFO message")
+    logger.warning("This is a WARNING message")
+    logger.error("This is an ERROR message")
+    logger.critical("This is a CRITICAL message")
+
+    # Output some message indicating logging works
+    print("Logging messages have been sent.")
+
+
+if __name__ == "__main__":
+    main()
