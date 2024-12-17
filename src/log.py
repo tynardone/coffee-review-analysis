@@ -12,8 +12,9 @@ logger = logging.getLogger("my_app")
 def setup_logging() -> None:
     """
     Load dictionary configuration for logging and initialize queue handler listener.
-    If the "queue" key is absent in config, a standard unbounded queue.Queue instance
-    is created and used.
+    When loaded from dictConfig QueueHandler has a QueueListener under
+    `listener` attribute. If the "queue" key is absent in config, a standard unbounded
+    queue.Queue instance is created and used.
     """
     if not CONFIG_FILE:
         raise ValueError("Config file path is not set.")
