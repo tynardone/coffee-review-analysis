@@ -10,10 +10,10 @@ import aiohttp
 import pandas as pd
 from tqdm.asyncio import tqdm
 
-from log import setup_logging
 from src.async_review_scraper import scrape_review
 from src.async_url_scraper import get_urls
 from src.config import Config
+from src.log import setup_logging
 from src.utils import create_filename
 
 # Initialize logging
