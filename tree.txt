@@ -3,14 +3,6 @@
 ├── README.md
 ├── __pycache__
 │   └── logging.cpython-312.pyc
-├── coffee
-│   ├── __init__.py
-│   ├── async_parser.py
-│   ├── async_review_scraper.py
-│   ├── async_url_scraper.py
-│   ├── config.py
-│   ├── data_cleaning.py
-│   └── utils.py
 ├── coffee.egg-info
 │   ├── PKG-INFO
 │   ├── SOURCES.txt
@@ -31,7 +23,6 @@
 ├── log.py
 ├── loggingconfig.json
 ├── logs
-├── main.py
 ├── notebooks
 │   ├── 1-data-cleaning.ipynb
 │   ├── 2-data-EDA.ipynb
@@ -44,7 +35,16 @@
 ├── requirements.txt
 ├── scripts
 │   ├── __pycache__
-│   └── openex.py
+│   ├── openex.py
+│   └── run_scraper.py
+├── src
+│   ├── __init__.py
+│   ├── async_parser.py
+│   ├── async_review_scraper.py
+│   ├── async_url_scraper.py
+│   ├── config.py
+│   ├── data_cleaning.py
+│   └── utils.py
 ├── tests
 ├── tree.txt
 └── venv

@@ -1,22 +1,24 @@
-# type: ignore
 import atexit
 import json
 import logging
 import logging.config
 from logging.handlers import QueueHandler
 
-CONFIG_FILE = ""
+CONFIG_FILE: str = ""
 
 logger = logging.getLogger("my_app")
 
 
 def setup_logging() -> None:
+    """
+    Load dict config for logging.
+    """
     if not CONFIG_FILE:
         raise ValueError("Config file path is not set.")
     with open(CONFIG_FILE) as f_in:
         config = json.load(f_in)
     logging.config.dictConfig(config)
-    queue_handler: QueueHandler | None = logging.getHandlerByName("queue_handler")
+    queue_handler: QueueHandler | None = logging.getHandlerByName("queue_handler")  # type: ignore
     if queue_handler:
-        queue_handler.listener.start()
-        atexit.register(queue_handler.listener.stop)
+        queue_handler.listener.start()  # type: ignore
+        atexit.register(queue_handler.listener.stop)  # type: ignore

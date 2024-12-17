@@ -16,13 +16,15 @@ from src.async_url_scraper import get_urls
 from src.config import Config
 from src.utils import create_filename
 
+# Initialize logging
 logger = logging.getLogger(__name__)
 setup_logging()
 
-
+# Constants
 DATA_DIR: Path = Config.BASEDIR / Path("data/raw/")
 SEMAPHORE_COUNT: int = 10
-# Create the filepaths for saving the data
+
+# Create filepaths for saving the data
 csv_filepath: Path = DATA_DIR / create_filename("reviews", "csv")
 json_filepath: Path = DATA_DIR / create_filename("reviews", "json")
 
