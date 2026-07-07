@@ -1,93 +1,136 @@
-"""Fetches historical exchange rates from the OpenExchangeRates API.
-For free tier users there's a monthly allowance of 1000 requests."""
+"""Fetch historical exchange rates from the OpenExchangeRates API.
 
+Reads the unique review dates from a scraped reviews file and downloads the
+historical rates for each date, writing them to JSON. Free-tier accounts are
+limited to 1000 requests per month.
+"""
+
+import argparse
 import json
+import logging
 from datetime import date
 from pathlib import Path
 
 import pandas as pd
 import requests
+from requests.adapters import HTTPAdapter
 from tqdm import tqdm
+from urllib3.util.retry import Retry
 
 from coffee.config import OpenExConfig
 
-# Project directories
-data_dir: Path = Path(OpenExConfig.BASEDIR) / "data"
-dates_csv_path: Path = data_dir / "raw/25072024_reviews.csv"
-output_json_path: Path = data_dir / "external/openex_exchange_rates.json"
+logger = logging.getLogger(__name__)
+
+DEFAULT_INPUT = OpenExConfig.DATA_DIR / "raw" / "25072024_reviews.csv"
+DEFAULT_OUTPUT = OpenExConfig.DATA_DIR / "external" / "openex_exchange_rates.json"
+
+# OpenExchangeRates' historical data begins in 1999.
+EARLIEST_DATE = "1999-01-01"
 
 
-def load_date_list(file_path: Path) -> list[date]:
-    """Loads scraped data and returns a list of unique dates.
-    Filepath should point to recent scraped data."""
-    if file_path.suffix not in (".csv", ".json"):
-        raise ValueError("Invalid file format. Only CSV and JSON files are supported.")
-    if not file_path.exists():
-        raise FileNotFoundError(f"{file_path} does not exist.")
+def load_review_dates(path: Path) -> list[date]:
+    """Return the sorted, unique review dates (>= 1999) from a scraped file."""
+    readers = {".csv": pd.read_csv, ".json": pd.read_json}
+    if path.suffix not in readers:
+        raise ValueError(f"Unsupported file type {path.suffix!r}; use .csv or .json.")
+    if not path.exists():
+        raise FileNotFoundError(f"{path} does not exist.")
 
-    if file_path.suffix == ".json":
-        df = pd.read_json(file_path)
-    if file_path.suffix == ".csv":
-        df = pd.read_csv(file_path)
-
-    # Convert review date to datetime and filter dates from 1999 onwards,
-    # this is the earliest date available in the OpenExchangeRates API
-    dates = (
-        df.assign(review_date=pd.to_datetime(df["review date"]))
-        .query('review_date >= "1999-01-01"')
-        .sort_values("review_date")
+    # Review dates are stored as "Month Year", e.g. "November 2016".
+    review_dates = pd.to_datetime(
+        readers[path.suffix](path)["review date"], format="%B %Y"
     )
-    return dates["review_date"].dt.date.unique().tolist()
+    return (
+        review_dates[review_dates >= EARLIEST_DATE]
+        .dt.date.drop_duplicates()
+        .sort_values()
+        .tolist()
+    )
 
 
-def fetch_rate_for_date(date: str, api_url: str, params: dict) -> dict:
-    """Fetches historical exchange rates for a given date."""
-    url = f"{api_url}{date}.json"
+def _build_session(retries: int = 3) -> requests.Session:
+    """Session that reuses connections and retries transient errors."""
+    retry = Retry(
+        total=retries,
+        backoff_factor=1,
+        status_forcelist=(429, 500, 502, 503, 504),
+        allowed_methods=("GET",),
+    )
+    session = requests.Session()
+    session.mount("https://", HTTPAdapter(max_retries=retry))
+    session.headers.update(OpenExConfig.HEADERS)
+    return session
+
+
+def fetch_rate(session: requests.Session, day: date, app_id: str) -> dict[str, float]:
+    """Fetch rates for a single date; return an empty dict on failure."""
+    url = f"{OpenExConfig.API_URL}{day}.json"
     try:
-        response = requests.get(
-            url,
-            headers=OpenExConfig.HEADERS,
-            params=params,
-            timeout=OpenExConfig.TIMEOUT,
+        response = session.get(
+            url, params={"app_id": app_id}, timeout=OpenExConfig.TIMEOUT
         )
         response.raise_for_status()
         return response.json().get("rates", {})
-    except requests.RequestException as e:
-        print(f"Error fetching data for date {date}: {e}")
+    except requests.RequestException:
+        logger.warning("Failed to fetch rates for %s", day, exc_info=True)
         return {}
 
 
-def fetch_exchange_rates(
-    dates: list[date],
-    api_url: str,
-    params: dict[str, str],
-    timeout: int,
-) -> dict[str, dict[str, float]]:
-    """Fetch exchange rates for a list of dates."""
-    exchange_rates = {}
-    for d in tqdm(dates, desc="Fetching exchange rates..."):
-        exchange_rates[str(d)] = fetch_rate_for_date(
-            date=str(d),
-            api_url=api_url,
-            params=params,
-        )
-    return exchange_rates
+def fetch_rates(dates: list[date], app_id: str) -> dict[str, dict[str, float]]:
+    """Fetch rates for every date, keyed by ISO date string."""
+    session = _build_session()
+    return {
+        str(day): fetch_rate(session, day, app_id)
+        for day in tqdm(dates, desc="Fetching exchange rates")
+    }
 
 
-def save_exchange_rates(exchange_rates: dict[str, dict[str, float]], output_path: Path):
-    """Save exchange rates to a JSON file."""
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(output_path, "w", encoding="utf-8") as f:
-        json.dump(exchange_rates, f)
+def save_rates(rates: dict[str, dict[str, float]], path: Path) -> None:
+    """Write the exchange-rate mapping to a JSON file."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8") as f:
+        json.dump(rates, f, indent=2)
 
 
-def main():
-    params = {"app_id": OpenExConfig.OPENEXCHANGERATES_API_ID}
-    dates = load_date_list(dates_csv_path)
-    exchange_rates = fetch_exchange_rates(
-        dates, OpenExConfig.API_URL, params, OpenExConfig.TIMEOUT
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "-i",
+        "--input",
+        type=Path,
+        default=DEFAULT_INPUT,
+        help="Scraped reviews file (.csv or .json).",
     )
-    save_exchange_rates(exchange_rates, output_json_path)
+    parser.add_argument(
+        "-o",
+        "--output",
+        type=Path,
+        default=DEFAULT_OUTPUT,
+        help="Destination JSON file for exchange rates.",
+    )
+    return parser.parse_args()
+
+
+def main() -> None:
+    logging.basicConfig(
+        level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s"
+    )
+    args = parse_args()
+
+    app_id = OpenExConfig.OPENEXCHANGERATES_API_ID
+    if not app_id:
+        raise SystemExit("OPENEXCHANGERATES_API_ID is not set (add it to your .env).")
+
+    dates = load_review_dates(args.input)
+    logger.info("Fetching rates for %d unique dates", len(dates))
+    rates = fetch_rates(dates, app_id)
+
+    failures = sum(1 for r in rates.values() if not r)
+    if failures:
+        logger.warning("%d/%d dates returned no rates", failures, len(dates))
+
+    save_rates(rates, args.output)
+    logger.info("Wrote exchange rates to %s", args.output)
 
 
 if __name__ == "__main__":

@@ -1,5 +1,10 @@
-"""Main script."""
+"""Scrape all coffee reviews from CoffeeReview.com to CSV and JSON.
 
+Discovers every review URL, scrapes each review concurrently, and writes a
+dated CSV + JSON to the output directory.
+"""
+
+import argparse
 import asyncio
 import logging
 import time
@@ -15,46 +20,76 @@ from coffee.async_url_scraper import get_urls
 from coffee.config import Config
 from coffee.utils import create_filename
 
-DATA_DIR: Path = Config.BASEDIR / Path("data/raw/")
-SEMAPHORE_COUNT: int = 10
+logger = logging.getLogger(__name__)
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-)
-logger = logging.getLogger()
+DEFAULT_OUTPUT_DIR = Config.DATA_DIR / "raw"
+DEFAULT_CONCURRENCY = 10
 
 
-async def main() -> None:
-    # Create the filepaths for saving the data
-    csv_filepath: Path = DATA_DIR / create_filename("reviews", "csv")
-    json_filepath: Path = DATA_DIR / create_filename("reviews", "json")
+async def scrape_reviews(output_dir: Path, concurrency: int) -> None:
+    """Discover every review URL, scrape each review, and save to CSV + JSON."""
+    output_dir.mkdir(parents=True, exist_ok=True)
+    csv_path = output_dir / create_filename("reviews", "csv")
+    json_path = output_dir / create_filename("reviews", "json")
 
-    # Initialize the results list
-    results: list[dict[Any, Any] | None] = []
+    semaphore = asyncio.Semaphore(concurrency)
+    results: list[dict[str, Any]] = []
 
-    # Create an aiohttp ClientSession.
-    semaphore = asyncio.Semaphore(SEMAPHORE_COUNT)
     async with aiohttp.ClientSession(headers=Config.HEADERS) as session:
-        start: float = time.time()
-        # Scrape website for review urls
-        urls: set[str] = await get_urls(base_url=Config.BASE_URL, session=session)
-        end: float = time.time()
-        logger.info(f"Time elapsed: {end - start:.2f} seconds")
-        logger.info(f"Total review links found: {len(urls)}")
-        # Uses Semaphore to limit the number of concurrent requests while scraping
-        # reviews, while still allowing speed improvements
-        # over pure synchronous scraping
-        tasks = [scrape_review(url, session, semaphore) for url in urls]
-        for f in tqdm(asyncio.as_completed(tasks), total=len(tasks)):
-            result = await f
-            results.append(result)
+        start = time.perf_counter()
+        urls = await get_urls(base_url=Config.BASE_URL, session=session)
+        logger.info(
+            "Found %d review links in %.2f seconds",
+            len(urls),
+            time.perf_counter() - start,
+        )
 
-    # Use pandas to save the results to a CSV and JSON file
+        # The semaphore bounds concurrent requests while still improving on
+        # pure-synchronous scraping.
+        tasks = [scrape_review(url, session, semaphore) for url in urls]
+        for future in tqdm(asyncio.as_completed(tasks), total=len(tasks)):
+            # Failed scrapes return None; skip them so they don't become
+            # all-NaN rows in the output.
+            if (review := await future) is not None:
+                results.append(review)
+
+    failed = len(urls) - len(results)
+    if failed:
+        logger.warning("%d of %d reviews failed to scrape", failed, len(urls))
+
     df = pd.DataFrame(results)
-    df.to_csv(csv_filepath, index=False)
-    df.to_json(json_filepath, orient="records")
+    df.to_csv(csv_path, index=False)
+    df.to_json(json_path, orient="records")
+    logger.info("Wrote %d reviews to %s and %s", len(df), csv_path, json_path)
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "-o",
+        "--output-dir",
+        type=Path,
+        default=DEFAULT_OUTPUT_DIR,
+        help="Directory for the dated reviews CSV and JSON.",
+    )
+    parser.add_argument(
+        "-c",
+        "--concurrency",
+        type=int,
+        default=DEFAULT_CONCURRENCY,
+        help="Maximum number of concurrent review requests.",
+    )
+    return parser.parse_args()
+
+
+def main() -> None:
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    )
+    args = parse_args()
+    asyncio.run(scrape_reviews(args.output_dir, args.concurrency))
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
