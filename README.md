@@ -13,8 +13,8 @@ This project is a complete data pipeline for scraping coffee reviews from [Coffe
 - [Directory Structure](#directory-structure)
 - [Installation](#installation)
 - [Data Sources](#data-sources)
-- [Data Cleaning and Analysis](#data-cleaning-and-analysis)
-- [License](#license)
+- [Code Layout](#code-layout)
+- [Usage](#usage)
 
 ## Project Overview
 
@@ -48,7 +48,6 @@ The goal is to provide insights into the boutique coffee market, with a focus on
 │   └── raw
 ├── docs
 ├── imgs
-├── main.py
 ├── notebooks
 │   ├── 1-data-cleaning.ipynb
 │   ├── 2-data-EDA.ipynb
@@ -60,7 +59,8 @@ The goal is to provide insights into the boutique coffee market, with a focus on
 ├── requirements.txt
 ├── scripts
 │   ├── archive
-│   └── openex.py
+│   ├── openex.py
+│   └── scrape_reviews.py
 ├── tests
 ```
 
@@ -96,6 +96,13 @@ The goal is to provide insights into the boutique coffee market, with a focus on
     pip install -r requirements.txt
     ```
 
+    Then install the `coffee` package itself (editable) so the scripts can
+    import it:
+
+    ```bash
+    pip install -e .
+    ```
+
 4. **Obtain free API Keys**:
 
     If you want to run data cleaning you will need two API keys, both available with free tiers.
@@ -106,7 +113,7 @@ The goal is to provide insights into the boutique coffee market, with a focus on
     Add API keys to environment or .env file
 
     ```plaintext
-    OPENEXCHANGERATES_API_KEY =
+    OPENEXCHANGERATES_API_ID =
     GEOCODE_API_KEY =
     ```
 
@@ -126,13 +133,40 @@ The goal is to provide insights into the boutique coffee market, with a focus on
 
     A free geocoding API from [Map Maker](https://maps.co/). Geocoding is the process of converting addresses into latitude and longitude coordinates. This is done to provide coordinates of roasters and origin locations for potential future spatial analysis or visualization.
 
-## Scripts
+## Code Layout
 
-- async_scrape_roast_reviews.py
-- async_scrape_roast_urls.py
-- json_to_csv.py
-- openex.py
-- review_parse.py
+Reusable logic lives in the `coffee/` package; runnable pipeline steps live in
+`scripts/`.
+
+**`coffee/` (importable package)**
+
+- `async_url_scraper.py` — crawls the paginated review listings to discover
+  individual review URLs.
+- `async_review_scraper.py` — fetches each review page with bounded concurrency
+  and retries.
+- `async_parser.py` — parses review HTML into structured records.
+- `config.py` — configuration and API keys (loaded from the environment / `.env`).
+- `utils.py` — small helpers (e.g. dated filename generation).
+
+**`scripts/` (runnable steps)**
+
+- `scrape_reviews.py` — end-to-end scrape: discovers review URLs, scrapes every
+  review, and writes a dated CSV + JSON to `data/raw/`.
+- `openex.py` — fetches historical exchange rates for the scraped review dates.
+- `archive/` — one-off / retired scripts kept for reference.
+
+## Usage
+
+Run from the repository root (with the virtual environment activated and
+`pip install -e .` done):
+
+```bash
+# Scrape all reviews into data/raw/<ddmmyyyy>_reviews.{csv,json}
+python scripts/scrape_reviews.py
+
+# Fetch historical exchange rates for the scraped review dates
+python scripts/openex.py
+```
 
 ## Historical Exchange Rates
 
