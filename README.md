@@ -68,8 +68,8 @@ The goal is to provide insights into the boutique coffee market, with a focus on
 
 ### Prerequisites
 
-- Python 3.11+
-- Virtual environment (e.g. `venv` or `pyenv`)
+- Python 3.12 (the project targets `>=3.12,<3.14`)
+- [uv](https://docs.astral.sh/uv/) for dependency and environment management
 - Git (optional)
 
 ### Setup
@@ -77,33 +77,25 @@ The goal is to provide insights into the boutique coffee market, with a focus on
 1. **Clone this repository**:
 
     ```bash
-    git clone https://github.com/tynardone/coffee-review-scraper.git
-    cd coffee-review-scraper
+    git clone https://github.com/tynardone/coffee-review-analysis.git
+    cd coffee-review-analysis
     ```
 
-    Or just download files from [repository](https://github.com/tynardone/coffee-review-analysis.git).
+2. **Install dependencies**:
 
-2. **Create and activate a virtual environment**:
+    `uv sync` creates a virtual environment in `.venv`, installs the pinned
+    dependencies from `uv.lock`, and installs the `coffee` package itself in
+    editable mode:
 
     ```bash
-    python -m venv venv
-    source venv/bin/activate
+    uv sync
     ```
 
-3. **Install dependencies**:
+    This installs the `analysis` and `dev` dependency groups by default. For a
+    lean environment with just the scraping/pipeline dependencies, run
+    `uv sync --no-default-groups`.
 
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-    Then install the `coffee` package itself (editable) so the scripts can
-    import it:
-
-    ```bash
-    pip install -e .
-    ```
-
-4. **Obtain free API Keys**:
+3. **Obtain free API Keys**:
 
     If you want to run data cleaning you will need two API keys, both available with free tiers.
 
@@ -157,15 +149,18 @@ Reusable logic lives in the `coffee/` package; runnable pipeline steps live in
 
 ## Usage
 
-Run from the repository root (with the virtual environment activated and
-`pip install -e .` done):
+Run from the repository root. `uv run` executes commands inside the project's
+virtual environment without needing to activate it:
 
 ```bash
 # Scrape all reviews into data/raw/<ddmmyyyy>_reviews.{csv,json}
-python scripts/scrape_reviews.py
+uv run python scripts/scrape_reviews.py
 
 # Fetch historical exchange rates for the scraped review dates
-python scripts/openex.py
+uv run python scripts/openex.py
+
+# Launch Jupyter for the analysis notebooks
+uv run jupyter lab
 ```
 
 ## Historical Exchange Rates
