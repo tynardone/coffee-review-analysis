@@ -5,7 +5,7 @@ import logging
 
 import aiohttp
 
-from .async_parser import parse_html
+from coffee.async_parser import parse_html
 
 
 async def fetch(
