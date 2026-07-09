@@ -14,8 +14,12 @@ async def _parse_element(
     string: str | None = None,
     next_element: str | None = None,
 ) -> str | None:
+    # bs4's find() doesn't accept class_=None, so express the class filter via
+    # attrs, using an empty (no-op) filter when no class is provided.
     found_element = soup.find(
-        element, class_=class_, string=re.compile(string) if string else None
+        element,
+        attrs={"class": class_} if class_ is not None else {},
+        string=re.compile(string) if string else None,
     )
     if found_element:
         if next_element:

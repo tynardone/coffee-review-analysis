@@ -39,7 +39,12 @@ async def get_urls(
 
             tasks: list[Coroutine[Any, Any, set[str]]] = []
             for a_tag in soup.find_all("a", href=True):
-                href = a_tag["href"]
+                # bs4 types a tag attribute as str | AttributeValueList; anchor
+                # hrefs are always single-valued, so narrow to str (and skip
+                # anything unexpected).
+                href = a_tag.get("href")
+                if not isinstance(href, str):
+                    continue
                 full_url = urljoin(base_url, href)
                 if full_url in visited:
                     continue
