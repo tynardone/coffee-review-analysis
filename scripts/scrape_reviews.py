@@ -26,7 +26,7 @@ DEFAULT_OUTPUT_DIR = Config.DATA_DIR / "raw"
 DEFAULT_CONCURRENCY = 10
 
 
-async def scrape_reviews(output_dir: Path, concurrency: int) -> None:
+async def scrape_all_reviews(output_dir: Path, concurrency: int) -> None:
     """Discover every review URL, scrape each review, and save to CSV + JSON."""
     output_dir.mkdir(parents=True, exist_ok=True)
     csv_path = output_dir / create_filename("reviews", "csv")
@@ -57,10 +57,22 @@ async def scrape_reviews(output_dir: Path, concurrency: int) -> None:
     if failed:
         logger.warning("%d of %d reviews failed to scrape", failed, len(urls))
 
+    if not results:
+        logger.warning("No reviews scraped; nothing written.")
+        return
+
     df = pd.DataFrame(results)
     df.to_csv(csv_path, index=False)
     df.to_json(json_path, orient="records")
     logger.info("Wrote %d reviews to %s and %s", len(df), csv_path, json_path)
+
+
+def _positive_int(value: str) -> int:
+    """argparse type that rejects non-positive integers."""
+    ivalue = int(value)
+    if ivalue < 1:
+        raise argparse.ArgumentTypeError(f"must be a positive integer, got {value!r}")
+    return ivalue
 
 
 def parse_args() -> argparse.Namespace:
@@ -75,7 +87,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "-c",
         "--concurrency",
-        type=int,
+        type=_positive_int,
         default=DEFAULT_CONCURRENCY,
         help="Maximum number of concurrent review requests.",
     )
@@ -88,7 +100,7 @@ def main() -> None:
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
     args = parse_args()
-    asyncio.run(scrape_reviews(args.output_dir, args.concurrency))
+    asyncio.run(scrape_all_reviews(args.output_dir, args.concurrency))
 
 
 if __name__ == "__main__":
