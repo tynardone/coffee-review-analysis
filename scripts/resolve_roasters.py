@@ -31,7 +31,7 @@ from rapidfuzz import fuzz, process
 # them before scoring is the highest-leverage step in the whole pipeline.
 STOPWORDS = {
     "coffee", "coffees", "coffe", "cofee",
-    "roaster", "roasters", "roasting", "roastery", "roasterie", "roasters",
+    "roaster", "roasters", "roasting", "roastery", "roasterie",
     "cafe", "caffe", "kaffee", "espresso", "bean", "beans",
     "co", "company", "inc", "incorporated", "llc", "ltd", "limited", "corp",
     "the", "and",
