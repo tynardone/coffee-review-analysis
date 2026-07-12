@@ -37,7 +37,9 @@ async def scrape_all_reviews(output_dir: Path, concurrency: int) -> None:
 
     async with aiohttp.ClientSession(headers=Config.HEADERS) as session:
         start = time.perf_counter()
-        urls = await get_urls(base_url=Config.BASE_URL, session=session)
+        urls = await get_urls(
+            base_url=Config.BASE_URL, session=session, semaphore=semaphore
+        )
         logger.info(
             "Found %d review links in %.2f seconds",
             len(urls),

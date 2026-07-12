@@ -1,75 +1,68 @@
-"""Module to scrape coffee review URLs asynchronously."""
+"""Module to discover coffee review URLs asynchronously."""
 
 import asyncio
 import logging
-from typing import Any, Coroutine
 from urllib.parse import urljoin
 
 import aiohttp
 from bs4 import BeautifulSoup
 
+from coffee.fetch import fetch
 
-async def fetch(url: str, session: aiohttp.ClientSession):
-    try:
-        response = await session.get(url)
-        response.raise_for_status()
-        return await response.text()
-    except aiohttp.ClientResponseError as e:
-        logging.error(f"Error fetching {url}: {e}")
-        return None
+
+def _extract_links(html: str, base_url: str) -> tuple[set[str], set[str]]:
+    """Return (pagination_links, review_links) found on a listing page."""
+    soup = BeautifulSoup(html, "lxml")
+    page_links: set[str] = set()
+    review_links: set[str] = set()
+    for a_tag in soup.find_all("a", href=True):
+        # bs4 types a tag attribute as str | AttributeValueList; anchor hrefs
+        # are single-valued, so narrow to str (and skip anything unexpected).
+        href = a_tag.get("href")
+        if not isinstance(href, str):
+            continue
+        full_url = urljoin(base_url, href)
+        if "/review/page/" in href:
+            page_links.add(full_url)
+        elif (
+            "/review/" in href
+            and not href.endswith("/page")
+            and full_url != base_url
+        ):
+            review_links.add(full_url)
+    return page_links, review_links
 
 
 async def get_urls(
     base_url: str,
     session: aiohttp.ClientSession,
-    url: str = "",
-    visited: set | None = None,
+    semaphore: asyncio.Semaphore,
 ) -> set[str]:
-    if visited is None:
-        url = base_url
-        visited = set()
-        logging.info(f"Starting to fetch links from {url}")
+    """Crawl the paginated review listings and return every review URL.
 
-    review_links: set = set()
+    Breadth-first over listing pages: each round fetches the current frontier
+    (bounded and retrying via the shared fetch), collects review links, and
+    seeds the next round with newly seen pagination links. An explicit visited
+    set replaces the previous recursion's shared mutable state.
+    """
+    logging.info("Discovering review URLs from %s", base_url)
+    visited_pages: set[str] = {base_url}
+    frontier: set[str] = {base_url}
+    review_links: set[str] = set()
 
-    try:
-        html = await fetch(url, session)
-        if html:
-            soup = BeautifulSoup(html, "lxml")
+    while frontier:
+        htmls = await asyncio.gather(
+            *(fetch(page, session, semaphore) for page in frontier)
+        )
+        next_frontier: set[str] = set()
+        for html in htmls:
+            if not html:
+                continue
+            page_links, reviews = _extract_links(html, base_url)
+            review_links |= reviews
+            next_frontier |= page_links - visited_pages
+        visited_pages |= next_frontier
+        frontier = next_frontier
 
-            tasks: list[Coroutine[Any, Any, set[str]]] = []
-            for a_tag in soup.find_all("a", href=True):
-                # bs4 types a tag attribute as str | AttributeValueList; anchor
-                # hrefs are always single-valued, so narrow to str (and skip
-                # anything unexpected).
-                href = a_tag.get("href")
-                if not isinstance(href, str):
-                    continue
-                full_url = urljoin(base_url, href)
-                if full_url in visited:
-                    continue
-                if "/review/page/" in href:
-                    visited.add(full_url)
-                    tasks.append(
-                        get_urls(
-                            base_url=base_url,
-                            session=session,
-                            url=full_url,
-                            visited=visited,
-                        )
-                    )
-                elif (
-                    "/review/" in href
-                    and not href.endswith("/page")
-                    and href != base_url
-                ):
-                    review_links.add(full_url)
-
-            results = await asyncio.gather(*tasks)
-            for result in results:
-                review_links.update(result)
-
-    except aiohttp.ClientError as e:
-        logging.error(f"Error fetching {url}: {e}")
-
+    logging.info("Discovered %d review URLs", len(review_links))
     return review_links
