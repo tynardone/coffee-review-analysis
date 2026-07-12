@@ -41,12 +41,6 @@ OUTPUTS
     review.csv      Pairs in the honest-uncertainty band, with a blank `merge`
                     column for you (or an LLM) to fill in.
 
-BEFORE YOU USE THIS AT ALL
-    Fuzzy string matching is what you do when you have been DENIED a real join
-    key. If the scrape carries a roaster URL, block on the domain instead —
-    `onyxcoffeelab.com` is deterministic and beats every heuristic here. Check
-    for a real key first. Same for city/state, which at minimum lets you refuse
-    to merge two roasters in different states.
 
 USAGE
     python resolve_roasters.py names.csv --column roaster --outdir ./out
@@ -64,9 +58,7 @@ import pandas as pd
 from rapidfuzz import fuzz, process
 
 # ==========================================================================
-# 1. NORMALIZATION  — the stage that does the most work while looking like
-#                     the least. Spend effort on the REPRESENTATION, not the
-#                     metric.
+# 1. NORMALIZATION
 # ==========================================================================
 
 # Words that carry near-zero information about *which* roaster this is, because
@@ -123,27 +115,19 @@ def tokens(name: str) -> list[str]:
     algorithm level. Each line below closes a specific noise channel, and the
     order matters. Two are landmines worth stating outright:
 
-    1. APOSTROPHES ARE DELETED, NOT SPACED.
-       The obvious implementation — regex-replace all punctuation with a space —
-       turns "Willoughby's" into the tokens ["willoughby", "s"]. That stray "s"
-       then sorts to the FRONT of the key ("s willoughby") and wrecks it. This
-       is the class of bug that makes people conclude "fuzzy matching doesn't
-       work on my data" when in fact their tokenizer is broken. Kill the
-       apostrophe before the general punctuation pass.
-
+    1. APOSTROPHES ARE DELETED.
     2. SINGLE-LETTER RUNS ARE COLLAPSED.
        "J.B.C. Coffee Roasters" punctuation-strips to ["j","b","c",...], which
        shares nothing with "JBC Coffee" -> ["jbc",...]. Gluing runs of single
        letters back together makes initialisms agree with their solid form.
     """
     s = strip_accents(str(name)).lower()
-    s = s.replace("&", " and ")                  # "Black & White" == "Black and White"
-    s = re.sub(r"['\u2019]", "", s)               # LANDMINE 1 — see docstring
-    s = re.sub(r"[^a-z0-9\s]", " ", s)            # all other punctuation -> space
+    s = s.replace("&", " and ")
+    s = re.sub(r"['\u2019]", "", s)
+    s = re.sub(r"[^a-z0-9\s]", " ", s)
     s = re.sub(r"\s+", " ", s).strip()
     toks = [ABBREV.get(t, t) for t in s.split()]
 
-    # LANDMINE 2 — see docstring. "j b c" -> "jbc"
     out: list[str] = []
     run: list[str] = []
     for t in toks:
