@@ -1,4 +1,9 @@
-"""Contains logic for parsing coffee review HTML."""
+"""Contains logic for parsing coffee review HTML.
+
+These functions are pure CPU-bound parsing (no I/O), so they are synchronous;
+callers that need to avoid blocking the event loop should run them in a thread
+(e.g. ``asyncio.to_thread``).
+"""
 
 import logging
 import re
@@ -7,7 +12,7 @@ from bs4 import BeautifulSoup
 from bs4.element import Tag
 
 
-async def _parse_element(
+def _parse_element(
     soup: BeautifulSoup,
     element: str,
     class_: str | None = None,
@@ -31,7 +36,7 @@ async def _parse_element(
     return None
 
 
-async def _parse_notes_section(soup: BeautifulSoup) -> str | None:
+def _parse_notes_section(soup: BeautifulSoup) -> str | None:
     """The notes section structure is not consistent, but is generally all the text
     content between the Notes h2 header and the next h2 header. So this function
     extracts all text content between these two headers."""
@@ -50,38 +55,33 @@ async def _parse_notes_section(soup: BeautifulSoup) -> str | None:
         return None
 
 
-async def _parse_tables(soup: BeautifulSoup) -> dict | None:
-    data: dict = {}
+def _parse_tables(soup: BeautifulSoup) -> dict[str, str]:
+    """Extract two-column tables into a dict, with lowercased, colon-free keys."""
+    data: dict[str, str] = {}
     for table in soup.find_all("table"):
-        if table:
-            for row in table.find_all("tr"):
-                cells = row.find_all("td")
-                if len(cells) == 2:
-                    data[cells[0].get_text().strip()] = cells[1].get_text().strip()
-        else:
-            logging.warning("No tables found.")
-            return None
-    # Clean up keys
-    data = {key.lower().replace(":", ""): value for key, value in data.items()}
-    return data
+        for row in table.find_all("tr"):
+            cells = row.find_all("td")
+            if len(cells) == 2:
+                data[cells[0].get_text().strip()] = cells[1].get_text().strip()
+    return {key.lower().replace(":", ""): value for key, value in data.items()}
 
 
-async def parse_html(text: str) -> dict[str, str | None]:
-    soup: BeautifulSoup = BeautifulSoup(text, "html.parser")
+def parse_html(text: str) -> dict[str, str | None]:
+    soup: BeautifulSoup = BeautifulSoup(text, "lxml")
     data: dict[str, str | None] = {
-        "rating": await _parse_element(soup, "span", "review-template-rating"),
-        "roaster": await _parse_element(soup, "p", "review-roaster"),
-        "title": await _parse_element(soup, "h1", "review-title"),
-        "blind_assessment": await _parse_element(
+        "rating": _parse_element(soup, "span", "review-template-rating"),
+        "roaster": _parse_element(soup, "p", "review-roaster"),
+        "title": _parse_element(soup, "h1", "review-title"),
+        "blind_assessment": _parse_element(
             soup, "h2", string="Blind Assessment", next_element="p"
         ),
-        "notes": await _parse_notes_section(soup),
-        "bottom_line": await _parse_element(
+        "notes": _parse_notes_section(soup),
+        "bottom_line": _parse_element(
             soup, "h2", string="Bottom Line", next_element="p"
         ),
     }
 
-    table_data = await _parse_tables(soup)
+    table_data = _parse_tables(soup)
     if table_data:
         data.update(table_data)
 

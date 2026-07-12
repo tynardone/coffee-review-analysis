@@ -35,7 +35,7 @@ async def get_urls(
     try:
         html = await fetch(url, session)
         if html:
-            soup = BeautifulSoup(html, "html.parser")
+            soup = BeautifulSoup(html, "lxml")
 
             tasks: list[Coroutine[Any, Any, set[str]]] = []
             for a_tag in soup.find_all("a", href=True):
