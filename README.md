@@ -33,35 +33,33 @@ The goal is to provide insights into the boutique coffee market, with a focus on
 ├── LICENSE
 ├── README.md
 ├── coffee
-│   ├── __init__.py
-│   ├── async_parser.py
-│   ├── async_review_scraper.py
-│   ├── async_url_scraper.py
-│   ├── config.py
-│   ├── data_cleaning.py
-│   ├── test_html
-│   └── utils.py
+│   ├── __init__.py
+│   ├── config.py
+│   ├── fetch.py
+│   ├── parser.py
+│   ├── review_scraper.py
+│   ├── review_urls.py
+│   ├── test_html
+│   └── utils.py
 ├── data
-│   ├── external
-│   ├── intermediate
-│   ├── processed
-│   └── raw
-├── docs
+│   ├── external
+│   ├── intermediate
+│   ├── processed
+│   └── raw
 ├── imgs
 ├── notebooks
-│   ├── 1-data-cleaning.ipynb
-│   ├── 2-data-EDA.ipynb
-│   ├── 3-text-features.ipynb
-│   └── wordcloud.png
+│   ├── 01-data-cleaning.ipynb
+│   ├── 02-data-EDA.ipynb
+│   ├── 03-text-features.ipynb
+│   └── wordcloud.png
 ├── notes
 ├── pyproject.toml
-├── requirement-dev.txt
-├── requirements.txt
 ├── scripts
-│   ├── archive
-│   ├── openex.py
-│   └── scrape_reviews.py
-├── tests
+│   ├── archive
+│   ├── openex.py
+│   ├── resolve_roasters.py
+│   └── scrape_reviews.py
+└── uv.lock
 ```
 
 ## Installation
@@ -132,12 +130,14 @@ Reusable logic lives in the `coffee/` package; runnable pipeline steps live in
 
 **`coffee/` (importable package)**
 
-- `async_url_scraper.py` — crawls the paginated review listings to discover
-  individual review URLs.
-- `async_review_scraper.py` — fetches each review page with bounded concurrency
-  and retries.
-- `async_parser.py` — parses review HTML into structured records.
-- `config.py` — configuration and API keys (loaded from the environment / `.env`).
+- `review_urls.py` — crawls the paginated review listings (breadth-first) to
+  discover individual review URLs.
+- `review_scraper.py` — fetches a review page and parses it into a record.
+- `parser.py` — parses review HTML into structured fields.
+- `fetch.py` — shared async HTTP GET with bounded concurrency and retry, used by
+  both discovery and scraping.
+- `config.py` — configuration, paths, and API keys (loaded from the environment
+  / `.env`).
 - `utils.py` — small helpers (e.g. dated filename generation).
 
 **`scripts/` (runnable steps)**
@@ -145,6 +145,7 @@ Reusable logic lives in the `coffee/` package; runnable pipeline steps live in
 - `scrape_reviews.py` — end-to-end scrape: discovers review URLs, scrapes every
   review, and writes a dated CSV + JSON to `data/raw/`.
 - `openex.py` — fetches historical exchange rates for the scraped review dates.
+- `resolve_roasters.py` — normalizes roaster names.
 - `archive/` — one-off / retired scripts kept for reference.
 
 ## Usage
@@ -153,7 +154,7 @@ Run from the repository root. `uv run` executes commands inside the project's
 virtual environment without needing to activate it:
 
 ```bash
-# Scrape all reviews into data/raw/<ddmmyyyy>_reviews.{csv,json}
+# Scrape all reviews into data/raw/<YYYY-MM-DD>_reviews.{csv,json}
 uv run python scripts/scrape_reviews.py
 
 # Fetch historical exchange rates for the scraped review dates

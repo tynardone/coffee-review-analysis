@@ -10,8 +10,8 @@ import asyncio
 
 import aiohttp
 
-from coffee.async_parser import parse_html
 from coffee.fetch import fetch
+from coffee.parser import parse_html
 
 
 async def scrape_review(

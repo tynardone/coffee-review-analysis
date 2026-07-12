@@ -15,9 +15,9 @@ import aiohttp
 import pandas as pd
 from tqdm.asyncio import tqdm
 
-from coffee.async_review_scraper import scrape_review
-from coffee.async_url_scraper import get_urls
 from coffee.config import Config
+from coffee.review_scraper import scrape_review
+from coffee.review_urls import get_urls
 from coffee.utils import create_filename
 
 logger = logging.getLogger(__name__)
