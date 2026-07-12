@@ -1,8 +1,10 @@
-"""Contains logic for parsing coffee review HTML.
+"""Parse a CoffeeReview review page into a flat dict of fields.
 
-These functions are pure CPU-bound parsing (no I/O), so they are synchronous;
-callers that need to avoid blocking the event loop should run them in a thread
-(e.g. ``asyncio.to_thread``).
+:func:`parse_html` extracts the rating, roaster, title, blind assessment,
+notes, and bottom line, then merges in the review's spec table (coffee origin,
+price, agtron, etc.). Parsing is pure CPU work with no I/O, so the functions
+are synchronous; run them in a thread (e.g. ``asyncio.to_thread``) to avoid
+blocking the event loop during a scrape.
 """
 
 import logging

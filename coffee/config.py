@@ -1,8 +1,10 @@
-"""Project configuration and paths.
+"""Project configuration, paths, and API credentials.
 
-Exposes a robust ``PROJECT_ROOT`` that resolves the repository root regardless
-of the current working directory, so it can be imported from scripts and
-notebooks alike (``from coffee.config import PROJECT_ROOT``).
+Exposes a robust ``PROJECT_ROOT`` — resolved from this file rather than the
+current working directory, so it is stable whether imported from a script or a
+notebook — and a derived ``DATA_DIR``. :class:`Config` and :class:`OpenExConfig`
+hold the request headers, base URL, and API keys loaded from the environment or
+a project-root ``.env`` (``OPENEXCHANGERATES_API_ID``, ``GEOCODE_API_KEY``).
 """
 
 import os

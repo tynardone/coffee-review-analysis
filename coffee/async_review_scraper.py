@@ -1,4 +1,10 @@
-"""Module for scraping coffee review page asynchronously."""
+"""Scrape a single coffee review page into structured data.
+
+:func:`scrape_review` fetches a review URL through the shared retrying
+:func:`coffee.fetch.fetch`, parses the HTML off the event loop, and returns a
+dict of the review's fields tagged with its source URL (or ``None`` if the page
+could not be fetched).
+"""
 
 import asyncio
 

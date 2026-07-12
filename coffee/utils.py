@@ -1,3 +1,9 @@
+"""Small shared helpers used across the package.
+
+Currently just :func:`create_filename`, which prefixes an output name with the
+current date (``YYYY-MM-DD``) to produce the scraper's dated CSV/JSON filenames.
+"""
+
 from datetime import datetime
 
 

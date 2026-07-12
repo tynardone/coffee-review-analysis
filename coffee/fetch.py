@@ -1,8 +1,10 @@
-"""Shared async HTTP fetch with bounded concurrency and retry.
+"""Shared async HTTP GET with bounded concurrency and retry.
 
-Used by both URL discovery and review scraping so the two phases share one
-robust request path (timeout, transient-only retries, backoff outside the
-semaphore).
+:func:`fetch` gives URL discovery and review scraping one common request path:
+a per-request timeout, retries limited to transient failures (429/5xx) with
+exponential backoff and jitter honoring ``Retry-After``, and backoff performed
+outside the caller's semaphore so a slow-failing URL never holds a concurrency
+slot idle. Permanent errors (e.g. 404) return ``None`` immediately.
 """
 
 import asyncio

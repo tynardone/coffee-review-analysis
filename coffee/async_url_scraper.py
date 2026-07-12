@@ -1,4 +1,10 @@
-"""Module to discover coffee review URLs asynchronously."""
+"""Discover every coffee review URL by crawling the paginated listings.
+
+:func:`get_urls` runs a breadth-first crawl over the ``/review/page/N`` listing
+pages, following pagination links and collecting individual review URLs. Fetches
+are bounded and retrying (via :func:`coffee.fetch.fetch`), and an explicit
+visited set keeps each page from being fetched more than once.
+"""
 
 import asyncio
 import logging
