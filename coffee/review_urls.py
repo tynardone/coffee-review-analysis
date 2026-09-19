@@ -1,33 +1,13 @@
 """Discover every coffee review URL from the site's XML sitemaps.
 
 :func:`get_review_urls` reads ``sitemap_index.xml``, fetches each child sitemap
-it names, and returns every review URL mapped to its ``<lastmod>`` date.
+it names, and returns every review URL mapped to its ``<lastmod>`` date. That
+date lets a caller re-fetch only what changed rather than the whole corpus.
 
-WHY THE SITEMAP AND NOT THE LISTING PAGES
-    This module previously crawled ``/review/page/N`` breadth-first. The sitemap
-    is better on all three axes that matter:
-
-    COVERAGE. The sitemap is a strict superset of what pagination found —
-        9,334 review URLs versus 9,054 scraped, with none going the other way.
-        Pagination silently missed 280 reviews, including green-coffee reviews
-        that never appear in the ``/review/`` listing at all.
-
-    COST. Ten or so sitemap requests enumerate the entire corpus, against
-        hundreds of listing-page fetches for the same information.
-
-    CHANGE DETECTION. Every entry carries ``<lastmod>``, so a caller can fetch
-        only what changed since its last run instead of re-scraping everything.
-        That is what makes an unattended, scheduled scrape affordable and
-        polite: ~200 pages a month rather than ~9,300.
-
-FAILING LOUDLY
-    Discovery failures raise :class:`SitemapError` rather than returning a short
-    list. A partial URL set is the dangerous failure here — it produces a
-    plausible-looking dataset that is quietly missing rows, which is exactly the
-    kind of error nobody notices downstream.
+Discovery raises :class:`SitemapError` rather than returning a partial list: a
+short URL set yields a dataset that looks complete and is quietly missing rows,
+which is the failure nobody notices downstream.
 """
-
-from __future__ import annotations
 
 import asyncio
 import logging
@@ -68,15 +48,12 @@ def _parse_lastmod(value: str | None) -> date | None:
 def parse_sitemap(xml: bytes) -> tuple[list[str], dict[str, date | None]]:
     """Split one sitemap document into (child sitemaps, {page URL: lastmod}).
 
-    Handles both document kinds with one pass, since an index (``<sitemapindex>``
-    of ``<sitemap>``) and a leaf (``<urlset>`` of ``<url>``) differ only in which
-    elements they contain, and the spec permits either at any level.
+    Indexes and leaf urlsets are handled in one pass, since the spec permits
+    either at any level. ``local-name()`` lookups keep this working when a
+    sitemap omits or changes the default namespace.
 
-    Element lookups go through ``local-name()`` so a sitemap that omits the
-    default namespace — or declares a different one — still parses.
-
-    Takes bytes, not str: every sitemap here carries an ``<?xml ... encoding?>``
-    declaration, and lxml refuses to parse those from a str.
+    Takes bytes, not str: lxml refuses to parse a str carrying an ``<?xml ...
+    encoding?>`` declaration, and every sitemap here has one.
     """
     try:
         root = etree.fromstring(xml, parser=_PARSER)
@@ -105,8 +82,8 @@ def parse_sitemap(xml: bytes) -> tuple[list[str], dict[str, date | None]]:
 def is_review_url(url: str, path_prefix: str = "/review/") -> bool:
     """True for an individual review page.
 
-    The length check excludes the listing page ``/review/`` itself, which the
-    sitemap lists alongside the reviews and which is not a review.
+    The length check excludes the ``/review/`` listing page, which the sitemap
+    lists alongside the reviews.
     """
     path = urlparse(url).path
     return path.startswith(path_prefix) and len(path) > len(path_prefix)
@@ -120,22 +97,22 @@ async def get_review_urls(
 ) -> dict[str, date | None]:
     """Return every review URL mapped to its sitemap ``<lastmod>`` date.
 
-    Fetches the index, then every sitemap it names — including the non-review
-    ones. Filtering the *URLs* by path rather than guessing from *sitemap
-    filenames* costs a handful of extra requests per run and buys immunity to
-    the site renaming or resharding its sitemap files, which would otherwise
-    shrink the corpus silently.
+    Fetches every sitemap the index names, including non-review ones, and
+    filters the resulting URLs by path. Filtering URLs rather than guessing
+    from sitemap filenames costs a few extra requests and survives the site
+    renaming or resharding its sitemap files.
     """
     logger.info("Discovering review URLs from %s", index_url)
 
-    pending = [index_url]
+    frontier = [index_url]
     visited: set[str] = set()
     all_entries: dict[str, date | None] = {}
+    depth = 0
 
-    for _ in range(MAX_SITEMAP_DEPTH):
-        frontier = [url for url in pending if url not in visited]
-        if not frontier:
-            break
+    while frontier:
+        depth += 1
+        if depth > MAX_SITEMAP_DEPTH:
+            raise SitemapError(f"Sitemap nesting exceeded {MAX_SITEMAP_DEPTH} levels")
         visited.update(frontier)
 
         documents = await asyncio.gather(
@@ -146,20 +123,20 @@ async def get_review_urls(
             url for url, doc in zip(frontier, documents, strict=True) if doc is None
         ]
         if failed:
+            shown = ", ".join(failed[:3]) + ("..." if len(failed) > 3 else "")
             raise SitemapError(
-                f"Could not fetch {len(failed)} of {len(frontier)} sitemap(s): "
-                f"{', '.join(failed[:3])}"
-                f"{'...' if len(failed) > 3 else ''}"
+                f"Could not fetch {len(failed)} of {len(frontier)} sitemap(s): {shown}"
             )
 
-        pending = []
+        children: list[str] = []
         for document in documents:
-            assert document is not None  # narrowed by the `failed` check above
-            children, entries = parse_sitemap(document.encode("utf-8"))
-            pending.extend(children)
+            if document is None:  # ruled out above; narrows the type for mypy
+                continue
+            child_urls, entries = parse_sitemap(document.encode("utf-8"))
+            children.extend(child_urls)
             all_entries.update(entries)
-    else:
-        raise SitemapError(f"Sitemap nesting exceeded {MAX_SITEMAP_DEPTH} levels")
+
+        frontier = [url for url in dict.fromkeys(children) if url not in visited]
 
     reviews = {
         url: lastmod

@@ -183,19 +183,16 @@ def core_key(name: str) -> str:
 # 2. SIMILARITY
 # ==========================================================================
 
-# A one-token core key may only be trusted as a SUBSET match when that token is
-# RARE across the corpus. See the hazard note in score() for why length is the
-# wrong axis and document frequency is the right one.
+# A one-token core key is trusted as a subset match only when that token is
+# rare across the corpus. See THE SUBSET GUARD in score().
 MAX_SUBSET_TOKEN_DF = 2
 
 
 def token_document_frequency(keys: Iterable[str]) -> Counter[str]:
     """How many DISTINCT core keys each token appears in.
 
-    This is the corpus statistic that separates "kona" (15 keys — generic here,
-    whatever it means in English) from "stumptown" (1 key — identifying). It is
-    computed from the data rather than declared in advance, so it adapts to
-    whatever the stopword list happens to leave behind.
+    Separates "kona" (15 keys, generic here) from "stumptown" (1, identifying).
+    Measured from the data, so it adapts to whatever stopwording leaves behind.
     """
     return Counter(tok for key in keys for tok in set(key.split()))
 
@@ -203,72 +200,36 @@ def token_document_frequency(keys: Iterable[str]) -> Counter[str]:
 def score(a: str, b: str, token_df: Mapping[str, int] | None = None, **kwargs) -> float:
     """Similarity of two CORE KEYS (not raw names) in [0, 100].
 
-    Two DIFFERENT KINDS of variation survive normalization, and no single metric
-    handles both — hence the max of two:
+    Two kinds of variation survive normalization, and no single metric handles
+    both — hence the max of two:
 
-      token_set_ratio   handles SUBSET relationships. After stopwording,
-                        "Onyx Coffee" -> "onyx" and "Onyx Coffee Lab" -> "lab onyx".
-                        One key is a strict subset of the other. token_set
-                        partitions into intersection + the two remainders and
-                        scores the intersection against the wholes, so a strict
-                        subset scores 100.
+      token_set_ratio   SUBSET relationships. "Onyx Coffee" -> "onyx" and
+                        "Onyx Coffee Lab" -> "lab onyx"; one key is a strict
+                        subset of the other, which token_set scores 100.
 
-      token_sort_ratio  handles TYPOS and reordering. Sorts tokens, then runs a
-                        normal edit distance — robust to order, still sensitive
-                        to character noise ("Cofee" vs "Coffee").
+      token_sort_ratio  TYPOS and reordering. Sorts tokens, then edit distance.
 
-    Taking the max is deliberately PERMISSIVE: "if either view thinks these are
-    the same, treat them as candidates." That's only affordable because the
-    thresholds downstream are strict, AND because of the guard below.
+    The max is deliberately permissive — "if either view thinks these are the
+    same, treat them as candidates" — which is only affordable because the
+    thresholds in resolve() are strict, and because of the guard below.
 
-    ------------------------------------------------------------------------
-    THE HAZARD, AND THE GUARD THAT CONTAINS IT
-    token_set's subset behavior is a loaded gun: ANY key that is a strict subset
-    of another scores 100, no matter how little it says. This is not theoretical.
-    Unguarded, on the real scraped data (1,591 spellings), it fired constantly,
-    because aggressive stopwording MANUFACTURES bare generic keys:
+    THE SUBSET GUARD
+        token_set scores ANY strict subset 100, however little it says, and
+        stopwording MANUFACTURES bare generic keys that then match everything:
+        "Kona Cafe" -> "kona", "Coffee Bros." -> "brothers". Unguarded on the
+        real data, each such key auto-merged with every key containing it and
+        union-find chained the neighborhood into one cluster — 219 of 1,591
+        spellings ended up in chained clusters.
 
-        "Kona Cafe"               -> "kona"          subset of every "kona <x>"
-        "The Gourmet Coffee Bean" -> "gourmet"       subset of every "<x> gourmet"
-        "Coffee Bros."            -> "brothers"      subset of every "brothers <x>"
+        So trust a subset reading only when the shorter key is DISTINCTIVE:
+        >= 2 tokens, or a single token rare in the corpus (document frequency
+        <= MAX_SUBSET_TOKEN_DF). Genericness, not length, is the property that
+        matters — "international" is long and useless, "coffeeam" is short and
+        identifying.
 
-    Each bare key auto-merged with everything containing it, and union-find then
-    chained the neighborhood together: a 20-member "Hula Daddy Kona Coffee"
-    cluster whose worst internal pair scored 0.0, a 14-member "Dallis Bros."
-    cluster that swallowed every unrelated roaster with "Brothers" in its name.
-    219 of 1,591 spellings landed in chained clusters.
-
-    THE GUARD: trust a subset reading only when the SHORTER key is DISTINCTIVE —
-    either it has >= 2 tokens, or its single token is rare in the corpus
-    (document frequency <= MAX_SUBSET_TOKEN_DF). Otherwise fall back to
-    token_sort_ratio alone, which measures the whole string and so scores "kona"
-    vs "kona luna" as the weak evidence it actually is.
-
-    WHY DOCUMENT FREQUENCY AND NOT LENGTH. A character-length threshold was the
-    obvious first try and it is measurably worse on both sides at once: it still
-    admits "brothers" (8 chars) and "international" (13), while REJECTING the
-    real merges "coffeeam"/"coffeeam com" and "peerless"/"peerless tea". Length
-    is not the property that matters. Genericness is, and genericness is exactly
-    what document frequency measures. Measured, on the real data:
-
-        guard                      merges   chain-risk rows   largest cluster
-        none (original)               367               219                20
-        length >= 8 chars             203                31                14
-        document frequency <= 2       222                18                 4
-
-    The DF guard makes MORE merges than the length guard while chaining far
-    less — it is not a precision/recall trade, it is a better axis.
-
-    `token_df` is the corpus statistic from token_document_frequency(). When it
-    is None (direct calls, tests), one-token keys are simply not trusted for
-    subset matching — the conservative reading, consistent with the governing
-    asymmetry at the top of this file.
-
-    RESIDUAL, NOT FIXED HERE: names that stopword down to the SAME bare key
-    ("Direct Coffee" and "Coffee Bean Direct" both -> "direct") are merged by
-    Stage A exact collision, which no similarity guard can see. That is the
-    documented failure mode of core_key — an over-aggressive stopword list — and
-    it is fixed there, not here.
+    `token_df` comes from token_document_frequency(). When it is None (direct
+    calls, tests) one-token keys are not trusted for subset matching, which is
+    the conservative reading per the asymmetry at the top of this file.
 
     **kwargs absorbs the `score_cutoff` that rapidfuzz.process.cdist injects
     into scorer callables. Without it, cdist raises TypeError.

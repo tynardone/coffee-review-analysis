@@ -10,12 +10,12 @@ This project is a complete data pipeline for scraping coffee reviews from [Coffe
 ## Table of Contents
 
 - [Project Overview](#project-overview)
-- [Directory Structure](#directory-structure)
 - [Installation](#installation)
 - [Data Sources](#data-sources)
 - [Code Layout](#code-layout)
 - [Usage](#usage)
 - [Tests](#tests)
+- [References](#references)
 
 ## Project Overview
 
@@ -26,48 +26,6 @@ The project involves:
 3. **Analysis**: Generating visualizations and insights into coffee characteristics, quality scores, and tasting notes.
 
 The goal is to provide insights into the boutique coffee market, with a focus on origin, price, flavor notes and quality metrics.
-
-## Directory Structure
-
-```plaintext
-.
-├── LICENSE
-├── README.md
-├── coffee
-│   ├── __init__.py
-│   ├── config.py
-│   ├── fetch.py
-│   ├── parser.py
-│   ├── review_scraper.py
-│   ├── review_urls.py
-│   └── utils.py
-├── data
-│   ├── external
-│   ├── intermediate
-│   ├── processed
-│   └── raw
-├── imgs
-├── notebooks
-│   ├── 01-data-cleaning.ipynb
-│   ├── 02-data-EDA.ipynb
-│   ├── 03-text-features.ipynb
-│   └── wordcloud.png
-├── notes
-├── pyproject.toml
-├── scripts
-│   ├── archive
-│   ├── openex.py
-│   ├── resolve_roasters.py
-│   └── scrape_reviews.py
-├── tests
-│   ├── conftest.py
-│   ├── fixtures
-│   ├── generate_golden.py
-│   ├── test_parser.py
-│   ├── test_resolve_roasters.py
-│   └── test_review_scraper.py
-└── uv.lock
-```
 
 ## Installation
 
@@ -135,9 +93,17 @@ The goal is to provide insights into the boutique coffee market, with a focus on
 
     Provider of historical and up-to-date currency exchange rates. Used to convert price data to a single currency. They offer free API access limited to 1000 requests per month.
 
-- **Geocoding API**
+- **US Consumer Price Index** (`data/external/consumer_price_index.csv`)
 
-    A free geocoding API from [Map Maker](https://maps.co/). Geocoding is the process of converting addresses into latitude and longitude coordinates. This is done to provide coordinates of roasters and origin locations for potential future spatial analysis or visualization.
+    CPI for All Urban Consumers (CPI-U), US city average, all items, not
+    seasonally adjusted. Used to express historical prices in constant dollars.
+    Published by the [Bureau of Labor Statistics](https://www.bls.gov/cpi/data.htm).
+
+- **Geocoding API** (planned, not yet used)
+
+    A free geocoding API from [Map Maker](https://maps.co/), intended to resolve
+    roaster and origin locations to coordinates for spatial analysis. No code in
+    the pipeline calls it yet.
 
 ## Code Layout
 
@@ -168,6 +134,13 @@ Reusable logic lives in the `coffee/` package; runnable pipeline steps live in
   pairs. The committed outputs live in `data/processed/`.
 - `archive/` — one-off / retired scripts kept for reference.
 
+**`tests/`**
+
+- `fixtures/html/` — ten saved review pages; `fixtures/parsed_reviews.json`
+  pins their expected parse.
+- `generate_golden.py` — regenerates that golden file after a deliberate
+  parser change.
+
 ## Usage
 
 Run from the repository root. `uv run` executes commands inside the project's
@@ -195,45 +168,30 @@ uv run jupyter lab
 uv run pytest
 ```
 
-`tests/fixtures/html/` holds ten real review pages, and
-`tests/fixtures/parsed_reviews.json` pins their expected parse. This matters
-because **parser regressions here are silent**: when the site changes a class
-name, the parser returns `None` and you get a column of nulls rather than an
-error — indistinguishable from real schema evolution (the `bottom_line` field
-genuinely does not exist before mid-2016, and `acidity` was renamed
-`acidity/structure` across 2017–18). After a deliberate parser change,
-regenerate the golden file and **read the diff**:
+`tests/fixtures/html/` holds ten real review pages and
+`tests/fixtures/parsed_reviews.json` pins their expected parse, so that a
+silent parser regression fails a test instead of quietly emptying a column —
+see the module docstring in `tests/test_parser.py` for why that matters here.
+After a deliberate parser change, regenerate the golden file and read the diff:
 
 ```bash
 uv run python tests/generate_golden.py
 ```
 
-The project uses pre-commit for linting and formatting. Install the hooks once
-after cloning:
+The project uses pre-commit for linting (ruff), formatting (ruff-format) and
+type checking (mypy). Install the hooks once after cloning:
 
 ```bash
 uv run pre-commit install
 ```
 
-## Historical Exchange Rates
+GitHub Actions runs the same checks on every pull request, plus the test suite
+on Python 3.12 and 3.13. The tests make no network requests, so they are
+reproducible offline.
 
-<https://docs.openexchangerates.org/reference/api-introduction>
+## References
 
-## US Consumer Price Index
-
-Consumer Price Index for All Urban Consumers (CPI-U)
-Not Seasonally Adjusted CPI for All Urban Consumers (CPI-U): U.S. city average
-All items in U.S. city average, all urban consumers, not seasonally adjusted
-
-consumer_price_index.csv
-
-<https://www.bls.gov/cpi/data.htm>
-
-1. Scrape and parse
-2. Data cleaning
-3. Cleaning and reconciliation in OpenRefine
-4. Feature engineering from text
-
-# t-SNE
-
-<https://distill.pub/2016/misread-tsne/>
+- [OpenExchangeRates API](https://docs.openexchangerates.org/reference/api-introduction)
+- [BLS Consumer Price Index data](https://www.bls.gov/cpi/data.htm)
+- [How to Use t-SNE Effectively](https://distill.pub/2016/misread-tsne/) — relevant to the embedding work in `03-text-features.ipynb`
+- `notes/how_coffee_review_works.md` — how CoffeeReview scores coffees
