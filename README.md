@@ -69,10 +69,7 @@ The goal is to provide insights into the boutique coffee market, with a focus on
     OPENEXCHANGERATES_API_ID =
     ```
 
-    `GEOCODE_API_KEY` is also read from the environment by `coffee/config.py`,
-    reserved for planned geocoding of roaster and origin locations
-    ([Map Maker](https://geocode.maps.co/), free tier). Nothing in the pipeline
-    uses it yet, so you can leave it unset.
+    That is the only key the pipeline needs.
 
 ## Data Sources
 
@@ -107,10 +104,10 @@ The goal is to provide insights into the boutique coffee market, with a focus on
 
 ## Code Layout
 
-Reusable logic lives in the `coffee/` package; runnable pipeline steps live in
-`scripts/`.
+Everything importable lives in the `coffee/` package; the pipeline steps are
+installed as console commands that wrap it.
 
-**`coffee/` (importable package)**
+**`coffee/`**
 
 - `review_urls.py` — discovers every review URL from the site's XML sitemaps,
   along with each one's `<lastmod>` date. Fails loudly (`SitemapError`) rather
@@ -121,18 +118,15 @@ Reusable logic lives in the `coffee/` package; runnable pipeline steps live in
   both discovery and scraping.
 - `config.py` — configuration, paths, and API keys (loaded from the environment
   / `.env`).
+- `scrape.py` — end-to-end scrape: discovers review URLs, scrapes every review,
+  and writes a dated CSV + JSON to `data/raw/`.
+- `exchange_rates.py` — fetches historical rates for the scraped review dates.
+- `roaster_resolution.py` — entity resolution for messy roaster names. Clusters
+  spelling variants of the same roaster into a crosswalk (raw name → canonical
+  name) plus a queue of genuinely ambiguous pairs for human review. The
+  committed outputs live in `data/processed/`.
 - `utils.py` — small helpers (e.g. dated filename generation).
-
-**`scripts/` (runnable steps)**
-
-- `scrape_reviews.py` — end-to-end scrape: discovers review URLs, scrapes every
-  review, and writes a dated CSV + JSON to `data/raw/`.
-- `openex.py` — fetches historical exchange rates for the scraped review dates.
-- `resolve_roasters.py` — entity resolution for messy roaster names. Clusters
-  spelling variants of the same roaster and writes a `crosswalk.csv`
-  (raw name → canonical name) plus a `review.csv` queue of genuinely ambiguous
-  pairs. The committed outputs live in `data/processed/`.
-- `archive/` — one-off / retired scripts kept for reference.
+- `cli.py` — argument parsing for the console commands below.
 
 **`tests/`**
 
@@ -149,18 +143,20 @@ virtual environment without needing to activate it:
 ```bash
 # Scrape all reviews into data/raw/<YYYY-MM-DD>_reviews.{csv,json}
 # Discovery reads sitemap_index.xml (~17 requests for the whole corpus).
-uv run python scripts/scrape_reviews.py
+uv run scrape-reviews
 
-# Fetch historical exchange rates for the scraped review dates
-uv run python scripts/openex.py
+# Fetch historical exchange rates for the dates in a scraped file
+uv run fetch-exchange-rates -i data/raw/<date>_reviews.csv
 
 # Resolve roaster-name variants into a canonical crosswalk
-uv run python scripts/resolve_roasters.py data/raw/<date>_reviews.csv \
+uv run resolve-roasters data/raw/<date>_reviews.csv \
     --column roaster --outdir data/processed
 
 # Launch Jupyter for the analysis notebooks
 uv run jupyter lab
 ```
+
+`--help` on any of them lists the available options.
 
 ## Tests
 

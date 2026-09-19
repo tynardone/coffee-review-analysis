@@ -1,10 +1,8 @@
-"""Scrape all coffee reviews from CoffeeReview.com to CSV and JSON.
+"""End-to-end scrape: discover every review URL, then fetch and parse each one.
 
-Discovers every review URL, scrapes each review concurrently, and writes a
-dated CSV + JSON to the output directory.
+:func:`scrape_all_reviews` writes a dated CSV + JSON to the output directory.
 """
 
-import argparse
 import asyncio
 import logging
 import time
@@ -70,43 +68,3 @@ async def scrape_all_reviews(output_dir: Path, concurrency: int) -> None:
     df.to_csv(csv_path, index=False)
     df.to_json(json_path, orient="records")
     logger.info("Wrote %d reviews to %s and %s", len(df), csv_path, json_path)
-
-
-def _positive_int(value: str) -> int:
-    """argparse type that rejects non-positive integers."""
-    ivalue = int(value)
-    if ivalue < 1:
-        raise argparse.ArgumentTypeError(f"must be a positive integer, got {value!r}")
-    return ivalue
-
-
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "-o",
-        "--output-dir",
-        type=Path,
-        default=DEFAULT_OUTPUT_DIR,
-        help="Directory for the dated reviews CSV and JSON.",
-    )
-    parser.add_argument(
-        "-c",
-        "--concurrency",
-        type=_positive_int,
-        default=DEFAULT_CONCURRENCY,
-        help="Maximum number of concurrent review requests.",
-    )
-    return parser.parse_args()
-
-
-def main() -> None:
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    )
-    args = parse_args()
-    asyncio.run(scrape_all_reviews(args.output_dir, args.concurrency))
-
-
-if __name__ == "__main__":
-    main()

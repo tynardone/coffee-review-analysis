@@ -1,5 +1,5 @@
 """
-resolve_roasters.py — entity resolution for messy coffee roaster names.
+Entity resolution for messy coffee roaster names.
 
 THE PROBLEM
     Scraped review data spells the same roaster several ways:
@@ -43,18 +43,16 @@ OUTPUTS
 
 
 USAGE
-    python resolve_roasters.py names.csv --column roaster --outdir ./out
+    resolve-roasters names.csv --column roaster --outdir ./out
 """
 
 from __future__ import annotations
 
-import argparse
 import re
 import unicodedata
 from collections import Counter, defaultdict
 from collections.abc import Iterable, Mapping
 from functools import partial
-from pathlib import Path
 
 import pandas as pd
 from rapidfuzz import fuzz, process
@@ -462,57 +460,3 @@ def resolve(
         )
     )
     return crosswalk, review
-
-
-# ==========================================================================
-# 5. CLI
-# ==========================================================================
-
-
-def main() -> None:
-    ap = argparse.ArgumentParser(
-        description="Cluster messy coffee roaster names into canonical entities."
-    )
-    ap.add_argument("infile", type=Path, help="CSV containing the names")
-    ap.add_argument("--column", default="roaster", help="column holding the names")
-    ap.add_argument("--outdir", type=Path, default=Path("."))
-    ap.add_argument(
-        "--auto",
-        type=int,
-        default=92,
-        help="score >= this: merge automatically (raise if you see false merges)",
-    )
-    ap.add_argument(
-        "--review",
-        type=int,
-        default=82,
-        help="score in [review, auto): send to human review queue "
-        "(lower it if true matches are being missed entirely)",
-    )
-    args = ap.parse_args()
-
-    df = pd.read_csv(args.infile)
-    names = df[args.column].dropna().astype(str).tolist()
-
-    crosswalk, review = resolve(names, args.auto, args.review)
-
-    args.outdir.mkdir(parents=True, exist_ok=True)
-    crosswalk.to_csv(args.outdir / "crosswalk.csv", index=False)
-    review.to_csv(args.outdir / "review.csv", index=False)
-
-    # These three numbers are your run diagnostics. Read them in order:
-    #   merged        — did it do anything at all?
-    #   review        — how much human work is left?
-    #   chain-risk    — did single-linkage misbehave? THIS IS THE ONE THAT MATTERS.
-    n_raw = crosswalk.raw_name.nunique()
-    n_can = crosswalk.canonical_name.nunique()
-    print(f"{n_raw} distinct spellings -> {n_can} roasters ({n_raw - n_can} merged)")
-    print(f"{len(review)} pairs queued for review  -> review.csv")
-    print(
-        f"{int(crosswalk.chain_risk.sum())} rows in chain-risk clusters"
-        f"{'  <-- INSPECT THESE' if crosswalk.chain_risk.any() else ''}"
-    )
-
-
-if __name__ == "__main__":
-    main()
