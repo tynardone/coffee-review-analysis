@@ -30,11 +30,7 @@ def _extract_links(html: str, base_url: str) -> tuple[set[str], set[str]]:
         full_url = urljoin(base_url, href)
         if "/review/page/" in href:
             page_links.add(full_url)
-        elif (
-            "/review/" in href
-            and not href.endswith("/page")
-            and full_url != base_url
-        ):
+        elif "/review/" in href and not href.endswith("/page") and full_url != base_url:
             review_links.add(full_url)
     return page_links, review_links
 
