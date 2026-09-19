@@ -124,6 +124,13 @@ The goal is to provide insights into the boutique coffee market, with a focus on
     Operating since 1997 and amassing 1000s of blind-taste reviews of coffee roasts from around the world.
     The raw scraped data requires significant cleanup.
 
+    Review URLs are discovered from `sitemap_index.xml` rather than by crawling
+    the paginated listings. The sitemap is a strict superset — 9,333 review URLs
+    against the 9,054 that pagination found, with none going the other way — and
+    it costs ~17 requests instead of hundreds. Each entry also carries a
+    `<lastmod>` date, which the scraper records as `sitemap_lastmod` so a future
+    run can re-fetch only what changed.
+
 - **OpenExchangeRates**
 
     Provider of historical and up-to-date currency exchange rates. Used to convert price data to a single currency. They offer free API access limited to 1000 requests per month.
@@ -139,8 +146,9 @@ Reusable logic lives in the `coffee/` package; runnable pipeline steps live in
 
 **`coffee/` (importable package)**
 
-- `review_urls.py` — crawls the paginated review listings (breadth-first) to
-  discover individual review URLs.
+- `review_urls.py` — discovers every review URL from the site's XML sitemaps,
+  along with each one's `<lastmod>` date. Fails loudly (`SitemapError`) rather
+  than returning a partial list.
 - `review_scraper.py` — fetches a review page and parses it into a record.
 - `parser.py` — parses review HTML into structured fields.
 - `fetch.py` — shared async HTTP GET with bounded concurrency and retry, used by
@@ -167,6 +175,7 @@ virtual environment without needing to activate it:
 
 ```bash
 # Scrape all reviews into data/raw/<YYYY-MM-DD>_reviews.{csv,json}
+# Discovery reads sitemap_index.xml (~17 requests for the whole corpus).
 uv run python scripts/scrape_reviews.py
 
 # Fetch historical exchange rates for the scraped review dates

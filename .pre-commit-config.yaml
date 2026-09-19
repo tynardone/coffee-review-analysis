@@ -1,20 +1,46 @@
+# Files the hooks must never rewrite.
+#
+# `trailing-whitespace` and `end-of-file-fixer` operate line-by-line with no
+# idea what the file means. Run against a CSV whose quoted fields contain
+# newlines — which every scraped review does — they edit the DATA: an
+# `--all-files` run silently stripped a trailing space from inside a
+# blind_assessment value in data/raw/2026-07-12_reviews.csv. The saved review
+# pages under tests/fixtures/ are golden-test inputs and equally must not be
+# touched, or the parse they pin stops matching what the site actually served.
+exclude: |
+  (?x)^(
+    data/.*|
+    tests/fixtures/.*
+  )$
+
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v2.3.0
+    rev: v6.0.0
     hooks:
     -   id: check-yaml
+        # Notebooks are JSON that Jupyter rewrites on every save, with no final
+        # newline and with cell source held as string literals. Letting the
+        # whitespace fixers near them means both perpetual churn and the same
+        # edit-the-contents hazard as the CSVs above.
     -   id: end-of-file-fixer
+        exclude: \.ipynb$
     -   id: trailing-whitespace
+        exclude: \.ipynb$
 -   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.8.0
+    rev: v2.3.1
     hooks:
     -   id: mypy
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  # Ruff version.
-  rev: v0.7.2
+  # Keep this rev in step with the `ruff` floor in pyproject.toml's dev group.
+  # When the hook and the local venv disagree, every commit reformats whatever
+  # the other just formatted.
+  rev: v0.16.8
   hooks:
-    # Run the linter.
-    - id: ruff
+    # Run the linter. (Was `ruff`; that id is now a legacy alias.)
+    - id: ruff-check
       args: [ --fix ]
-    # Run the formatter (similar to black)
+    # Run the formatter (similar to black). Notebooks included: their code
+    # cells are held to the same style as the package. The one-time reformat
+    # is a large diff; steady-state churn is small because Jupyter writes cell
+    # source verbatim and only the cells you actually edit will move.
     - id: ruff-format

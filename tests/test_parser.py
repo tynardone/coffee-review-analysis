@@ -23,9 +23,9 @@ from coffee.parser import _parse_tables, parse_html
 
 @pytest.mark.parametrize("path", review_pages(), ids=lambda p: p.stem)
 def test_parse_matches_golden(path, golden):
-    assert (
-        path.name in golden
-    ), f"{path.name} has no golden entry; run tests/generate_golden.py"
+    assert path.name in golden, (
+        f"{path.name} has no golden entry; run tests/generate_golden.py"
+    )
     assert parse_html(path.read_text(encoding="utf-8")) == golden[path.name]
 
 
@@ -74,3 +74,48 @@ def test_notes_section_stops_at_the_next_heading():
     assert "First paragraph." in notes
     assert "Second paragraph." in notes
     assert "Should not appear" not in notes
+
+
+# --------------------------------------------------------------------------
+# Whitespace
+# --------------------------------------------------------------------------
+
+
+def test_extracted_fields_are_stripped_but_prose_is_left_alone():
+    """Leading/trailing whitespace goes; whatever is INSIDE a value stays.
+
+    The markup indents its content, so every extracted value would otherwise
+    carry the surrounding layout. Stripping the ends is lossless. Collapsing
+    runs *within* a value is not — that edits the review prose itself — so the
+    internal double space and newline below must survive verbatim.
+    """
+    html = """
+    <h1 class="review-title">
+        A Coffee
+    </h1>
+    <h2>Blind Assessment</h2>
+    <p>
+        Sweetly nut-toned.  Cantaloupe,
+        amber, bay leaf.
+    </p>
+    <table><tr><td>  Roast Level:  </td><td>  Medium-Light  </td></tr></table>
+    """
+    data = parse_html(html)
+
+    assert data["title"] == "A Coffee"
+    assert data["blind_assessment"].startswith("Sweetly")
+    assert data["blind_assessment"].endswith("bay leaf.")
+    # Internal whitespace is content, not formatting: leave it as scraped.
+    assert "  " in data["blind_assessment"]
+    assert "\n" in data["blind_assessment"]
+
+    # Table keys are stripped too, or the whitespace ends up in a column name.
+    assert data["roast level"] == "Medium-Light"
+
+
+@pytest.mark.parametrize("path", review_pages(), ids=lambda p: p.stem)
+def test_no_fixture_field_has_leading_or_trailing_whitespace(path):
+    data = parse_html(path.read_text(encoding="utf-8"))
+    for field, value in data.items():
+        if isinstance(value, str):
+            assert value == value.strip(), f"{field} in {path.name} is not stripped"

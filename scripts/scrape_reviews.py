@@ -17,7 +17,7 @@ from tqdm.asyncio import tqdm
 
 from coffee.config import Config
 from coffee.review_scraper import scrape_review
-from coffee.review_urls import get_urls
+from coffee.review_urls import get_review_urls
 from coffee.utils import create_filename
 
 logger = logging.getLogger(__name__)
@@ -37,27 +37,30 @@ async def scrape_all_reviews(output_dir: Path, concurrency: int) -> None:
 
     async with aiohttp.ClientSession(headers=Config.HEADERS) as session:
         start = time.perf_counter()
-        urls = await get_urls(
-            base_url=Config.BASE_URL, session=session, semaphore=semaphore
-        )
+        # Maps each review URL to its sitemap <lastmod>. Raises rather than
+        # returning a short list, so a partial discovery can't quietly produce a
+        # dataset that merely looks complete.
+        discovered = await get_review_urls(session=session, semaphore=semaphore)
         logger.info(
             "Found %d review links in %.2f seconds",
-            len(urls),
+            len(discovered),
             time.perf_counter() - start,
         )
 
         # The semaphore bounds concurrent requests while still improving on
         # pure-synchronous scraping.
-        tasks = [scrape_review(url, session, semaphore) for url in urls]
+        tasks = [scrape_review(url, session, semaphore) for url in discovered]
         for future in tqdm(asyncio.as_completed(tasks), total=len(tasks)):
             # Failed scrapes return None; skip them so they don't become
             # all-NaN rows in the output.
             if (review := await future) is not None:
+                # Carried through so a later run can re-scrape only what changed.
+                review["sitemap_lastmod"] = discovered.get(review["url"])
                 results.append(review)
 
-    failed = len(urls) - len(results)
+    failed = len(discovered) - len(results)
     if failed:
-        logger.warning("%d of %d reviews failed to scrape", failed, len(urls))
+        logger.warning("%d of %d reviews failed to scrape", failed, len(discovered))
 
     if not results:
         logger.warning("No reviews scraped; nothing written.")
