@@ -39,8 +39,8 @@ repos:
     # Run the linter. (Was `ruff`; that id is now a legacy alias.)
     - id: ruff-check
       args: [ --fix ]
-    # Run the formatter (similar to black)
+    # Run the formatter (similar to black). Notebooks included: their code
+    # cells are held to the same style as the package. The one-time reformat
+    # is a large diff; steady-state churn is small because Jupyter writes cell
+    # source verbatim and only the cells you actually edit will move.
     - id: ruff-format
-      # Reformatting exploratory notebooks produces enormous, meaningless diffs
-      # (462 changed lines in 01-data-cleaning.ipynb alone). Still linted above.
-      exclude: \.ipynb$
