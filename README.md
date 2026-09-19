@@ -1,7 +1,7 @@
 
 # Coffee Review Scraper and Analysis
 
-[![Python Version](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
+[![Python Version](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://www.python.org/downloads/)
 [![Code style: Ruff](https://img.shields.io/badge/code%20style-Ruff-000000.svg)](https://github.com/astral-sh/ruff)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
@@ -15,6 +15,7 @@ This project is a complete data pipeline for scraping coffee reviews from [Coffe
 - [Data Sources](#data-sources)
 - [Code Layout](#code-layout)
 - [Usage](#usage)
+- [Tests](#tests)
 
 ## Project Overview
 
@@ -39,7 +40,6 @@ The goal is to provide insights into the boutique coffee market, with a focus on
 │   ├── parser.py
 │   ├── review_scraper.py
 │   ├── review_urls.py
-│   ├── test_html
 │   └── utils.py
 ├── data
 │   ├── external
@@ -59,6 +59,13 @@ The goal is to provide insights into the boutique coffee market, with a focus on
 │   ├── openex.py
 │   ├── resolve_roasters.py
 │   └── scrape_reviews.py
+├── tests
+│   ├── conftest.py
+│   ├── fixtures
+│   ├── generate_golden.py
+│   ├── test_parser.py
+│   ├── test_resolve_roasters.py
+│   └── test_review_scraper.py
 └── uv.lock
 ```
 
@@ -93,19 +100,21 @@ The goal is to provide insights into the boutique coffee market, with a focus on
     lean environment with just the scraping/pipeline dependencies, run
     `uv sync --no-default-groups`.
 
-3. **Obtain free API Keys**:
+3. **Obtain a free API key**:
 
-    If you want to run data cleaning you will need two API keys, both available with free tiers.
-
-    - [OpenExchangeRates](https://openexchangerates.org/signup/free)
-    - [GeoCodingAPI](https://geocode.maps.co/)
-
-    Add API keys to environment or .env file
+    Fetching exchange rates requires an
+    [OpenExchangeRates](https://openexchangerates.org/signup/free) key (free
+    tier: 1000 requests/month). Add it to your environment or a `.env` file at
+    the project root:
 
     ```plaintext
     OPENEXCHANGERATES_API_ID =
-    GEOCODE_API_KEY =
     ```
+
+    `GEOCODE_API_KEY` is also read from the environment by `coffee/config.py`,
+    reserved for planned geocoding of roaster and origin locations
+    ([Map Maker](https://geocode.maps.co/), free tier). Nothing in the pipeline
+    uses it yet, so you can leave it unset.
 
 ## Data Sources
 
@@ -145,7 +154,10 @@ Reusable logic lives in the `coffee/` package; runnable pipeline steps live in
 - `scrape_reviews.py` — end-to-end scrape: discovers review URLs, scrapes every
   review, and writes a dated CSV + JSON to `data/raw/`.
 - `openex.py` — fetches historical exchange rates for the scraped review dates.
-- `resolve_roasters.py` — normalizes roaster names.
+- `resolve_roasters.py` — entity resolution for messy roaster names. Clusters
+  spelling variants of the same roaster and writes a `crosswalk.csv`
+  (raw name → canonical name) plus a `review.csv` queue of genuinely ambiguous
+  pairs. The committed outputs live in `data/processed/`.
 - `archive/` — one-off / retired scripts kept for reference.
 
 ## Usage
@@ -160,8 +172,38 @@ uv run python scripts/scrape_reviews.py
 # Fetch historical exchange rates for the scraped review dates
 uv run python scripts/openex.py
 
+# Resolve roaster-name variants into a canonical crosswalk
+uv run python scripts/resolve_roasters.py data/raw/<date>_reviews.csv \
+    --column roaster --outdir data/processed
+
 # Launch Jupyter for the analysis notebooks
 uv run jupyter lab
+```
+
+## Tests
+
+```bash
+uv run pytest
+```
+
+`tests/fixtures/html/` holds ten real review pages, and
+`tests/fixtures/parsed_reviews.json` pins their expected parse. This matters
+because **parser regressions here are silent**: when the site changes a class
+name, the parser returns `None` and you get a column of nulls rather than an
+error — indistinguishable from real schema evolution (the `bottom_line` field
+genuinely does not exist before mid-2016, and `acidity` was renamed
+`acidity/structure` across 2017–18). After a deliberate parser change,
+regenerate the golden file and **read the diff**:
+
+```bash
+uv run python tests/generate_golden.py
+```
+
+The project uses pre-commit for linting and formatting. Install the hooks once
+after cloning:
+
+```bash
+uv run pre-commit install
 ```
 
 ## Historical Exchange Rates
