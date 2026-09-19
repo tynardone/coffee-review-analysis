@@ -10,8 +10,8 @@ from datetime import date
 
 import pytest
 
-from coffee import review_urls
-from coffee.review_urls import (
+from coffee import sitemap
+from coffee.sitemap import (
     SitemapError,
     get_review_urls,
     is_review_url,
@@ -50,7 +50,7 @@ def discover(docs=DOCS, monkeypatch=None, **kwargs):
     async def fake_fetch(url, session, semaphore, retries=5):
         return docs.get(url)
 
-    monkeypatch.setattr(review_urls, "fetch", fake_fetch)
+    monkeypatch.setattr(sitemap, "fetch", fake_fetch)
 
     async def run():
         return await get_review_urls(

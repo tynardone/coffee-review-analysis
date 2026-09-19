@@ -109,23 +109,22 @@ installed as console commands that wrap it.
 
 **`coffee/`**
 
-- `review_urls.py` — discovers every review URL from the site's XML sitemaps,
-  along with each one's `<lastmod>` date. Fails loudly (`SitemapError`) rather
-  than returning a partial list.
-- `review_scraper.py` — fetches a review page and parses it into a record.
-- `parser.py` — parses review HTML into structured fields.
+- `sitemap.py` — discovers every review URL from the site's XML sitemaps, along
+  with each one's `<lastmod>` date. Fails loudly (`SitemapError`) rather than
+  returning a partial list.
 - `fetch.py` — shared async HTTP GET with bounded concurrency and retry, used by
   both discovery and scraping.
+- `parser.py` — turns one review's HTML into structured fields.
+- `review.py` — fetches a single review page and parses it into a record.
+- `pipeline.py` — the full run: discovers every review URL, scrapes each one,
+  and writes a dated CSV + JSON to `data/raw/`.
 - `config.py` — configuration, paths, and API keys (loaded from the environment
   / `.env`).
-- `scrape.py` — end-to-end scrape: discovers review URLs, scrapes every review,
-  and writes a dated CSV + JSON to `data/raw/`.
 - `exchange_rates.py` — fetches historical rates for the scraped review dates.
 - `roaster_resolution.py` — entity resolution for messy roaster names. Clusters
   spelling variants of the same roaster into a crosswalk (raw name → canonical
   name) plus a queue of genuinely ambiguous pairs for human review. The
   committed outputs live in `data/processed/`.
-- `utils.py` — small helpers (e.g. dated filename generation).
 - `cli.py` — argument parsing for the console commands below.
 
 **`tests/`**

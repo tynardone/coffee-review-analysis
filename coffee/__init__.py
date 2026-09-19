@@ -3,9 +3,9 @@
 The pipeline runs in three steps, each exposed as a console command (see
 ``[project.scripts]``) and importable here:
 
-* **scrape** — :mod:`review_urls` discovers review URLs from the site's
-  sitemaps, :mod:`fetch` retrieves them, :mod:`parser` turns each page into a
-  record, and :mod:`scrape` drives the whole run.
+* **scrape** — :mod:`sitemap` discovers review URLs, :mod:`fetch` retrieves
+  pages, :mod:`parser` turns one page into a record, :mod:`review` combines
+  those two for a single review, and :mod:`pipeline` drives the whole run.
 * **augment** — :mod:`exchange_rates` fetches historical rates so prices from
   different countries and years can be compared.
 * **resolve** — :mod:`roaster_resolution` clusters roaster-name spellings into
