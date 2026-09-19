@@ -10,7 +10,7 @@ import asyncio
 
 import pytest
 
-from coffee import review_scraper
+from coffee import review
 
 
 @pytest.fixture
@@ -26,8 +26,8 @@ def test_returns_none_when_fetch_fails(monkeypatch, semaphore):
     async def failing_fetch(url, session, semaphore, retries=5):
         return None
 
-    monkeypatch.setattr(review_scraper, "fetch", failing_fetch)
-    result = asyncio.run(review_scraper.scrape_review("u", None, semaphore))
+    monkeypatch.setattr(review, "fetch", failing_fetch)
+    result = asyncio.run(review.scrape_review("u", None, semaphore))
     assert result is None
 
 
@@ -35,9 +35,9 @@ def test_returns_none_when_parsing_raises(monkeypatch, semaphore):
     def exploding_parse(text):
         raise AttributeError("unexpected page shape")
 
-    monkeypatch.setattr(review_scraper, "fetch", _ok_fetch)
-    monkeypatch.setattr(review_scraper, "parse_html", exploding_parse)
-    result = asyncio.run(review_scraper.scrape_review("u", None, semaphore))
+    monkeypatch.setattr(review, "fetch", _ok_fetch)
+    monkeypatch.setattr(review, "parse_html", exploding_parse)
+    result = asyncio.run(review.scrape_review("u", None, semaphore))
     assert result is None
 
 
@@ -56,12 +56,12 @@ def test_one_bad_page_does_not_abort_the_batch(monkeypatch, semaphore):
     async def fetch_by_url(url, session, semaphore, retries=5):
         return url
 
-    monkeypatch.setattr(review_scraper, "fetch", fetch_by_url)
-    monkeypatch.setattr(review_scraper, "parse_html", parse_one_bad)
+    monkeypatch.setattr(review, "fetch", fetch_by_url)
+    monkeypatch.setattr(review, "parse_html", parse_one_bad)
 
     async def run():
         urls = ["good-1", "boom", "good-2"]
-        tasks = [review_scraper.scrape_review(u, None, semaphore) for u in urls]
+        tasks = [review.scrape_review(u, None, semaphore) for u in urls]
         return [r for r in await asyncio.gather(*tasks) if r is not None]
 
     results = asyncio.run(run())
@@ -70,8 +70,8 @@ def test_one_bad_page_does_not_abort_the_batch(monkeypatch, semaphore):
 
 
 def test_successful_scrape_is_tagged_with_its_url(monkeypatch, semaphore):
-    monkeypatch.setattr(review_scraper, "fetch", _ok_fetch)
-    result = asyncio.run(review_scraper.scrape_review("http://x/r/1", None, semaphore))
+    monkeypatch.setattr(review, "fetch", _ok_fetch)
+    result = asyncio.run(review.scrape_review("http://x/r/1", None, semaphore))
     assert result is not None
     assert result["url"] == "http://x/r/1"
     assert result["title"] == "A Coffee"

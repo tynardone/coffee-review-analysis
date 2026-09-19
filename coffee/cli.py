@@ -21,8 +21,8 @@ from coffee.exchange_rates import (
     load_review_dates,
     save_rates,
 )
+from coffee.pipeline import DEFAULT_OUTPUT_DIR, scrape_all_reviews
 from coffee.roaster_resolution import resolve
-from coffee.scrape import DEFAULT_OUTPUT_DIR, scrape_all_reviews
 
 logger = logging.getLogger(__name__)
 

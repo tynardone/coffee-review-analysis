@@ -6,6 +6,7 @@
 import asyncio
 import logging
 import time
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -14,21 +15,31 @@ import pandas as pd
 from tqdm.asyncio import tqdm
 
 from coffee.config import Config
-from coffee.review_scraper import scrape_review
-from coffee.review_urls import get_review_urls
-from coffee.utils import create_filename
+from coffee.review import scrape_review
+from coffee.sitemap import get_review_urls
 
 logger = logging.getLogger(__name__)
 
 DEFAULT_OUTPUT_DIR = Config.DATA_DIR / "raw"
+
+
+def dated_filename(stem: str, suffix: str) -> str:
+    """``reviews``, ``csv`` -> ``2026-09-19_reviews.csv``.
+
+    Each run writes its own dated file rather than overwriting the last, so a
+    scrape can be compared against its predecessor.
+    """
+    return f"{datetime.now().strftime('%Y-%m-%d')}_{stem}.{suffix}"
+
+
 DEFAULT_CONCURRENCY = 10
 
 
 async def scrape_all_reviews(output_dir: Path, concurrency: int) -> None:
     """Discover every review URL, scrape each review, and save to CSV + JSON."""
     output_dir.mkdir(parents=True, exist_ok=True)
-    csv_path = output_dir / create_filename("reviews", "csv")
-    json_path = output_dir / create_filename("reviews", "json")
+    csv_path = output_dir / dated_filename("reviews", "csv")
+    json_path = output_dir / dated_filename("reviews", "json")
 
     semaphore = asyncio.Semaphore(concurrency)
     results: list[dict[str, Any]] = []
