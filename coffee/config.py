@@ -3,7 +3,7 @@
 Exposes a robust ``PROJECT_ROOT`` — resolved from this file rather than the
 current working directory, so it is stable whether imported from a script or a
 notebook — and a derived ``DATA_DIR``. :class:`Config` and :class:`OpenExConfig`
-hold the request headers, base URL, and API keys loaded from the environment or
+hold the request headers, site URLs, and API keys loaded from the environment or
 a project-root ``.env`` (``OPENEXCHANGERATES_API_ID``, ``GEOCODE_API_KEY``).
 """
 
@@ -41,7 +41,10 @@ class Config:
     BASEDIR: Path = PROJECT_ROOT
     OPENEXCHANGERATES_API_ID = os.environ.get("OPENEXCHANGERATES_API_ID")
     GEOCODE_API_KEY = os.environ.get("GEOCODE_API_KEY")
+    # Review discovery reads the sitemap index; BASE_URL is the human-facing
+    # listing page, kept for reference and for constructing review URLs by hand.
     BASE_URL = "https://www.coffeereview.com/review/"
+    SITEMAP_URL = "https://www.coffeereview.com/sitemap_index.xml"
     HEADERS = {
         "user-agent": (
             "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 "
