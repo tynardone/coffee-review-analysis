@@ -1,10 +1,9 @@
 """The scraper's failure contract: a bad page is a dropped row, never a dead run.
 
-`scrape_all_reviews` awaits each review one at a time, so any exception that
-escapes `scrape_review` propagates out of the loop, abandons the remaining
-tasks, and returns before anything is written. On a ~9,000-URL scrape that turns
-one malformed page into a total loss. These tests pin the contract that prevents
-it: every failure mode returns None.
+`scrape_all_reviews` awaits each review in turn, so an exception escaping
+`scrape_review` abandons the remaining tasks and writes nothing — one bad page
+out of ~9,000 loses the run. These tests pin the contract: every failure mode
+returns None.
 """
 
 import asyncio

@@ -1,9 +1,8 @@
 """Sitemap discovery tests.
 
-The invariant under test throughout is that discovery is COMPLETE OR LOUD.
-A short URL list is the dangerous outcome — it yields a dataset that looks
-fine and is quietly missing rows — so every partial-failure path here is
-asserted to raise rather than to return what it managed to get.
+The invariant throughout is that discovery is complete or loud: a short URL
+list yields a dataset that looks fine and is quietly missing rows, so every
+partial-failure path is asserted to raise rather than return what it got.
 """
 
 import asyncio

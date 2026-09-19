@@ -1,17 +1,14 @@
 """Golden-output tests for the review parser.
 
-WHY A GOLDEN FILE RATHER THAN SPOT ASSERTIONS
-    Parser regressions here are SILENT. When CoffeeReview changes a class name,
-    `_parse_element` returns None and you get a column of nulls — not an error,
-    not a crash, just slightly emptier data that looks plausible. There is no
-    way to distinguish "the site changed" from "the scraper broke" after the
-    fact, because real schema evolution produces the identical symptom: the
-    `bottom_line` field is genuinely absent from every review before mid-2016,
-    and `acidity` was genuinely renamed `acidity/structure` across 2017-18.
+Parser regressions are silent: a changed class name makes `_parse_element`
+return None, so you get a column of nulls rather than an error. That is
+indistinguishable from real schema evolution, which this corpus has —
+`bottom_line` is absent before mid-2016, and `acidity` became
+`acidity/structure` across 2017-18. Pinning the full parse of ten real pages
+turns that silence into a failing test.
 
-    Pinning the full parse of ten real pages turns that silence into a failing
-    test. Regenerate with `python tests/generate_golden.py` after a deliberate
-    parser change — and read the diff.
+Regenerate with `python tests/generate_golden.py` after a deliberate parser
+change, and read the diff.
 """
 
 import pytest

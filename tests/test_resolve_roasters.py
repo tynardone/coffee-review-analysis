@@ -1,9 +1,8 @@
 """Entity-resolution tests, centered on the subset-match hazard.
 
-The governing asymmetry in resolve_roasters.py is that a FALSE MERGE is silent
-and a false split is obvious, so these tests weight precision accordingly: the
-merges asserted below are ones that must happen, and the separations are ones
-whose absence corrupted the real crosswalk.
+A false merge is silent and a false split is obvious, so these tests weight
+precision accordingly: the merges asserted here are ones that must happen, the
+separations ones whose absence corrupted the real crosswalk.
 """
 
 import pytest
