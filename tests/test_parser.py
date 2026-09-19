@@ -18,7 +18,7 @@ import pytest
 from bs4 import BeautifulSoup
 from conftest import review_pages
 
-from coffee.parser import _parse_tables, parse_html
+from coffee.parser import _parse_tables, clean_text, parse_html
 
 
 @pytest.mark.parametrize("path", review_pages(), ids=lambda p: p.stem)
@@ -74,3 +74,53 @@ def test_notes_section_stops_at_the_next_heading():
     assert "First paragraph." in notes
     assert "Second paragraph." in notes
     assert "Should not appear" not in notes
+
+
+# --------------------------------------------------------------------------
+# Whitespace normalization
+# --------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "raw, expected",
+    [
+        ("  leading and trailing  ", "leading and trailing"),
+        ("double  spaces", "double spaces"),
+        ("embedded\nnewline", "embedded newline"),
+        ("tab\tseparated", "tab separated"),
+        ("many \n\n  mixed\t\tkinds", "many mixed kinds"),
+        ("\xa0non-breaking\xa0space\xa0", "non-breaking space"),
+        ("already clean", "already clean"),
+        ("", ""),
+        ("   ", ""),
+    ],
+)
+def test_clean_text(raw, expected):
+    assert clean_text(raw) == expected
+
+
+def test_extracted_fields_carry_no_internal_newlines():
+    """The specific defect this normalization exists for.
+
+    Review prose arrives from the HTML with newlines baked in. Left alone they
+    survive into the CSV as multi-line quoted fields, where anything reading the
+    file line-by-line instead of as CSV can reach inside a value and edit it.
+    """
+    html = """
+    <h1 class="review-title">A   Coffee</h1>
+    <h2>Blind Assessment</h2>
+    <p>Sweetly nut-toned.
+       Cantaloupe,  amber, bay leaf.
+    </p>
+    <table><tr><td>Roaster  Location:</td><td>Auburn,\n  Maine</td></tr></table>
+    """
+    data = parse_html(html)
+    assert data["title"] == "A Coffee"
+    assert data["blind_assessment"] == "Sweetly nut-toned. Cantaloupe, amber, bay leaf."
+    # Table keys are normalized too, or the column name itself carries the noise.
+    assert data["roaster location"] == "Auburn, Maine"
+
+    for field, value in data.items():
+        if isinstance(value, str):
+            assert "\n" not in value, f"{field} kept a newline"
+            assert "  " not in value, f"{field} kept a double space"

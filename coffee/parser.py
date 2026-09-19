@@ -5,6 +5,9 @@ notes, and bottom line, then merges in the review's spec table (coffee origin,
 price, agtron, etc.). Parsing is pure CPU work with no I/O, so the functions
 are synchronous; run them in a thread (e.g. ``asyncio.to_thread``) to avoid
 blocking the event loop during a scrape.
+
+Every extracted value goes through :func:`clean_text`, so whitespace is
+normalized once here at the source rather than being chased downstream.
 """
 
 import logging
@@ -12,6 +15,25 @@ import re
 
 from bs4 import BeautifulSoup
 from bs4.element import Tag
+
+
+def clean_text(value: str) -> str:
+    r"""Collapse every run of whitespace to one space, then strip.
+
+    Applied to all extracted values so that a field's content is decided here
+    and not by whatever the page's markup happened to indent.
+
+    This is not cosmetic. Review prose arrives with newlines and double spaces
+    baked in from the HTML source — 33 blind assessments in the last scrape
+    contained embedded newlines — and those newlines survive into the CSV as
+    multi-line quoted fields. Anything that then reads the file line-by-line
+    rather than as CSV (a whitespace-fixing pre-commit hook, a shell pipeline,
+    a naive diff) sees *inside* a value and can silently edit the data.
+
+    ``\s`` is Unicode-aware, so non-breaking spaces normalize to real spaces
+    too, which is what downstream tokenizing and grouping want.
+    """
+    return re.sub(r"\s+", " ", value).strip()
 
 
 def _parse_element(
@@ -32,9 +54,9 @@ def _parse_element(
         if next_element:
             found_next_element = found_element.find_next(next_element)
             if found_next_element:
-                return found_next_element.get_text().strip()
+                return clean_text(found_next_element.get_text())
         else:
-            return found_element.get_text().strip()
+            return clean_text(found_element.get_text())
     return None
 
 
@@ -55,7 +77,7 @@ def _parse_notes_section(soup: BeautifulSoup) -> str | None:
             if element.name == "h2":
                 break
             notes_text += element.get_text().strip()
-        return re.sub(r"\s+", " ", notes_text)
+        return clean_text(notes_text)
     else:
         logging.warning("No notes section found.")
         return None
@@ -68,7 +90,7 @@ def _parse_tables(soup: BeautifulSoup) -> dict[str, str]:
         for row in table.find_all("tr"):
             cells = row.find_all("td")
             if len(cells) == 2:
-                data[cells[0].get_text().strip()] = cells[1].get_text().strip()
+                data[clean_text(cells[0].get_text())] = clean_text(cells[1].get_text())
     return {key.lower().replace(":", ""): value for key, value in data.items()}
 
 
