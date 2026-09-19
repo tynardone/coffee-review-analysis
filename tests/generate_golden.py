@@ -8,14 +8,10 @@ changes, so regenerating it without reading the diff silently discards the test.
 """
 
 import json
-import sys
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from conftest import GOLDEN, review_pages
 
-from conftest import GOLDEN, review_pages  # noqa: E402  (isort: local)
-
-from coffee.parser import parse_html  # noqa: E402
+from coffee.parser import parse_html
 
 
 def main() -> None:

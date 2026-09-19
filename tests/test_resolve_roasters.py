@@ -6,7 +6,8 @@ separations ones whose absence corrupted the real crosswalk.
 """
 
 import pytest
-from resolve_roasters import (
+
+from coffee.roaster_resolution import (
     core_key,
     fingerprint,
     resolve,
