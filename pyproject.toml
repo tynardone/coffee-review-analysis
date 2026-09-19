@@ -50,6 +50,7 @@ analysis = [
 dev = [
     "mypy>=1.8",
     "pre-commit>=3.5",
+    "pytest>=8.0",
     "ruff>=0.7",
 ]
 
@@ -60,6 +61,11 @@ default-groups = ["dev", "analysis"]
 # Flat layout: only the `coffee` package is importable; scripts/ and
 # notebooks/ are not part of the distribution.
 packages = ["coffee"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# Keep the golden-parse diff readable when a fixture's parse changes.
+addopts = "-q"
 
 [tool.mypy]
 disable_error_code = "import-untyped"

@@ -52,6 +52,8 @@ import argparse
 import re
 import unicodedata
 from collections import Counter, defaultdict
+from collections.abc import Iterable, Mapping
+from functools import partial
 from pathlib import Path
 
 import pandas as pd
@@ -76,6 +78,9 @@ from rapidfuzz import fuzz, process
 # TUNING: this list is the first thing to edit for your data. Misspellings of
 # the stopwords themselves belong here too ("coffe", "cofee") — they'd
 # otherwise survive into the key as noise tokens.
+# fmt: off
+# Grouped by kind deliberately — the grouping is the documentation for what
+# each line is doing. Keep the formatter from flattening it to one per line.
 STOPWORDS = {
     "coffee", "coffees", "coffe", "cofee",
     "roaster", "roasters", "roasting", "roastery", "roasterie",
@@ -83,6 +88,7 @@ STOPWORDS = {
     "co", "company", "inc", "incorporated", "llc", "ltd", "limited", "corp",
     "the", "and",
 }
+# fmt: on
 
 # Applied BEFORE stopword removal, so that whatever an abbreviation expands to
 # can itself be stopworded if it belongs on the list above.
@@ -177,7 +183,24 @@ def core_key(name: str) -> str:
 # 2. SIMILARITY
 # ==========================================================================
 
-def score(a: str, b: str, **kwargs) -> float:
+# A one-token core key may only be trusted as a SUBSET match when that token is
+# RARE across the corpus. See the hazard note in score() for why length is the
+# wrong axis and document frequency is the right one.
+MAX_SUBSET_TOKEN_DF = 2
+
+
+def token_document_frequency(keys: Iterable[str]) -> Counter[str]:
+    """How many DISTINCT core keys each token appears in.
+
+    This is the corpus statistic that separates "kona" (15 keys — generic here,
+    whatever it means in English) from "stumptown" (1 key — identifying). It is
+    computed from the data rather than declared in advance, so it adapts to
+    whatever the stopword list happens to leave behind.
+    """
+    return Counter(tok for key in keys for tok in set(key.split()))
+
+
+def score(a: str, b: str, token_df: Mapping[str, int] | None = None, **kwargs) -> float:
     """Similarity of two CORE KEYS (not raw names) in [0, 100].
 
     Two DIFFERENT KINDS of variation survive normalization, and no single metric
@@ -196,31 +219,81 @@ def score(a: str, b: str, **kwargs) -> float:
 
     Taking the max is deliberately PERMISSIVE: "if either view thinks these are
     the same, treat them as candidates." That's only affordable because the
-    thresholds downstream are strict. Precision is enforced there, not here.
+    thresholds downstream are strict, AND because of the guard below.
 
     ------------------------------------------------------------------------
-    KNOWN HAZARD — token_set's subset behavior is a loaded gun.
-    ANY key that is a strict subset of another scores 100, no matter how little
-    it says. A bare key like "black" would score 100 against BOTH "black oak"
-    and "black white", and union-find would then fuse all three into one
-    roaster. This doesn't blow up on real roaster data because real names have
-    distinctive heads. But if your data yields very short or generic residual
-    keys after stopwording, add a guard here: require the shorter key to be >= 2
-    tokens or >= 5 chars before trusting a subset match.
-    ------------------------------------------------------------------------
+    THE HAZARD, AND THE GUARD THAT CONTAINS IT
+    token_set's subset behavior is a loaded gun: ANY key that is a strict subset
+    of another scores 100, no matter how little it says. This is not theoretical.
+    Unguarded, on the real scraped data (1,591 spellings), it fired constantly,
+    because aggressive stopwording MANUFACTURES bare generic keys:
+
+        "Kona Cafe"               -> "kona"          subset of every "kona <x>"
+        "The Gourmet Coffee Bean" -> "gourmet"       subset of every "<x> gourmet"
+        "Coffee Bros."            -> "brothers"      subset of every "brothers <x>"
+
+    Each bare key auto-merged with everything containing it, and union-find then
+    chained the neighborhood together: a 20-member "Hula Daddy Kona Coffee"
+    cluster whose worst internal pair scored 0.0, a 14-member "Dallis Bros."
+    cluster that swallowed every unrelated roaster with "Brothers" in its name.
+    219 of 1,591 spellings landed in chained clusters.
+
+    THE GUARD: trust a subset reading only when the SHORTER key is DISTINCTIVE —
+    either it has >= 2 tokens, or its single token is rare in the corpus
+    (document frequency <= MAX_SUBSET_TOKEN_DF). Otherwise fall back to
+    token_sort_ratio alone, which measures the whole string and so scores "kona"
+    vs "kona luna" as the weak evidence it actually is.
+
+    WHY DOCUMENT FREQUENCY AND NOT LENGTH. A character-length threshold was the
+    obvious first try and it is measurably worse on both sides at once: it still
+    admits "brothers" (8 chars) and "international" (13), while REJECTING the
+    real merges "coffeeam"/"coffeeam com" and "peerless"/"peerless tea". Length
+    is not the property that matters. Genericness is, and genericness is exactly
+    what document frequency measures. Measured, on the real data:
+
+        guard                      merges   chain-risk rows   largest cluster
+        none (original)               367               219                20
+        length >= 8 chars             203                31                14
+        document frequency <= 2       222                18                 4
+
+    The DF guard makes MORE merges than the length guard while chaining far
+    less — it is not a precision/recall trade, it is a better axis.
+
+    `token_df` is the corpus statistic from token_document_frequency(). When it
+    is None (direct calls, tests), one-token keys are simply not trusted for
+    subset matching — the conservative reading, consistent with the governing
+    asymmetry at the top of this file.
+
+    RESIDUAL, NOT FIXED HERE: names that stopword down to the SAME bare key
+    ("Direct Coffee" and "Coffee Bean Direct" both -> "direct") are merged by
+    Stage A exact collision, which no similarity guard can see. That is the
+    documented failure mode of core_key — an over-aggressive stopword list — and
+    it is fixed there, not here.
 
     **kwargs absorbs the `score_cutoff` that rapidfuzz.process.cdist injects
     into scorer callables. Without it, cdist raises TypeError.
     """
-    return max(
-        fuzz.token_set_ratio(a, b),
-        fuzz.token_sort_ratio(a, b),
-    )
+    shorter = a if len(a) <= len(b) else b
+    shorter_tokens = shorter.split()
+
+    if len(shorter_tokens) >= 2:
+        subset_is_trustworthy = True
+    elif not shorter_tokens or token_df is None:
+        subset_is_trustworthy = False
+    else:
+        df = token_df.get(shorter_tokens[0], MAX_SUBSET_TOKEN_DF + 1)
+        subset_is_trustworthy = df <= MAX_SUBSET_TOKEN_DF
+
+    result = float(fuzz.token_sort_ratio(a, b))
+    if subset_is_trustworthy:
+        result = max(result, float(fuzz.token_set_ratio(a, b)))
+    return result
 
 
 # ==========================================================================
 # 3. UNION-FIND (DISJOINT SET)
 # ==========================================================================
+
 
 class DSU:
     """Turns PAIRS into GROUPS: link every pair above threshold, then read off
@@ -247,7 +320,7 @@ class DSU:
 
     def find(self, x: int) -> int:
         while self.p[x] != x:
-            self.p[x] = self.p[self.p[x]]      # path compression
+            self.p[x] = self.p[self.p[x]]  # path compression
             x = self.p[x]
         return x
 
@@ -260,6 +333,7 @@ class DSU:
 # ==========================================================================
 # 4. RESOLUTION
 # ==========================================================================
+
 
 def resolve(
     raw_names: list[str],
@@ -298,8 +372,8 @@ def resolve(
         appearing. That score is your real `auto`. Then find where plausible
         matches stop appearing entirely — that's your real `review` floor.
     """
-    counts = Counter(raw_names)          # frequency drives canonical selection
-    uniques = sorted(counts)             # index space for the DSU
+    counts = Counter(raw_names)  # frequency drives canonical selection
+    uniques = sorted(counts)  # index space for the DSU
     keys = [core_key(n) for n in uniques]
 
     # -- Stage A: exact core-key collision -----------------------------------
@@ -321,16 +395,27 @@ def resolve(
     # rather than boilerplate.
     distinct_keys = sorted(by_key)
 
+    # The subset guard in score() needs to know which tokens are generic IN THIS
+    # CORPUS, so bind the statistic to the scorer before any comparison happens.
+    # Every scoring path below must use `scorer`, never bare `score` — an
+    # unbound call silently reverts to the conservative no-corpus behavior.
+    token_df = token_document_frequency(distinct_keys)
+    scorer = partial(score, token_df=token_df)
+
+    # NOTE: `workers` is deliberately not set. rapidfuzz can only parallelize its
+    # own native scorers; with a Python callable it is a no-op, so asking for it
+    # only implies a speed that isn't there. This is O(n^2) Python calls — ~3s at
+    # 1.6k keys, and it grows quadratically.
     matrix = process.cdist(
-        distinct_keys, distinct_keys,
-        scorer=score,
-        score_cutoff=review_threshold,   # advisory only for custom scorers
-        workers=-1,                      # all cores; fine to ~10k keys
+        distinct_keys,
+        distinct_keys,
+        scorer=scorer,
+        score_cutoff=review_threshold,  # advisory only for custom scorers
     )
 
     review_rows = []
     for i in range(len(distinct_keys)):
-        for j in range(i + 1, len(distinct_keys)):   # upper triangle only
+        for j in range(i + 1, len(distinct_keys)):  # upper triangle only
             s = matrix[i][j]
 
             # GOTCHA: cdist's score_cutoff is honored by BUILT-IN scorers but is
@@ -345,14 +430,16 @@ def resolve(
             if s >= auto_threshold:
                 dsu.union(by_key[ki][0], by_key[kj][0])
             else:
-                review_rows.append({
-                    "name_a": uniques[by_key[ki][0]],
-                    "name_b": uniques[by_key[kj][0]],
-                    "core_a": ki,          # keys are shown so you can see WHY
-                    "core_b": kj,          # a pair scored the way it did
-                    "score": round(float(s), 1),
-                    "merge": "",           # <- you (or an LLM) fill in y/n
-                })
+                review_rows.append(
+                    {
+                        "name_a": uniques[by_key[ki][0]],
+                        "name_b": uniques[by_key[kj][0]],
+                        "core_a": ki,  # keys are shown so you can see WHY
+                        "core_b": kj,  # a pair scored the way it did
+                        "score": round(float(s), 1),
+                        "merge": "",  # <- you (or an LLM) fill in y/n
+                    }
+                )
 
     # -- Stage C: assemble clusters ------------------------------------------
     clusters: dict[int, list[int]] = defaultdict(list)
@@ -380,7 +467,7 @@ def resolve(
         if len(names) > 2:
             ks = [core_key(n) for n in names]
             worst = min(
-                score(ks[a], ks[b])
+                scorer(ks[a], ks[b])
                 for a in range(len(ks))
                 for b in range(a + 1, len(ks))
             )
@@ -388,15 +475,17 @@ def resolve(
             worst = 100.0
 
         for n in names:
-            rows.append({
-                "raw_name": n,
-                "n_records": counts[n],
-                "cluster_id": cid,
-                "canonical_name": canonical,
-                "cluster_size": len(names),
-                "min_internal_score": round(float(worst), 1),
-                "chain_risk": worst < auto_threshold,   # <- triage on this first
-            })
+            rows.append(
+                {
+                    "raw_name": n,
+                    "n_records": counts[n],
+                    "cluster_id": cid,
+                    "canonical_name": canonical,
+                    "cluster_size": len(names),
+                    "min_internal_score": round(float(worst), 1),
+                    "chain_risk": worst < auto_threshold,  # <- triage on this first
+                }
+            )
 
     # Sorted biggest-cluster-first: the largest clusters carry the most risk and
     # are what you want to eyeball before trusting the run.
@@ -407,8 +496,9 @@ def resolve(
     review = (
         pd.DataFrame(review_rows).sort_values("score", ascending=False)
         if review_rows
-        else pd.DataFrame(columns=["name_a", "name_b", "core_a", "core_b",
-                                   "score", "merge"])
+        else pd.DataFrame(
+            columns=["name_a", "name_b", "core_a", "core_b", "score", "merge"]
+        )
     )
     return crosswalk, review
 
@@ -417,6 +507,7 @@ def resolve(
 # 5. CLI
 # ==========================================================================
 
+
 def main() -> None:
     ap = argparse.ArgumentParser(
         description="Cluster messy coffee roaster names into canonical entities."
@@ -424,12 +515,19 @@ def main() -> None:
     ap.add_argument("infile", type=Path, help="CSV containing the names")
     ap.add_argument("--column", default="roaster", help="column holding the names")
     ap.add_argument("--outdir", type=Path, default=Path("."))
-    ap.add_argument("--auto", type=int, default=92,
-                    help="score >= this: merge automatically (raise if you see "
-                         "false merges)")
-    ap.add_argument("--review", type=int, default=82,
-                    help="score in [review, auto): send to human review queue "
-                         "(lower it if true matches are being missed entirely)")
+    ap.add_argument(
+        "--auto",
+        type=int,
+        default=92,
+        help="score >= this: merge automatically (raise if you see false merges)",
+    )
+    ap.add_argument(
+        "--review",
+        type=int,
+        default=82,
+        help="score in [review, auto): send to human review queue "
+        "(lower it if true matches are being missed entirely)",
+    )
     args = ap.parse_args()
 
     df = pd.read_csv(args.infile)
@@ -449,8 +547,10 @@ def main() -> None:
     n_can = crosswalk.canonical_name.nunique()
     print(f"{n_raw} distinct spellings -> {n_can} roasters ({n_raw - n_can} merged)")
     print(f"{len(review)} pairs queued for review  -> review.csv")
-    print(f"{int(crosswalk.chain_risk.sum())} rows in chain-risk clusters"
-          f"{'  <-- INSPECT THESE' if crosswalk.chain_risk.any() else ''}")
+    print(
+        f"{int(crosswalk.chain_risk.sum())} rows in chain-risk clusters"
+        f"{'  <-- INSPECT THESE' if crosswalk.chain_risk.any() else ''}"
+    )
 
 
 if __name__ == "__main__":

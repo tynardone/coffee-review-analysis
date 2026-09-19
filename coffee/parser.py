@@ -47,7 +47,11 @@ def _parse_notes_section(soup: BeautifulSoup) -> str | None:
         notes_text: str = ""
         # Extract all text from notes h2 header until the next h2 header
         for element in notes.find_next_siblings():
-            assert isinstance(element, Tag)
+            # find_next_siblings() yields only Tags, but narrow explicitly rather
+            # than assert: an assert is compiled out under `python -O`, and this
+            # runs against markup we don't control.
+            if not isinstance(element, Tag):
+                continue
             if element.name == "h2":
                 break
             notes_text += element.get_text().strip()
