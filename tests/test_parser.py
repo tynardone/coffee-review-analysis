@@ -23,9 +23,9 @@ from coffee.parser import _parse_tables, parse_html
 
 @pytest.mark.parametrize("path", review_pages(), ids=lambda p: p.stem)
 def test_parse_matches_golden(path, golden):
-    assert (
-        path.name in golden
-    ), f"{path.name} has no golden entry; run tests/generate_golden.py"
+    assert path.name in golden, (
+        f"{path.name} has no golden entry; run tests/generate_golden.py"
+    )
     assert parse_html(path.read_text(encoding="utf-8")) == golden[path.name]
 
 

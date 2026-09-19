@@ -19,7 +19,7 @@ Given that coffee is an inherently bitter beverage, natural sweetness is good, w
 
 Aromas and flavors that develop naturally from the coffee bean itself when skillfully processed and roasted, like floral, fruit, citrus, honey, molasses, and chocolate, are better than flavors that come from mistakes made during fruit removal and drying, such as the taste of rotten fermented fruit, mustiness or moldiness, or medicinal flavors.
 
-A long, sweet, flavor-saturated aftertaste is better than a short, fast-fading, astringent or aromatically empty aftertqaste 
+A long, sweet, flavor-saturated aftertaste is better than a short, fast-fading, astringent or aromatically empty aftertqaste
 
 Both implicitly and explicitly, Coffee Review follows these assumptions in generating its evaluations and reviews.
 
