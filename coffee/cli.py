@@ -291,7 +291,7 @@ def clean_reviews_command(argv: list[str] | None = None) -> None:
         "-o",
         "--output",
         type=Path,
-        default=DATA_DIR / "processed" / "reviews_cleaned.csv",
+        default=DATA_DIR / "clean" / "reviews.csv",
     )
     parser.add_argument(
         "--rates",

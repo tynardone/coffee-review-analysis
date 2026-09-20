@@ -352,9 +352,8 @@ roaster appears twice in a table. See the module docstring in
 ## The two layers
 
 ```
-data/raw/reviews.csv         RAW      as scraped, never edited
-data/processed/reviews_cleaned.csv   CLEANED  typed, priced in constant USD,
-                                              roasters resolved
+data/raw/reviews.csv     RAW      as scraped, never edited
+data/clean/reviews.csv   CLEANED  typed, priced in constant USD, roasters resolved
 ```
 
 `uv run clean-reviews` builds the second from the first. The transformation
@@ -383,11 +382,11 @@ Run them in order; each depends on the previous one's output.
 
 | notebook | reads | writes |
 |---|---|---|
-| `01-data-cleaning` | `data/raw/reviews.csv` | `data/processed/reviews_cleaned.csv` (same as `clean-reviews`) |
-| `02-data-EDA` | `data/processed/reviews_cleaned.csv` | charts |
-| `03-text-features` | `data/processed/reviews_cleaned.csv` | wordclouds in `imgs/` |
+| `01-data-cleaning` | `data/raw/reviews.csv` | `data/clean/reviews.csv` (same as `clean-reviews`) |
+| `02-data-EDA` | `data/clean/reviews.csv` | charts |
+| `03-text-features` | `data/clean/reviews.csv` | wordclouds in `imgs/` |
 
-`reviews_cleaned.csv` is gitignored — notebook 01 regenerates it, so run that
+`data/clean/reviews.csv` is gitignored — notebook 01 regenerates it, so run that
 first on a fresh checkout. Committed data is limited to the scrape itself and
 to outputs carrying human judgement (the roaster crosswalk and decisions).
 
