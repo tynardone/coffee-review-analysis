@@ -138,7 +138,7 @@ installed as console commands that wrap it.
 - `roaster_resolution.py` — entity resolution for messy roaster names. Uses
   the roaster's name *and* location, and applies previously adjudicated pairs
   so manual effort accumulates rather than resetting. Outputs live in
-  `data/processed/` (see [Resolving roaster names](#resolving-roaster-names)
+  `data/roasters/` (see [Resolving roaster names](#resolving-roaster-names)
   for the workflow and [`docs/roaster-resolution.md`](docs/roaster-resolution.md)
   for why it is built this way).
 - `cli.py` — argument parsing for the console commands below.
@@ -169,7 +169,7 @@ uv run scrape-reviews
 uv run fetch-exchange-rates
 
 # Resolve roaster-name variants into a canonical crosswalk
-uv run resolve-roasters data/raw/reviews.csv --outdir data/processed
+uv run resolve-roasters data/raw/reviews.csv --outdir data/roasters
 
 # Build the cleaned layer from the raw scrape
 uv run clean-reviews
@@ -254,7 +254,7 @@ rather than starting over.
 **1. Resolve.**
 
 ```bash
-uv run resolve-roasters data/raw/reviews.csv --outdir data/processed
+uv run resolve-roasters data/raw/reviews.csv --outdir data/roasters
 ```
 
 It prints four lines. Read them in this order:
@@ -268,7 +268,7 @@ no decisions yet (…/roaster_decisions.csv not found)       are your past calls
 
 **2. Judge the queue.**
 
-Open `data/processed/roaster_review_queue.csv` and answer in the `verdict`
+Open `data/roasters/roaster_review_queue.csv` and answer in the `verdict`
 column. That column is the only thing you change.
 
 `merge` / `y` / `yes` / `m` / `same` / `1` all mean **same company**;
@@ -298,7 +298,7 @@ queue should always be followed by step 3.
 **3. Record the verdicts and re-resolve.**
 
 ```bash
-uv run resolve-roasters data/raw/reviews.csv --outdir data/processed --accept-reviewed --decided-by "$USER"
+uv run resolve-roasters data/raw/reviews.csv --outdir data/roasters --accept-reviewed --decided-by "$USER"
 ```
 
 This folds the answers into `roaster_decisions.csv`, then re-resolves with them
@@ -319,7 +319,7 @@ Inspect the chain-risk clusters, which single-linkage could only have assembled
 transitively and are therefore the likeliest false merges:
 
 ```bash
-uv run python -c "import pandas as pd; c=pd.read_csv('data/processed/roaster_crosswalk.csv'); print(c[c.chain_risk][['raw_name','canonical_name','min_internal_score']].to_string(index=False))"
+uv run python -c "import pandas as pd; c=pd.read_csv('data/roasters/roaster_crosswalk.csv'); print(c[c.chain_risk][['raw_name','canonical_name','min_internal_score']].to_string(index=False))"
 ```
 
 Surface merges the name score alone misses: pairs below the normal floor that
@@ -328,7 +328,7 @@ share an address, which is how `Starbucks` ~ `Starbucks Reserve Roastery` (score
 roughly doubles, from 17 to 30 on the current data:
 
 ```bash
-uv run resolve-roasters data/raw/reviews.csv --outdir data/processed --location-review 70
+uv run resolve-roasters data/raw/reviews.csv --outdir data/roasters --location-review 70
 ```
 
 ### When a split doesn't stick

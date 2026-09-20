@@ -165,7 +165,7 @@ def resolve_roasters(argv: list[str] | None = None) -> None:
         default="roaster_location",
         help="column holding each roaster's location; '' disables the signal",
     )
-    parser.add_argument("--outdir", type=Path, default=DATA_DIR / "processed")
+    parser.add_argument("--outdir", type=Path, default=DATA_DIR / "roasters")
     parser.add_argument(
         "--decisions",
         type=Path,
@@ -318,7 +318,7 @@ def clean_reviews_command(argv: list[str] | None = None) -> None:
     parser.add_argument(
         "--crosswalk",
         type=Path,
-        default=DATA_DIR / "processed" / "roaster_crosswalk.csv",
+        default=DATA_DIR / "roasters" / "roaster_crosswalk.csv",
         help="roaster crosswalk; skipped if absent",
     )
     args = parser.parse_args(argv)
