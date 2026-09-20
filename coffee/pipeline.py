@@ -1,27 +1,26 @@
 """End-to-end scrape: discover every review URL, then fetch and parse each one.
 
-:func:`scrape_all_reviews` writes a dated CSV + JSON to the output directory.
+:func:`scrape_all_reviews` hands the results to a :class:`~coffee.storage.
+ReviewStore` rather than writing files itself, so where reviews land is the
+caller's choice and not baked into the pipeline.
 """
 
 import asyncio
 import logging
 import time
-from datetime import datetime
-from pathlib import Path
 from typing import Any
 
 import aiohttp
-import pandas as pd
 from tqdm.asyncio import tqdm
 
 from coffee.config import DATA_DIR, HEADERS
 from coffee.review import scrape_review
 from coffee.sitemap import get_review_urls
+from coffee.storage import ReviewStore
 
 __all__ = [
     "DEFAULT_CONCURRENCY",
     "DEFAULT_OUTPUT_DIR",
-    "dated_filename",
     "scrape_all_reviews",
 ]
 
@@ -30,24 +29,11 @@ logger = logging.getLogger(__name__)
 DEFAULT_OUTPUT_DIR = DATA_DIR / "raw"
 
 
-def dated_filename(stem: str, suffix: str) -> str:
-    """``reviews``, ``csv`` -> ``2026-09-19_reviews.csv``.
-
-    Each run writes its own dated file rather than overwriting the last, so a
-    scrape can be compared against its predecessor.
-    """
-    return f"{datetime.now().strftime('%Y-%m-%d')}_{stem}.{suffix}"
-
-
 DEFAULT_CONCURRENCY = 10
 
 
-async def scrape_all_reviews(output_dir: Path, concurrency: int) -> None:
-    """Discover every review URL, scrape each review, and save to CSV + JSON."""
-    output_dir.mkdir(parents=True, exist_ok=True)
-    csv_path = output_dir / dated_filename("reviews", "csv")
-    json_path = output_dir / dated_filename("reviews", "json")
-
+async def scrape_all_reviews(store: ReviewStore, concurrency: int) -> None:
+    """Discover every review URL, scrape each review, and hand them to `store`."""
     semaphore = asyncio.Semaphore(concurrency)
     results: list[dict[str, Any]] = []
 
@@ -78,11 +64,4 @@ async def scrape_all_reviews(output_dir: Path, concurrency: int) -> None:
     if failed:
         logger.warning("%d of %d reviews failed to scrape", failed, len(discovered))
 
-    if not results:
-        logger.warning("No reviews scraped; nothing written.")
-        return
-
-    df = pd.DataFrame(results)
-    df.to_csv(csv_path, index=False)
-    df.to_json(json_path, orient="records")
-    logger.info("Wrote %d reviews to %s and %s", len(df), csv_path, json_path)
+    store.save(results)

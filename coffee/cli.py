@@ -32,6 +32,7 @@ from coffee.roaster_resolution import (
     resolve,
     unpromoted_verdicts,
 )
+from coffee.storage import CsvReviewStore
 
 __all__ = [
     "fetch_exchange_rates",
@@ -77,7 +78,8 @@ def scrape_reviews(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
 
     _configure_logging()
-    asyncio.run(scrape_all_reviews(args.output_dir, args.concurrency))
+    store = CsvReviewStore(args.output_dir)
+    asyncio.run(scrape_all_reviews(store, args.concurrency))
 
 
 def fetch_exchange_rates(argv: list[str] | None = None) -> None:
