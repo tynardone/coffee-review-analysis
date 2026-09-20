@@ -15,6 +15,8 @@ import aiohttp
 
 # Only retry transient failures; other 4xx (e.g. 404 for a removed review) are
 # permanent and should fail fast instead of burning retries.
+__all__ = ["fetch"]  # the module-level constants are tuning knobs, not API
+
 RETRY_STATUSES: frozenset[int] = frozenset({429, 500, 502, 503, 504})
 REQUEST_TIMEOUT = aiohttp.ClientTimeout(total=20)
 BASE_DELAY = 1.0  # seconds; exponential backoff base

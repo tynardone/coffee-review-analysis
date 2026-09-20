@@ -14,13 +14,20 @@ import aiohttp
 import pandas as pd
 from tqdm.asyncio import tqdm
 
-from coffee.config import Config
+from coffee.config import DATA_DIR, HEADERS
 from coffee.review import scrape_review
 from coffee.sitemap import get_review_urls
 
+__all__ = [
+    "DEFAULT_CONCURRENCY",
+    "DEFAULT_OUTPUT_DIR",
+    "dated_filename",
+    "scrape_all_reviews",
+]
+
 logger = logging.getLogger(__name__)
 
-DEFAULT_OUTPUT_DIR = Config.DATA_DIR / "raw"
+DEFAULT_OUTPUT_DIR = DATA_DIR / "raw"
 
 
 def dated_filename(stem: str, suffix: str) -> str:
@@ -44,7 +51,7 @@ async def scrape_all_reviews(output_dir: Path, concurrency: int) -> None:
     semaphore = asyncio.Semaphore(concurrency)
     results: list[dict[str, Any]] = []
 
-    async with aiohttp.ClientSession(headers=Config.HEADERS) as session:
+    async with aiohttp.ClientSession(headers=HEADERS) as session:
         start = time.perf_counter()
         # Maps each review URL to its sitemap <lastmod>. Raises rather than
         # returning a short list, so a partial discovery can't quietly produce a

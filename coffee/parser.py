@@ -13,6 +13,10 @@ import re
 from bs4 import BeautifulSoup
 from bs4.element import Tag
 
+__all__ = [
+    "parse_html",
+]
+
 
 def _parse_element(
     soup: BeautifulSoup,
