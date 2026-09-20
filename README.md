@@ -134,7 +134,9 @@ installed as console commands that wrap it.
 - `roaster_resolution.py` — entity resolution for messy roaster names. Uses
   the roaster's name *and* location, and applies previously adjudicated pairs
   so manual effort accumulates rather than resetting. Outputs live in
-  `data/processed/` (see [Resolving roaster names](#resolving-roaster-names)).
+  `data/processed/` (see [Resolving roaster names](#resolving-roaster-names)
+  for the workflow and [`docs/roaster-resolution.md`](docs/roaster-resolution.md)
+  for why it is built this way).
 - `cli.py` — argument parsing for the console commands below.
 
 **`tests/`**
@@ -143,6 +145,12 @@ installed as console commands that wrap it.
   pins their expected parse.
 - `generate_golden.py` — regenerates that golden file after a deliberate
   parser change.
+
+**`docs/`**
+
+- [`roaster-resolution.md`](docs/roaster-resolution.md) — the design reasoning
+  behind roaster entity resolution: why it optimises for precision, how the
+  location signal is used, and how to tune the thresholds.
 
 ## Usage
 
@@ -294,7 +302,7 @@ roughly double, 17 to 30 on the current data:
 uv run resolve-roasters data/raw/reviews.csv --outdir data/processed --location-review 70
 ```
 
-### ### When a split doesn't stick
+### When a split doesn't stick
 
 Occasionally you will split a pair and they stay together. That is not a bug in
 your verdict — single-linkage can rejoin two names through a **third** name that
