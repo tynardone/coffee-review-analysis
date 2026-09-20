@@ -2,23 +2,25 @@
 
 Raw rows record what the site published; cleaned rows are what the analysis
 consumes. This module owns that transition: coercing types, parsing the
-free-text price into a value, a currency and a quantity, converting to USD at
-the review month's rate, adjusting for inflation, and resolving origin and
-roaster locations to countries.
+free-text price into a value, a currency and a quantity, and resolving origin
+and roaster locations to countries.
 
-Every step is a pure ``DataFrame -> DataFrame`` function. Reference data --
-exchange rates, CPI, the roaster crosswalk -- is passed in rather than read
-from disk here, so the transformation can be tested against a few hand-written
-rows instead of a 14MB download and does not depend on where that data is kept.
+The cleaned layer depends on the raw scrape and nothing else, so it can be
+rebuilt on a fresh checkout with no external data. Expressing prices in
+comparable money needs historical exchange rates and CPI, which are fetched
+using the cleaned layer's own review months; that step lives in
+:mod:`coffee.enrich` and runs afterwards.
+
+Every step is a pure ``DataFrame -> DataFrame`` function. The one piece of
+reference data used here, the roaster crosswalk, is passed in rather than read
+from disk, so the transformation can be tested against a few hand-written rows.
 
 :func:`clean_reviews` composes the steps in order. The individual steps remain
 public because they are useful one at a time when exploring in a notebook.
 """
 
 import re
-from datetime import datetime
 from functools import cache
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -29,7 +31,6 @@ from coffee.parser import normalise_field_name
 
 __all__ = [
     "CURRENCY_MAP",
-    "DEFAULT_BASELINE_DATE",
     "DEFAULT_MAX_AGTRON",
     "NON_WHOLE_BEAN_TERMS",
     "US_PRICE_UNITS",
@@ -39,23 +40,13 @@ __all__ = [
     "clean_origin",
     "clean_reviews",
     "clean_roaster_location",
-    "convert_currency",
     "convert_to_lbs",
-    "cpi_adjust_price",
-    "load_cpi",
-    "load_exchange_rates",
     "normalise_types",
-    "price_per_lb",
     "split_price_and_quantity",
 ]
 
 # Agtron readings above this are website typos, not measurements.
 DEFAULT_MAX_AGTRON = 100
-
-# The month whose dollars every adjusted price is expressed in. Changing it
-# changes every price_usd_adj, so it is recorded on the output rather than left
-# implicit.
-DEFAULT_BASELINE_DATE = "2024-06-01"
 
 # Formats that are not whole-bean coffee sold by weight. Their prices are not
 # comparable per pound, so the quantity is left unparsed rather than guessed.
@@ -142,41 +133,6 @@ _NUMERIC_COLUMNS = [
 # ==========================================================================
 # Reference data
 # ==========================================================================
-
-
-def load_exchange_rates(path: Path) -> pd.DataFrame:
-    """Flatten ``{date: {currency: rate}}`` into a (date, currency, rate) table.
-
-    A lookup table rather than the nested mapping, so that conversion is a
-    vectorised merge rather than a row-wise apply.
-    """
-    import json
-
-    nested = json.loads(Path(path).read_text(encoding="utf-8"))
-    return (
-        pd.DataFrame(nested)
-        .T.rename_axis("review_date")
-        .reset_index()
-        .melt(id_vars="review_date", var_name="price_currency", value_name="rate")
-        .assign(review_date=lambda d: pd.to_datetime(d["review_date"]))
-    )
-
-
-def load_cpi(path: Path) -> pd.DataFrame:
-    """Read the BLS CPI-U table into (date, cpi) rows, one per month."""
-    cpi = pd.read_csv(path)
-    cpi.columns = cpi.columns.str.strip().str.lower().str.replace(" ", "_")
-    return (
-        cpi.drop(columns=["half1", "half2"])
-        .melt(id_vars="year", var_name="month", value_name="cpi")
-        .assign(
-            month=lambda d: d["month"].apply(
-                lambda m: datetime.strptime(m, "%b").month
-            ),
-            date=lambda d: pd.to_datetime(d[["year", "month"]].assign(day=1)),
-        )
-        .drop(columns=["year", "month"])
-    )
 
 
 @cache
@@ -395,60 +351,6 @@ def clean_currency(df: pd.DataFrame) -> pd.DataFrame:
     )
 
 
-def convert_currency(df: pd.DataFrame, exchange_rates: pd.DataFrame) -> pd.DataFrame:
-    """Convert prices to USD at the rate for the review's month.
-
-    Checks that the row count survives the merge, since a duplicated
-    (date, currency) pair in the rate table would otherwise multiply reviews.
-    """
-    before = len(df)
-    merged = df.merge(exchange_rates, on=["review_date", "price_currency"], how="left")
-    if len(merged) != before:
-        raise ValueError(
-            f"Exchange-rate merge changed the row count ({before} -> {len(merged)}); "
-            "the rate table likely holds duplicate (date, currency) pairs."
-        )
-    return merged.assign(
-        price_usd=lambda d: (d["price_value"] / d["rate"]).round(2)
-    ).drop(columns="rate")
-
-
-def cpi_adjust_price(
-    df: pd.DataFrame, cpi: pd.DataFrame, baseline_date: str = DEFAULT_BASELINE_DATE
-) -> pd.DataFrame:
-    """Express prices in `baseline_date` dollars using CPI-U.
-
-    Where CPI is unavailable, typically for the current month, the unadjusted
-    USD price is kept rather than dropped.
-    """
-    baseline = cpi.loc[cpi["date"] == baseline_date, "cpi"]
-    if baseline.empty:
-        raise ValueError(f"No CPI value for baseline date {baseline_date!r}.")
-
-    before = len(df)
-    merged = df.merge(cpi, how="left", left_on="review_date", right_on="date")
-    if len(merged) != before:
-        raise ValueError(
-            f"CPI merge changed the row count ({before} -> {len(merged)})."
-        )
-    return merged.assign(
-        price_usd_adj=lambda d: np.where(
-            d["cpi"].isna(),
-            d["price_usd"],
-            (d["price_usd"] * baseline.iloc[0] / d["cpi"]).round(2),
-        )
-    )
-
-
-def price_per_lb(df: pd.DataFrame) -> pd.DataFrame:
-    """The comparable figure: inflation-adjusted USD per pound."""
-    return df.assign(
-        price_usd_adj_per_lb=lambda d: np.round(
-            d["price_usd_adj"] / d["quantity_in_lbs"], 2
-        )
-    )
-
-
 def clean_origin(df: pd.DataFrame) -> pd.DataFrame:
     """Extract origin countries from the coffee_origin text.
 
@@ -525,22 +427,21 @@ def apply_roaster_crosswalk(df: pd.DataFrame, crosswalk: pd.DataFrame) -> pd.Dat
 def clean_reviews(
     raw: pd.DataFrame,
     *,
-    exchange_rates: pd.DataFrame,
-    cpi: pd.DataFrame,
     crosswalk: pd.DataFrame | None = None,
-    baseline_date: str = DEFAULT_BASELINE_DATE,
     max_agtron: int = DEFAULT_MAX_AGTRON,
 ) -> pd.DataFrame:
-    """Raw scraped reviews in, cleaned layer out."""
+    """Raw scraped reviews in, cleaned layer out.
+
+    Depends on nothing but the raw scrape. Putting prices in comparable money
+    needs exchange rates and CPI, which are reference data fetched separately;
+    that belongs to :func:`coffee.enrich.enrich_reviews` and runs after this.
+    """
     cleaned = (
         raw.pipe(check_raw_schema)
         .pipe(normalise_types, max_agtron=max_agtron)
         .pipe(split_price_and_quantity)
         .pipe(convert_to_lbs)
         .pipe(clean_currency)
-        .pipe(convert_currency, exchange_rates)
-        .pipe(cpi_adjust_price, cpi, baseline_date)
-        .pipe(price_per_lb)
         .pipe(clean_origin)
         .pipe(clean_roaster_location)
     )

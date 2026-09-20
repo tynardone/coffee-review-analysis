@@ -14,18 +14,14 @@ from pathlib import Path
 
 import pandas as pd
 
-from coffee.clean import (
-    DEFAULT_BASELINE_DATE,
-    clean_reviews,
-    load_cpi,
-    load_exchange_rates,
-)
+from coffee.clean import clean_reviews
 from coffee.config import DATA_DIR, openexchangerates_api_id
 from coffee.exchange_rates import (
     DEFAULT_OUTPUT,
     fetch_rates,
+    load_rates,
     load_review_dates,
-    save_rates,
+    unfetched_dates,
 )
 from coffee.pipeline import (
     DEFAULT_CONCURRENCY,
@@ -103,8 +99,11 @@ def fetch_exchange_rates(argv: list[str] | None = None) -> None:
         "-i",
         "--input",
         type=Path,
-        required=True,
-        help="Scraped reviews file (.csv or .json).",
+        default=DATA_DIR / "clean" / "reviews.csv",
+        help="Reviews file whose review months need rates. Defaults to the "
+        "cleaned layer, whose months are the ones cleaning converts; the raw "
+        "scrape is also accepted, for bootstrapping before a cleaned layer "
+        "exists.",
     )
     parser.add_argument(
         "-o",
@@ -113,6 +112,12 @@ def fetch_exchange_rates(argv: list[str] | None = None) -> None:
         default=DEFAULT_OUTPUT,
         help="Destination JSON file for exchange rates.",
     )
+    parser.add_argument(
+        "--refetch",
+        action="store_true",
+        help="re-request dates already held. Rates for a past date do not "
+        "change, so this is only for repairing a corrupt file.",
+    )
     args = parser.parse_args(argv)
 
     _configure_logging()
@@ -120,16 +125,34 @@ def fetch_exchange_rates(argv: list[str] | None = None) -> None:
     if not app_id:
         raise SystemExit("OPENEXCHANGERATES_API_ID is not set (add it to your .env).")
 
-    dates = load_review_dates(args.input)
-    logger.info("Fetching rates for %d unique dates", len(dates))
-    rates = fetch_rates(dates, app_id)
+    try:
+        dates = load_review_dates(args.input)
+    except FileNotFoundError as exc:
+        raise SystemExit(
+            f"{args.input} does not exist. Build the cleaned layer first with "
+            "`uv run clean-reviews`, or pass --input data/raw/reviews.csv to "
+            "read months from the raw scrape instead."
+        ) from exc
+    held = load_rates(args.output)
+    pending = dates if args.refetch else unfetched_dates(dates, held)
 
-    failures = sum(1 for rate in rates.values() if not rate)
-    if failures:
-        logger.warning("%d/%d dates returned no rates", failures, len(dates))
+    print(
+        f"{len(dates)} review month(s); {len(dates) - len(pending)} already held, "
+        f"{len(pending)} to fetch"
+    )
+    if not pending:
+        print(f"Nothing to fetch; {args.output} is already current.")
+        return
 
-    save_rates(rates, args.output)
-    logger.info("Wrote exchange rates to %s", args.output)
+    rates = fetch_rates(dates, app_id, args.output, refetch=args.refetch)
+
+    missing = [str(day) for day in dates if not rates.get(str(day))]
+    if missing:
+        print(
+            f"{len(missing)} date(s) still have no rates and will be retried "
+            f"next run, starting with {missing[0]}"
+        )
+    print(f"Wrote {sum(1 for r in rates.values() if r)} dated rates to {args.output}")
 
 
 def resolve_roasters(argv: list[str] | None = None) -> None:
@@ -293,23 +316,10 @@ def clean_reviews_command(argv: list[str] | None = None) -> None:
         default=DATA_DIR / "clean" / "reviews.csv",
     )
     parser.add_argument(
-        "--rates",
-        type=Path,
-        default=DATA_DIR / "external" / "openex_exchange_rates.json",
-    )
-    parser.add_argument(
-        "--cpi", type=Path, default=DATA_DIR / "external" / "consumer_price_index.csv"
-    )
-    parser.add_argument(
         "--crosswalk",
         type=Path,
         default=DATA_DIR / "processed" / "roaster_crosswalk.csv",
         help="roaster crosswalk; skipped if absent",
-    )
-    parser.add_argument(
-        "--baseline-date",
-        default=DEFAULT_BASELINE_DATE,
-        help="month whose dollars adjusted prices are expressed in",
     )
     args = parser.parse_args(argv)
 
@@ -321,13 +331,7 @@ def clean_reviews_command(argv: list[str] | None = None) -> None:
             "No crosswalk at %s; roaster spellings stay unresolved.", args.crosswalk
         )
 
-    cleaned = clean_reviews(
-        raw,
-        exchange_rates=load_exchange_rates(args.rates),
-        cpi=load_cpi(args.cpi),
-        crosswalk=crosswalk,
-        baseline_date=args.baseline_date,
-    )
+    cleaned = clean_reviews(raw, crosswalk=crosswalk)
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     cleaned.to_csv(args.output, index=False)
@@ -335,4 +339,4 @@ def clean_reviews_command(argv: list[str] | None = None) -> None:
     print(
         f"{len(raw)} raw -> {len(cleaned)} cleaned ({dropped} dropped as agtron typos)"
     )
-    print(f"prices in {args.baseline_date} dollars -> {args.output}")
+    print(f"wrote {args.output}")
