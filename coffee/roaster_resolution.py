@@ -372,6 +372,53 @@ class Verdict(StrEnum):
     SPLIT = "split"
 
 
+# What counts as an answer in the queue's `verdict` column.
+#
+# Being strict here is a bad trade. The column is filled in by hand, often in a
+# spreadsheet, and "y"/"n" is the obvious thing to type when the question is
+# "are these the same company?". Accepting only the two canonical spellings
+# meant a whole afternoon of answers was silently skipped.
+VERDICT_SYNONYMS: dict[str, Verdict] = {
+    "merge": Verdict.MERGE,
+    "m": Verdict.MERGE,
+    "yes": Verdict.MERGE,
+    "y": Verdict.MERGE,
+    "true": Verdict.MERGE,
+    "1": Verdict.MERGE,
+    "same": Verdict.MERGE,
+    "split": Verdict.SPLIT,
+    "s": Verdict.SPLIT,
+    "no": Verdict.SPLIT,
+    "n": Verdict.SPLIT,
+    "false": Verdict.SPLIT,
+    "0": Verdict.SPLIT,
+    "different": Verdict.SPLIT,
+    "diff": Verdict.SPLIT,
+}
+
+
+def parse_verdict(value: object) -> Verdict | None:
+    """Read one cell of the `verdict` column. None means "not answered"."""
+    text = str(value).strip().lower()
+    if not text or text in {"nan", "none"}:
+        return None
+    return VERDICT_SYNONYMS.get(text)
+
+
+def unpromoted_verdicts(review_path: Path) -> int:
+    """How many answered rows in this queue are not yet in the decisions file.
+
+    The caller uses this to refuse to regenerate a queue that still holds
+    unsaved work.
+    """
+    if not review_path.exists():
+        return 0
+    frame = pd.read_csv(review_path).fillna("")
+    if "verdict" not in frame.columns:
+        return 0
+    return sum(1 for value in frame["verdict"] if str(value).strip())
+
+
 @dataclass(frozen=True)
 class Decision:
     """One adjudicated pair. `decided_by` records who or what decided.
@@ -441,8 +488,12 @@ def promote_reviewed(
     from scratch and asks again. Promoting the answers is what makes the effort
     cumulative — every question is asked at most once, ever.
 
-    Rows with a blank or unrecognized verdict are left alone, so a partially
-    filled queue is fine. Returns the number of new decisions recorded.
+    Blank rows are left alone, so a partially filled queue is fine. A value
+    that cannot be read is reported rather than skipped in silence — silently
+    dropping answers is indistinguishable from the tool not working, and costs
+    whoever filled the queue in their whole session.
+
+    Returns the number of new decisions recorded.
     """
     if not review_path.exists():
         return 0
@@ -453,14 +504,19 @@ def promote_reviewed(
     existing = {d.key: d for d in load_decisions(decisions_path)}
     today = datetime.now().strftime("%Y-%m-%d")
     added = 0
+    unreadable: list[str] = []
     for _, row in queue.iterrows():
-        raw = str(row["verdict"]).strip().lower()
-        if raw not in {v.value for v in Verdict}:
+        verdict = parse_verdict(row["verdict"])
+        if verdict is None:
+            if str(row["verdict"]).strip():
+                unreadable.append(
+                    f"{row['name_a']} ~ {row['name_b']}: {row['verdict']!r}"
+                )
             continue
         decision = Decision(
             name_a=row["name_a"],
             name_b=row["name_b"],
-            verdict=Verdict(raw),
+            verdict=verdict,
             decided_by=decided_by,
             decided_on=today,
             note=str(row.get("note", "")),
@@ -470,6 +526,15 @@ def promote_reviewed(
         if decision.key not in existing:
             existing[decision.key] = decision
             added += 1
+
+    if unreadable:
+        readable = ", ".join(sorted(set(VERDICT_SYNONYMS)))
+        raise ValueError(
+            f"{len(unreadable)} row(s) in {review_path} have a verdict that "
+            f"cannot be read, so nothing was recorded. Fix them and re-run.\n  "
+            + "\n  ".join(unreadable[:10])
+            + f"\nAccepted values: {readable}"
+        )
 
     save_decisions(existing.values(), decisions_path)
     return added

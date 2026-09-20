@@ -193,8 +193,13 @@ no decisions yet (…/roaster_decisions.csv not found)       are your past calls
 
 **2. Judge the queue.**
 
-Open `data/processed/roaster_review_queue.csv` and put `merge` or `split` in the
-`verdict` column. That column is the only thing you change.
+Open `data/processed/roaster_review_queue.csv` and answer in the `verdict`
+column. That column is the only thing you change.
+
+`merge` / `y` / `yes` / `m` / `same` / `1` all mean **same company**;
+`split` / `n` / `no` / `s` / `different` / `0` all mean **different**. Anything
+else is reported as an error rather than skipped, so a typo cannot cost you a
+session of answers.
 
 | name_a | name_b | score | location_evidence | verdict |
 |---|---|---|---|---|
@@ -209,6 +214,11 @@ Open `data/processed/roaster_review_queue.csv` and put `merge` or `split` in the
 - **`unknown`** — no location on one side. Judge on the names alone.
 
 Blank rows are fine; they simply come back next time.
+
+**Save your answers before re-running.** Step 1 regenerates the queue, so a run
+without `--accept-reviewed` would overwrite it. The tool refuses to do that
+while unsaved verdicts are present and tells you which flag to use, but the
+habit to build is: fill in the queue, then always go to step 3.
 
 **3. Record the verdicts and re-resolve.**
 
