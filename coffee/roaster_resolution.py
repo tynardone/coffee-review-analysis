@@ -806,6 +806,33 @@ def resolve(
                 }
             )
 
+    # -- Stage D: did any split decision get defeated transitively? ----------
+    # Blocking a union is not the same as keeping two names apart. Single
+    # linkage can rejoin them through a third name -- "RND" and "Red Rooster
+    # Coffee Roaster" are bridged by the collaboration "RND & Red Rooster
+    # Coffee Roaster", whose key is a superset of both. The split is then
+    # honoured pairwise and violated in the result.
+    #
+    # This cannot be prevented without changing the clustering, but it CAN be
+    # reported, which is the same bargain the chain_risk alarm makes: a cheap
+    # algorithm plus a loud alarm beats an expensive one with none. A violation
+    # is fixed by splitting the bridging name as well.
+    cluster_of = {
+        uniques[m]: cid
+        for cid, (_root, members) in enumerate(sorted(clusters.items()))
+        for m in members
+    }
+    violated_pairs = [
+        (d.name_a, d.name_b)
+        for d in (decisions or ())
+        if d.verdict is Verdict.SPLIT
+        and d.name_a in cluster_of
+        and cluster_of[d.name_a] == cluster_of.get(d.name_b)
+    ]
+    violated_clusters = {cluster_of[a] for a, _ in violated_pairs}
+    for row in rows:
+        row["violates_decision"] = row["cluster_id"] in violated_clusters
+
     # Sorted biggest-cluster-first: the largest clusters carry the most risk and
     # are what you want to eyeball before trusting the run.
     crosswalk = pd.DataFrame(rows).sort_values(

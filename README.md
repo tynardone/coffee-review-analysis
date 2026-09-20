@@ -257,6 +257,31 @@ roughly double, 17 to 30 on the current data:
 uv run resolve-roasters data/raw/2026-09-19_reviews.csv --outdir data/processed --location-review 70
 ```
 
+### ### When a split doesn't stick
+
+Occasionally you will split a pair and they stay together. That is not a bug in
+your verdict — single-linkage can rejoin two names through a **third** name that
+resembles both, most often a collaboration:
+
+```
+RND                               -> key 'rnd'
+Red Rooster Coffee Roaster        -> key 'red rooster'
+RND & Red Rooster Coffee Roaster  -> key 'red rnd rooster'   superset of both
+```
+
+Blocking the direct union doesn't help, because they rejoin through the collab.
+The run says so explicitly:
+
+```
+!! 1 cluster(s) VIOLATE a split decision -- these names were kept together
+   despite your verdict:
+    RND  |  RND & Red Rooster Coffee Roaster  |  Red Rooster Coffee Roaster
+```
+
+The fix is to split against the **bridging** name too — here, `RND` vs
+`RND & Red Rooster Coffee Roaster`. Rows in an affected cluster are also marked
+`violates_decision` in the crosswalk.
+
 ### Two rules
 
 1. **Never hand-edit `roaster_crosswalk.csv`.** It is regenerated on every run.

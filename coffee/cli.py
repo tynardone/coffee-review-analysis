@@ -240,3 +240,20 @@ def resolve_roasters(argv: list[str] | None = None) -> None:
         f"{int(crosswalk.chain_risk.sum())} rows in chain-risk clusters"
         f"{'  <-- INSPECT THESE' if crosswalk.chain_risk.any() else ''}"
     )
+
+    # A split you recorded but that the clustering defeated anyway. Loud,
+    # because a decision the tool accepted and then ignored is worse than one
+    # it refused outright.
+    if "violates_decision" in crosswalk and crosswalk.violates_decision.any():
+        offenders = crosswalk[crosswalk.violates_decision]
+        print(
+            f"\n!! {offenders.cluster_id.nunique()} cluster(s) VIOLATE a split "
+            "decision -- these names were kept together despite your verdict:"
+        )
+        for _, group in offenders.groupby("cluster_id"):
+            print("    " + "  |  ".join(sorted(group.raw_name)))
+        print(
+            "   A split can be defeated through a third name that resembles "
+            "both\n   (often a collaboration, e.g. 'A & B Coffee'). Record a "
+            "split against\n   that bridging name too."
+        )
