@@ -6,10 +6,10 @@ price, agtron, etc.). Parsing is pure CPU work with no I/O, so the functions
 are synchronous; run them in a thread (e.g. ``asyncio.to_thread``) to avoid
 blocking the event loop during a scrape.
 
-Field names are normalised HERE, by :func:`normalise_field_name`, so the raw
-layer lands as ``est_price`` rather than ``"Est. Price:"``. The scraped label is
-presentation; the field name is schema, and settling it at the boundary means
-no downstream consumer has to re-derive it.
+Field names are normalised at this boundary by :func:`normalise_field_name`, so
+the raw layer lands as ``est_price`` rather than ``"Est. Price:"``. The scraped
+label is presentation and the field name is schema; fixing the mapping here
+means no downstream consumer re-derives it.
 """
 
 import logging
@@ -25,19 +25,16 @@ __all__ = [
 
 
 def normalise_field_name(label: str) -> str:
-    """The site's table label -> the field name we store it under.
+    """The site's table label -> the field name it is stored under.
 
-    ``"Est. Price:"`` -> ``"est_price"``. Applied HERE rather than downstream so
-    the raw layer lands with the names everything else already uses: a scraped
-    label is presentation, and letting it reach storage means every consumer
-    has to re-derive the same mapping (and disagree about it -- this is why
-    ``load_review_dates`` was reading ``"review date"`` while the cleaning code
-    read ``"review_date"``).
+    ``"Est. Price:"`` becomes ``"est_price"``. Applying this at parse time
+    rather than downstream keeps a scraped label out of storage, so that each
+    consumer reads the same field name instead of deriving its own.
 
-    Deliberately NOT a general slugifier. ``acidity/structure`` keeps its slash
-    because that is the name the site used for the field and the cleaning layer
-    coalesces it by that name; inventing a prettier one would just move the
-    translation problem somewhere else.
+    This is not a general slugifier. ``acidity/structure`` keeps its slash,
+    since that is the name the site uses and the name the cleaning layer
+    coalesces the field by; renaming it here would relocate the translation
+    rather than remove it.
     """
     return label.strip().lower().replace(":", "").replace(" ", "_").replace(".", "")
 
@@ -67,17 +64,19 @@ def _parse_element(
 
 
 def _parse_notes_section(soup: BeautifulSoup) -> str | None:
-    """The notes section structure is not consistent, but is generally all the text
-    content between the Notes h2 header and the next h2 header. So this function
-    extracts all text content between these two headers."""
+    """Text content between the Notes heading and the next h2 heading.
+
+    The section's internal structure varies between pages, so the extent is
+    defined by the surrounding headings rather than by the markup within.
+    """
     notes = soup.find("h2", string=re.compile("Notes"))
     if notes:
         notes_text: str = ""
-        # Extract all text from notes h2 header until the next h2 header
+        # Accumulate text until the next h2 heading.
         for element in notes.find_next_siblings():
-            # find_next_siblings() yields only Tags, but narrow explicitly rather
-            # than assert: an assert is compiled out under `python -O`, and this
-            # runs against markup we don't control.
+            # find_next_siblings() yields only Tags, but the type is narrowed
+            # explicitly rather than asserted, since an assert is compiled out
+            # under `python -O` and this runs against third-party markup.
             if not isinstance(element, Tag):
                 continue
             if element.name == "h2":
