@@ -1,38 +1,38 @@
 """Where scraped reviews are read from and written to.
 
-The pipeline talks to a :class:`ReviewStore` rather than to files, for two
-reasons. Incremental scraping needs to ask what is already held and how fresh
-it is — a read the pipeline has never had — and that question has a different
-answer for a directory of CSVs than for a database. Naming the seam now means
-the Postgres implementation arrives without touching the pipeline.
+ONE SOURCE OF TRUTH
+    A single ``reviews.csv`` (plus a ``reviews.json`` twin), updated in place.
+    History is git's job, not the filename's: dated snapshots were doing both
+    jobs at once, which meant three full copies of the corpus in the working
+    tree and no single file you could point downstream code at.
 
-The protocol is two methods because that is all incremental scraping needs.
-Guessing at a wider interface before a second implementation exists is how
-abstractions end up shaped like their first and only caller.
+THE SEAM
+    The pipeline talks to a :class:`ReviewStore`, not to files. Incremental
+    scraping has to ask what is already held and how fresh it is, and that
+    question has a different answer for a CSV than for a database.
+
+    The store OWNS THE MERGE. :meth:`ReviewStore.upsert` takes only the records
+    that were fetched and is responsible for combining them with what is
+    already there. That keeps the pipeline from having to load the whole corpus
+    into memory just to write it back out, and it maps onto exactly what a
+    database does natively (``INSERT ... ON CONFLICT DO UPDATE``) instead of
+    forcing a read-modify-write through the caller.
 """
 
 import logging
-import re
 from collections.abc import Iterable, Mapping
-from datetime import date, datetime
+from datetime import date
 from pathlib import Path
 from typing import Any, Protocol, runtime_checkable
 
 import pandas as pd
 
-__all__ = ["CsvReviewStore", "ReviewStore", "dated_filename"]
+__all__ = ["CsvReviewStore", "ReviewStore"]
 
 logger = logging.getLogger(__name__)
 
-# Only ISO-dated snapshots are candidates for "the most recent run". The legacy
-# 25072024_reviews.csv is DDMMYYYY, and sorts AFTER every ISO name lexically —
-# a plain max() over the directory would silently pick a 2024 file as newest.
-SNAPSHOT_PATTERN = re.compile(r"^(\d{4}-\d{2}-\d{2})_reviews\.csv$")
-
-
-def dated_filename(stem: str, suffix: str) -> str:
-    """``reviews``, ``csv`` -> ``2026-09-20_reviews.csv``."""
-    return f"{datetime.now().strftime('%Y-%m-%d')}_{stem}.{suffix}"
+URL_COLUMN = "url"
+LASTMOD_COLUMN = "sitemap_lastmod"
 
 
 @runtime_checkable
@@ -44,64 +44,91 @@ class ReviewStore(Protocol):
 
         A URL present with ``None`` means "held, but freshness unknown" — the
         caller should treat it as stale, since nothing proves it is current.
+        Absent from the mapping means never scraped.
         """
         ...
 
-    def save(self, records: Iterable[Mapping[str, Any]]) -> int:
-        """Persist a COMPLETE set of reviews and return how many were written.
+    def upsert(self, records: Iterable[Mapping[str, Any]]) -> int:
+        """Add or replace records by URL, leaving everything else untouched.
 
-        Callers pass everything, not just what changed: each run leaves behind
-        a self-contained dataset rather than a delta that only makes sense
-        alongside its predecessors.
+        Returns the total number of reviews held afterwards, not the number
+        written, so callers can report the size of the corpus.
         """
+        ...
+
+    def replace(self, records: Iterable[Mapping[str, Any]]) -> int:
+        """Discard what is held and keep exactly `records`. Used by ``--full``."""
         ...
 
 
 class CsvReviewStore:
-    """Dated CSV + JSON snapshots in a directory, one pair per run."""
+    """A single ``reviews.csv`` + ``reviews.json`` pair, updated in place."""
 
-    def __init__(self, directory: Path) -> None:
+    def __init__(self, directory: Path, stem: str = "reviews") -> None:
         self.directory = directory
+        self.csv_path = directory / f"{stem}.csv"
+        self.json_path = directory / f"{stem}.json"
 
-    def latest_snapshot(self) -> Path | None:
-        """The most recent ISO-dated snapshot, or None if there is none yet."""
-        dated = [
-            (match.group(1), path)
-            for path in self.directory.glob("*_reviews.csv")
-            if (match := SNAPSHOT_PATTERN.match(path.name))
-        ]
-        return max(dated)[1] if dated else None
+    # -- reading -----------------------------------------------------------
 
     def known_lastmods(self) -> dict[str, date | None]:
-        snapshot = self.latest_snapshot()
-        if snapshot is None:
+        if not self.csv_path.exists():
             return {}
 
-        frame = pd.read_csv(snapshot, usecols=lambda c: c in {"url", "sitemap_lastmod"})
-        if "url" not in frame.columns:
-            raise ValueError(f"{snapshot} has no 'url' column.")
-        if "sitemap_lastmod" not in frame.columns:
-            # Snapshots predating sitemap discovery have no freshness to report.
-            logger.info("%s predates sitemap_lastmod; treating all as stale", snapshot)
-            return dict.fromkeys(frame["url"].astype(str), None)
+        frame = pd.read_csv(
+            self.csv_path,
+            usecols=lambda column: column in {URL_COLUMN, LASTMOD_COLUMN},
+        )
+        if URL_COLUMN not in frame.columns:
+            raise ValueError(f"{self.csv_path} has no {URL_COLUMN!r} column.")
+        if LASTMOD_COLUMN not in frame.columns:
+            # Data predating sitemap discovery has no freshness to report.
+            logger.info(
+                "%s predates %s; treating all as stale", self.csv_path, LASTMOD_COLUMN
+            )
+            return dict.fromkeys(frame[URL_COLUMN].astype(str), None)
 
-        parsed = pd.to_datetime(frame["sitemap_lastmod"], errors="coerce")
+        stamps = pd.to_datetime(frame[LASTMOD_COLUMN], errors="coerce")
         return {
             str(url): (None if pd.isna(stamp) else stamp.date())
-            for url, stamp in zip(frame["url"], parsed, strict=True)
+            for url, stamp in zip(frame[URL_COLUMN], stamps, strict=True)
         }
 
-    def save(self, records: Iterable[Mapping[str, Any]]) -> int:
-        rows = list(records)
-        if not rows:
-            logger.warning("No reviews to write; nothing saved.")
-            return 0
+    def _load(self) -> pd.DataFrame:
+        return pd.read_csv(self.csv_path) if self.csv_path.exists() else pd.DataFrame()
 
+    # -- writing -----------------------------------------------------------
+
+    def upsert(self, records: Iterable[Mapping[str, Any]]) -> int:
+        incoming = pd.DataFrame(list(records))
+        if incoming.empty:
+            held = self._load()
+            logger.info("Nothing fetched; %d reviews unchanged", len(held))
+            return len(held)
+
+        existing = self._load()
+        if not existing.empty:
+            # Drop the rows being replaced, then append. concat unions the
+            # columns, which matters because fields come and go with a page's
+            # vintage -- a 1997 review has no `bottom_line`, a 2026 one has no
+            # bare `acidity`.
+            kept = existing[~existing[URL_COLUMN].isin(set(incoming[URL_COLUMN]))]
+            merged = pd.concat([kept, incoming], ignore_index=True)
+        else:
+            merged = incoming
+        return self._write(merged)
+
+    def replace(self, records: Iterable[Mapping[str, Any]]) -> int:
+        frame = pd.DataFrame(list(records))
+        if frame.empty:
+            logger.warning("Refusing to replace the corpus with nothing.")
+            return len(self._load())
+        return self._write(frame)
+
+    def _write(self, frame: pd.DataFrame) -> int:
         self.directory.mkdir(parents=True, exist_ok=True)
-        frame = pd.DataFrame(rows)
-        csv_path = self.directory / dated_filename("reviews", "csv")
-        json_path = self.directory / dated_filename("reviews", "json")
-        frame.to_csv(csv_path, index=False)
-        frame.to_json(json_path, orient="records")
-        logger.info("Wrote %d reviews to %s and %s", len(frame), csv_path, json_path)
+        frame = frame.sort_values(URL_COLUMN).reset_index(drop=True)
+        frame.to_csv(self.csv_path, index=False)
+        frame.to_json(self.json_path, orient="records", indent=2)
+        logger.info("Wrote %d reviews to %s", len(frame), self.csv_path)
         return len(frame)

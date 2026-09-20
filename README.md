@@ -117,8 +117,11 @@ installed as console commands that wrap it.
   both discovery and scraping.
 - `parser.py` — turns one review's HTML into structured fields.
 - `review.py` — fetches a single review page and parses it into a record.
-- `pipeline.py` — the full run: discovers every review URL, scrapes each one,
-  and writes a dated CSV + JSON to `data/raw/`.
+- `pipeline.py` — the full run: discovers every review URL and fetches only
+  those that are new or have changed since the last run.
+- `storage.py` — where reviews live. `CsvReviewStore` keeps
+  `data/raw/reviews.{csv,json}`; the pipeline talks to the protocol, so a
+  database backend can replace it without touching the scrape.
 - `config.py` — configuration, paths, and API keys (loaded from the environment
   / `.env`).
 - `exchange_rates.py` — fetches historical rates for the scraped review dates.
@@ -141,21 +144,46 @@ Run from the repository root. `uv run` executes commands inside the project's
 virtual environment without needing to activate it:
 
 ```bash
-# Scrape all reviews into data/raw/<YYYY-MM-DD>_reviews.{csv,json}
-# Discovery reads sitemap_index.xml (~17 requests for the whole corpus).
+# Update data/raw/reviews.{csv,json}, fetching only what changed
 uv run scrape-reviews
 
 # Fetch historical exchange rates for the dates in a scraped file
-uv run fetch-exchange-rates -i data/raw/<date>_reviews.csv
+uv run fetch-exchange-rates -i data/raw/reviews.csv
 
 # Resolve roaster-name variants into a canonical crosswalk
-uv run resolve-roasters data/raw/<date>_reviews.csv --outdir data/processed
+uv run resolve-roasters data/raw/reviews.csv --outdir data/processed
 
 # Launch Jupyter for the analysis notebooks
 uv run jupyter lab
 ```
 
 `--help` on any of them lists the available options.
+
+### Scraping is incremental
+
+`data/raw/reviews.csv` is the single source of truth, updated in place — git
+holds the history, so the filename does not need a date in it.
+
+Discovery reads `sitemap_index.xml` (~17 requests) and returns every review URL
+with its `<lastmod>`. A run fetches only the URLs that are new, that changed
+since the last run, or whose freshness cannot be proven. On the current corpus
+that is a handful of pages in about a second, against ~9,300 pages and half an
+hour for a full pass.
+
+Each fetched row records `scraped_at`, so you can tell how old any given row
+is. Reviews that vanish from the sitemap are reported and **kept** — they can
+never be fetched again, so the held copy is the only one.
+
+Re-fetch everything with:
+
+```bash
+uv run scrape-reviews --full
+```
+
+Use it after changing `coffee/parser.py`. An incremental run re-parses only the
+pages it re-fetches, so without `--full` a parser fix reaches new rows only and
+the corpus becomes a mixture of two parser versions — `scraped_at` is what
+makes that mixture visible.
 
 ## Resolving roaster names
 
@@ -179,7 +207,7 @@ Know which of these you edit and which you never touch:
 **1. Resolve.**
 
 ```bash
-uv run resolve-roasters data/raw/2026-09-19_reviews.csv --outdir data/processed
+uv run resolve-roasters data/raw/reviews.csv --outdir data/processed
 ```
 
 It prints four lines. Read them in this order:
@@ -223,7 +251,7 @@ habit to build is: fill in the queue, then always go to step 3.
 **3. Record the verdicts and re-resolve.**
 
 ```bash
-uv run resolve-roasters data/raw/2026-09-19_reviews.csv --outdir data/processed --accept-reviewed --decided-by "$USER"
+uv run resolve-roasters data/raw/reviews.csv --outdir data/processed --accept-reviewed --decided-by "$USER"
 ```
 
 This folds your answers into `roaster_decisions.csv`, then re-resolves with them
@@ -254,7 +282,7 @@ scores 72). They are surfaced for judgement, never merged — expect the queue t
 roughly double, 17 to 30 on the current data:
 
 ```bash
-uv run resolve-roasters data/raw/2026-09-19_reviews.csv --outdir data/processed --location-review 70
+uv run resolve-roasters data/raw/reviews.csv --outdir data/processed --location-review 70
 ```
 
 ### ### When a split doesn't stick
