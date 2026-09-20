@@ -227,11 +227,14 @@ def resolve_roasters(argv: list[str] | None = None) -> None:
         f"{n_raw} distinct spellings -> {n_canonical} roasters "
         f"({n_raw - n_canonical} merged)"
     )
-    print(
-        f"{len(decisions)} decisions applied from {decisions_path}"
-        if decisions
-        else f"no decisions yet ({decisions_path} not found)"
-    )
+    # Distinguish "no file" from "file with nothing in it": reporting a present
+    # file as missing sends you hunting for the wrong problem.
+    if decisions:
+        print(f"{len(decisions)} decisions applied from {decisions_path}")
+    elif decisions_path.exists():
+        print(f"0 decisions in {decisions_path} (nothing adjudicated yet)")
+    else:
+        print(f"no decisions file yet; it will be created at {decisions_path}")
     print(f"{len(review)} pairs queued for review -> {review_path}")
     print(
         f"{int(crosswalk.chain_risk.sum())} rows in chain-risk clusters"
