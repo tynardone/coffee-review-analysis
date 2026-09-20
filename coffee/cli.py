@@ -212,10 +212,9 @@ def resolve_roasters(argv: list[str] | None = None) -> None:
             raise SystemExit(str(exc)) from exc
         print(f"recorded {added} new decision(s) in {decisions_path}")
     else:
-        # This run is about to regenerate the queue. If the existing one still
-        # holds answers that were never recorded, regenerating destroys them --
-        # which is exactly how a full session of adjudication gets lost. Stop
-        # instead, and say which flag saves it.
+        # This run regenerates the queue. If the existing one still holds
+        # answers that were never recorded, regenerating would discard them,
+        # so stop and name the flag that records them first.
         pending = unpromoted_verdicts(review_path)
         if pending:
             raise SystemExit(
@@ -241,16 +240,16 @@ def resolve_roasters(argv: list[str] | None = None) -> None:
     crosswalk.to_csv(crosswalk_path, index=False)
     review.to_csv(review_path, index=False)
 
-    # Read these in order: did it merge anything, how much review is left, and
-    # -- the one that matters -- did single-linkage chain clusters together?
+    # Reported in order: what was merged, how much review remains, and whether
+    # single-linkage chained any clusters together.
     n_raw = crosswalk.raw_name.nunique()
     n_canonical = crosswalk.canonical_name.nunique()
     print(
         f"{n_raw} distinct spellings -> {n_canonical} roasters "
         f"({n_raw - n_canonical} merged)"
     )
-    # Distinguish "no file" from "file with nothing in it": reporting a present
-    # file as missing sends you hunting for the wrong problem.
+    # An absent decisions file and an empty one are reported differently,
+    # since they call for different action.
     if decisions:
         print(f"{len(decisions)} decisions applied from {decisions_path}")
     elif decisions_path.exists():
@@ -263,9 +262,9 @@ def resolve_roasters(argv: list[str] | None = None) -> None:
         f"{'  <-- INSPECT THESE' if crosswalk.chain_risk.any() else ''}"
     )
 
-    # A split you recorded but that the clustering defeated anyway. Loud,
-    # because a decision the tool accepted and then ignored is worse than one
-    # it refused outright.
+    # A recorded split that the clustering defeated transitively. Reported
+    # prominently, since a decision that was accepted and then not applied is
+    # harder to notice than one that was rejected.
     if "violates_decision" in crosswalk and crosswalk.violates_decision.any():
         offenders = crosswalk[crosswalk.violates_decision]
         print(

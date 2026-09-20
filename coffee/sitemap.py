@@ -4,9 +4,9 @@
 it names, and returns every review URL mapped to its ``<lastmod>`` date. That
 date lets a caller re-fetch only what changed rather than the whole corpus.
 
-Discovery raises :class:`SitemapError` rather than returning a partial list: a
-short URL set yields a dataset that looks complete and is quietly missing rows,
-which is the failure nobody notices downstream.
+Discovery raises :class:`SitemapError` rather than returning a partial list,
+since a short URL set produces a dataset that appears complete while missing
+rows.
 """
 
 import asyncio
@@ -30,8 +30,8 @@ __all__ = [
 
 logger = logging.getLogger(__name__)
 
-# Sitemaps are third-party XML: don't resolve entities and don't let the parser
-# reach the network while doing it.
+# Sitemaps are third-party XML, so entity resolution and network access are
+# both disabled.
 _PARSER = etree.XMLParser(resolve_entities=False, no_network=True)
 
 # Guards against a malformed index that points at itself, directly or in a loop.
@@ -60,8 +60,8 @@ def parse_sitemap(xml: bytes) -> tuple[list[str], dict[str, date | None]]:
     either at any level. ``local-name()`` lookups keep this working when a
     sitemap omits or changes the default namespace.
 
-    Takes bytes, not str: lxml refuses to parse a str carrying an ``<?xml ...
-    encoding?>`` declaration, and every sitemap here has one.
+    Takes bytes rather than str, because lxml refuses to parse a str carrying
+    an ``<?xml ... encoding?>`` declaration and every sitemap here has one.
     """
     try:
         root = etree.fromstring(xml, parser=_PARSER)
@@ -106,9 +106,9 @@ async def get_review_urls(
     """Return every review URL mapped to its sitemap ``<lastmod>`` date.
 
     Fetches every sitemap the index names, including non-review ones, and
-    filters the resulting URLs by path. Filtering URLs rather than guessing
-    from sitemap filenames costs a few extra requests and survives the site
-    renaming or resharding its sitemap files.
+    filters the resulting URLs by path. Filtering by URL rather than guessing
+    from sitemap filenames costs a few extra requests and continues to work if
+    the site renames or reshards its sitemap files.
     """
     logger.info("Discovering review URLs from %s", index_url)
 

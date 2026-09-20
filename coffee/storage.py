@@ -1,22 +1,18 @@
 """Where scraped reviews are read from and written to.
 
-ONE SOURCE OF TRUTH
-    A single ``reviews.csv`` (plus a ``reviews.json`` twin), updated in place.
-    History is git's job, not the filename's: dated snapshots were doing both
-    jobs at once, which meant three full copies of the corpus in the working
-    tree and no single file you could point downstream code at.
+The corpus is a single ``reviews.csv`` with a ``reviews.json`` twin, updated in
+place. Version history is left to git rather than encoded in filenames, so that
+downstream code has one stable path to read.
 
-THE SEAM
-    The pipeline talks to a :class:`ReviewStore`, not to files. Incremental
-    scraping has to ask what is already held and how fresh it is, and that
-    question has a different answer for a CSV than for a database.
+The pipeline talks to a :class:`ReviewStore` rather than to files. Incremental
+scraping needs to know what is already held and how fresh it is, and that
+question is answered differently by a CSV than by a database.
 
-    The store OWNS THE MERGE. :meth:`ReviewStore.upsert` takes only the records
-    that were fetched and is responsible for combining them with what is
-    already there. That keeps the pipeline from having to load the whole corpus
-    into memory just to write it back out, and it maps onto exactly what a
-    database does natively (``INSERT ... ON CONFLICT DO UPDATE``) instead of
-    forcing a read-modify-write through the caller.
+The store owns the merge: :meth:`ReviewStore.upsert` receives only the records
+that were fetched and combines them with what is already held. The pipeline
+therefore never loads the whole corpus in order to write it back, and the
+interface maps onto what a database does natively with
+``INSERT ... ON CONFLICT DO UPDATE``.
 """
 
 import logging
@@ -42,9 +38,9 @@ class ReviewStore(Protocol):
     def known_lastmods(self) -> dict[str, date | None]:
         """Every review already held, mapped to its recorded ``sitemap_lastmod``.
 
-        A URL present with ``None`` means "held, but freshness unknown" — the
-        caller should treat it as stale, since nothing proves it is current.
-        Absent from the mapping means never scraped.
+        A URL mapped to ``None`` is held but of unknown freshness, and should
+        be treated as stale. A URL absent from the mapping has never been
+        scraped.
         """
         ...
 
@@ -109,9 +105,9 @@ class CsvReviewStore:
         existing = self._load()
         if not existing.empty:
             # Drop the rows being replaced, then append. concat unions the
-            # columns, which matters because fields come and go with a page's
-            # vintage -- a 1997 review has no `bottom_line`, a 2026 one has no
-            # bare `acidity`.
+            # columns, which matters because the fields present vary with a
+            # page's vintage: a 1997 review has no `bottom_line`, a 2026 one
+            # has no bare `acidity`.
             kept = existing[~existing[URL_COLUMN].isin(set(incoming[URL_COLUMN]))]
             merged = pd.concat([kept, incoming], ignore_index=True)
         else:

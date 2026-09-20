@@ -4,9 +4,9 @@
 directory, so it is stable whether imported from a script, a test, or a
 notebook started anywhere. Everything else hangs off it.
 
-Credentials are read through a function, not bound at import: a module-level
-``os.environ.get`` is evaluated once when the module first loads, so exporting
-the variable afterwards — routine in a notebook — would silently have no
+Credentials are read through a function rather than bound at import. A
+module-level ``os.environ.get`` is evaluated once when the module first loads,
+so setting the variable afterwards, as happens in a notebook, would have no
 effect.
 """
 
@@ -30,9 +30,9 @@ __all__ = [
 def _find_project_root(marker: str = "pyproject.toml") -> Path:
     """Walk up from this file until a directory containing ``marker`` is found.
 
-    Resolving from ``__file__`` (not the current working directory) makes this
-    stable whether it's imported from a script, a test, or a notebook running
-    from any directory. Falls back to the package's parent directory if no
+    Resolving from ``__file__`` rather than the current working directory keeps
+    this stable whether imported from a script, a test, or a notebook running
+    in any directory. Falls back to the package's parent directory when no
     marker is found.
     """
     start = Path(__file__).resolve()
@@ -68,6 +68,6 @@ OPENEX_TIMEOUT = 10
 def openexchangerates_api_id() -> str | None:
     """The OpenExchangeRates app id, or None if it is not configured.
 
-    Read on each call so that setting the variable after import still works.
+    Read on each call, so that setting the variable after import takes effect.
     """
     return os.environ.get("OPENEXCHANGERATES_API_ID")
