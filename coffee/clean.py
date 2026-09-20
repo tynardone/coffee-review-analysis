@@ -1,0 +1,536 @@
+"""Turn scraped reviews into the cleaned layer.
+
+Raw rows are what the site said; cleaned rows are what the analysis can use.
+This module owns that transition: normalising column names and types, parsing
+the free-text price into a value, a currency and a quantity, converting to USD
+at the review month's rate, adjusting for inflation, and resolving origin and
+roaster locations to countries.
+
+Every step is a ``DataFrame -> DataFrame`` function and every step is pure:
+reference data (exchange rates, CPI, the roaster crosswalk) is PASSED IN rather
+than read from disk here, so the transformation can be tested against three
+hand-written rows instead of a 14MB download, and so it does not care where
+that data came from.
+
+:func:`clean_reviews` composes them in order. The individual steps stay public
+because they are useful one at a time when exploring in a notebook.
+"""
+
+import re
+from datetime import datetime
+from functools import cache
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+import pycountry
+from unidecode import unidecode
+
+__all__ = [
+    "CURRENCY_MAP",
+    "DEFAULT_BASELINE_DATE",
+    "DEFAULT_MAX_AGTRON",
+    "NON_WHOLE_BEAN_TERMS",
+    "US_PRICE_UNITS",
+    "apply_roaster_crosswalk",
+    "clean_columns",
+    "clean_currency",
+    "clean_origin",
+    "clean_reviews",
+    "clean_roaster_location",
+    "convert_currency",
+    "convert_to_lbs",
+    "cpi_adjust_price",
+    "load_cpi",
+    "load_exchange_rates",
+    "normalise_types",
+    "price_per_lb",
+    "split_price_and_quantity",
+]
+
+# Agtron readings above this are website typos, not measurements.
+DEFAULT_MAX_AGTRON = 100
+
+# The month whose dollars every adjusted price is expressed in. Changing it
+# changes every price_usd_adj, so it is recorded on the output rather than
+# left implicit.
+DEFAULT_BASELINE_DATE = "2024-06-01"
+
+# Formats that are not whole-bean coffee sold by weight. Their prices are not
+# comparable per pound, so the quantity is left unparsed rather than guessed.
+NON_WHOLE_BEAN_TERMS: list[str] = [
+    "can",
+    "box",
+    "capsules",
+    "K-",
+    "cups",
+    "bags",
+    "concentrate",
+    "discs",
+    "bottle",
+    "pods",
+    "ml",
+    "pouch",
+    "packet|tin",
+    "instant",
+    "sachet",
+    "vue",
+    "single-serve",
+    "fluid",
+    "capsultes",
+]
+
+# Currency symbols and aliases the site uses, mapped to ISO 4217. Applied to
+# the whole value after stripping "$", since exact matches avoid the fragility
+# of substring replacement.
+CURRENCY_MAP: dict[str, str] = {
+    "": "USD",
+    "US": "USD",
+    "PRICE:": "USD",
+    "#": "GBP",
+    "£": "GBP",
+    "POUND": "GBP",
+    "¥": "JPY",
+    "€": "EUR",
+    "E": "EUR",
+    "EUROS": "EUR",
+    "PESOS": "MXN",
+    "RMB": "CNY",
+    "RM": "MYR",
+    "NT": "TWD",
+    "NTD": "TWD",
+    "HK": "HKD",
+}
+
+US_PRICE_UNITS: dict[str, float] = {
+    "ounces": 1 / 16,
+    "pounds": 1,
+    "kilograms": 2.20462,
+    "grams": 0.00220462,
+}
+
+# Country names the site uses that pycountry does not match on its own.
+COUNTRY_ALIASES: dict[str, str] = {
+    "south korea": "korea, republic of",
+    "north korea": "korea, democratic people's republic of",
+    "england": "united kingdom",
+    "scotland": "united kingdom",
+    "wales": "united kingdom",
+    "russia": "russian federation",
+    "czech republic": "czechia",
+    "slovak republic": "slovakia",
+    "the netherlands": "netherlands",
+    "holland": "netherlands",
+    "vietnam": "viet nam",
+    "british colombia": "canada",
+    "british columbia": "canada",
+}
+
+_NUMERIC_COLUMNS = [
+    "agtron_external",
+    "agtron_ground",
+    "acidity",
+    "rating",
+    "aroma",
+    "body",
+    "flavor",
+    "aftertaste",
+]
+
+
+# ==========================================================================
+# Reference data
+# ==========================================================================
+
+
+def load_exchange_rates(path: Path) -> pd.DataFrame:
+    """Flatten ``{date: {currency: rate}}`` into a (date, currency, rate) table.
+
+    A lookup table rather than the nested mapping, so conversion is a vectorised
+    merge instead of a row-wise apply.
+    """
+    import json
+
+    nested = json.loads(Path(path).read_text(encoding="utf-8"))
+    return (
+        pd.DataFrame(nested)
+        .T.rename_axis("review_date")
+        .reset_index()
+        .melt(id_vars="review_date", var_name="price_currency", value_name="rate")
+        .assign(review_date=lambda d: pd.to_datetime(d["review_date"]))
+    )
+
+
+def load_cpi(path: Path) -> pd.DataFrame:
+    """Read the BLS CPI-U table into (date, cpi) rows, one per month."""
+    cpi = pd.read_csv(path)
+    cpi.columns = cpi.columns.str.strip().str.lower().str.replace(" ", "_")
+    return (
+        cpi.drop(columns=["half1", "half2"])
+        .melt(id_vars="year", var_name="month", value_name="cpi")
+        .assign(
+            month=lambda d: d["month"].apply(
+                lambda m: datetime.strptime(m, "%b").month
+            ),
+            date=lambda d: pd.to_datetime(d[["year", "month"]].assign(day=1)),
+        )
+        .drop(columns=["year", "month"])
+    )
+
+
+@cache
+def _country_pattern() -> re.Pattern[str]:
+    """Alternation over country names, longest first so multi-word names win.
+
+    Built once and cached: assembling it from pycountry on every call would
+    dominate the runtime of origin matching.
+    """
+    names = {unidecode(c.name.lower()) for c in pycountry.countries}
+    for drop in [
+        "american samoa",
+        "united states minor outlying islands",
+        "south sudan",
+        "south georgia and the south sandwich islands",
+        "british indian ocean territory",
+        "congo, the democratic republic of the",
+        "taiwan, province of china",
+        "guinea",
+    ]:
+        names.discard(drop)
+    names = {n.split(",")[0] for n in names} | {"taiwan"}
+    ordered = sorted(map(re.escape, names), key=len, reverse=True)
+    return re.compile(r"\b(" + "|".join(ordered) + r")\b")
+
+
+@cache
+def _us_states() -> frozenset[str]:
+    states = {
+        unidecode(s.name.lower())
+        for s in pycountry.subdivisions.get(country_code="US") or []
+    }
+    return frozenset(states | {"district of columbia", "washington dc", "dc"})
+
+
+# ==========================================================================
+# Steps
+# ==========================================================================
+
+
+def clean_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """Normalise column names: strip, lowercase, snake_case, drop dots."""
+    df = df.copy()
+    df.columns = (
+        df.columns.str.strip().str.lower().str.replace(" ", "_").str.replace(".", "")
+    )
+    return df
+
+
+def _agtron_parts(df: pd.DataFrame) -> pd.DataFrame:
+    """Agtron as (external, ground), with both columns guaranteed to exist."""
+    return (
+        df["agtron"]
+        .astype("string")
+        .str.split("/", n=1, expand=True)
+        .reindex(columns=[0, 1])
+        # reindex fills a created column with float NaN, which has no .str
+        .astype("string")
+    )
+
+
+def normalise_types(
+    df: pd.DataFrame, max_agtron: int = DEFAULT_MAX_AGTRON
+) -> pd.DataFrame:
+    """Parse dates, split agtron, coalesce acidity, coerce scores to numbers.
+
+    Also DROPS rows whose agtron exceeds `max_agtron`; those readings are site
+    typos. :func:`clean_reviews` reports how many were removed, because a step
+    that changes the row count should never do so silently.
+    """
+    return (
+        df.assign(
+            review_date=lambda d: pd.to_datetime(d["review_date"], format="%B %Y"),
+            # One field under two names: the site renamed it across 2017-18.
+            acidity=lambda d: d["acidity"].fillna(d["acidity/structure"]),
+            # reindex: a batch where no agtron carries a "/" produces only one
+            # split column, and indexing [1] would raise.
+            agtron_external=lambda d: pd.to_numeric(
+                _agtron_parts(d)[0].str.strip(), errors="coerce"
+            ),
+            agtron_ground=lambda d: pd.to_numeric(
+                _agtron_parts(d)[1].str.strip(), errors="coerce"
+            ),
+            is_espresso=lambda d: (
+                d["title"].str.contains("espresso", case=False, na=False)
+                | d["with_milk"].notna()
+            ),
+        )
+        .replace(["", "NR", "N/A", "na"], np.nan)
+        # fillna(False): a MISSING agtron is not a typo. Without it a null
+        # reading makes the comparison NA, which propagates through `~` and
+        # silently drops the row instead of keeping it.
+        .loc[
+            lambda d: (
+                ~(
+                    (d["agtron_external"] > max_agtron)
+                    | (d["agtron_ground"] > max_agtron)
+                ).fillna(False)
+            )
+        ]
+        .map(lambda x: x.strip() if isinstance(x, str) else x)
+        # errors="ignore": the scraped schema drifts with a page's vintage, so
+        # a column being absent is normal rather than a failure.
+        .drop(columns=["acidity/structure", "agtron"], errors="ignore")
+        .assign(
+            **{
+                col: lambda d, col=col: pd.to_numeric(d[col], errors="coerce")
+                for col in _NUMERIC_COLUMNS
+            }
+        )
+    )
+
+
+def split_price_and_quantity(df: pd.DataFrame) -> pd.DataFrame:
+    """Parse ``est_price`` ("$19.00/16 ounces") into value, currency, quantity.
+
+    Rows whose quantity names a non-whole-bean format, or that cannot be parsed,
+    keep every other field and simply get no quantity: the result is merged back
+    on the index with a LEFT join, so this never removes a review.
+    """
+    drop_terms = "|".join(NON_WHOLE_BEAN_TERMS)
+    parsed = (
+        df["est_price"]
+        .astype("string")
+        .str.split("/", n=1, expand=True)
+        # Guarantee both halves exist: a batch with no "/" anywhere would
+        # otherwise yield one column and lose `quantity`.
+        .reindex(columns=[0, 1])
+        .astype("string")
+        .replace(",", "", regex=True)
+        .rename(columns={0: "price", 1: "quantity"})
+        .assign(
+            quantity=lambda d: (
+                d["quantity"]
+                .str.lower()
+                .str.strip()
+                .str.replace(r"\(.*?\)", "", regex=True)
+                .str.replace(r";.*", "", regex=True)
+                # Kilograms FIRST. The ".g$" rule below exists for "250g",
+                # but it also matches "kg" -- so "1 kg" became "1 gram", a
+                # 1000x error. Real rows write "1 kg." and dodge it only
+                # because of the trailing period.
+                .str.replace("kilogram", "kilograms")
+                .str.replace("kg", "kilograms")
+                .str.replace(r".g$", " grams", regex=True)
+                .str.replace(r"\sg$", "grams", regex=True)
+                .str.replace(r"\bgram$", "grams", regex=True)
+                .str.replace(r"pound$", "1 pounds", regex=True)
+                .str.replace(r"oz|onces|ouncues|ounce$|ounces\*", "ounces", regex=True)
+                .str.replace("online", "")
+                .str.strip()
+            ),
+            price=lambda d: d["price"].str.replace("..", "."),
+        )
+        .dropna()
+        .loc[lambda d: ~d["quantity"].str.contains(drop_terms, case=False)]
+        .assign(
+            quantity_value=lambda d: (
+                d["quantity"].str.extract(r"(\d+(?:\.\d+)?)").astype(float)
+            ),
+            quantity_unit=lambda d: (
+                d["quantity"]
+                .str.replace(r"(\d+)", "", regex=True)
+                .replace(r"\.", "", regex=True)
+                .str.strip()
+                .mask(lambda s: s == "g", "grams")
+                .mask(lambda s: s == "kilo", "kilograms")
+                .str.strip()
+            ),
+            price_value=lambda d: (
+                d["price"].str.extract(r"(\d+\.\d+|\d+)").astype(float)
+            ),
+            price_currency=lambda d: (
+                d["price"]
+                .str.replace(",", "")
+                .str.replace(r"(\d+\.\d+|\d+)", "", regex=True)
+                .str.strip()
+            ),
+        )
+        .drop(columns=["price", "quantity"])
+        .loc[lambda d: ~d["quantity_unit"].str.contains(r"\(", regex=True)]
+    )
+    return df.merge(parsed, how="left", left_index=True, right_index=True)
+
+
+def convert_to_lbs(df: pd.DataFrame) -> pd.DataFrame:
+    """Express every quantity in pounds so prices can be compared per unit."""
+    return df.assign(
+        quantity_in_lbs=lambda d: np.round(
+            d["quantity_value"] * d["quantity_unit"].map(US_PRICE_UNITS), 2
+        )
+    )
+
+
+def clean_currency(df: pd.DataFrame) -> pd.DataFrame:
+    """Standardise the currency column to ISO 4217 codes."""
+    return df.assign(
+        price_currency=lambda d: (
+            d["price_currency"]
+            .str.upper()
+            .str.replace("$", "", regex=False)
+            .str.strip()
+            .replace(CURRENCY_MAP)
+        )
+    )
+
+
+def convert_currency(df: pd.DataFrame, exchange_rates: pd.DataFrame) -> pd.DataFrame:
+    """Convert prices to USD at the rate for the review's month.
+
+    Asserts the row count survives the merge: a duplicated (date, currency) pair
+    in the rate table would otherwise multiply reviews silently.
+    """
+    before = len(df)
+    merged = df.merge(exchange_rates, on=["review_date", "price_currency"], how="left")
+    if len(merged) != before:
+        raise ValueError(
+            f"Exchange-rate merge changed the row count ({before} -> {len(merged)}); "
+            "the rate table likely holds duplicate (date, currency) pairs."
+        )
+    return merged.assign(
+        price_usd=lambda d: (d["price_value"] / d["rate"]).round(2)
+    ).drop(columns="rate")
+
+
+def cpi_adjust_price(
+    df: pd.DataFrame, cpi: pd.DataFrame, baseline_date: str = DEFAULT_BASELINE_DATE
+) -> pd.DataFrame:
+    """Express prices in `baseline_date` dollars using CPI-U.
+
+    Where CPI is unavailable (typically the current month) the unadjusted USD
+    price is kept rather than dropped.
+    """
+    baseline = cpi.loc[cpi["date"] == baseline_date, "cpi"]
+    if baseline.empty:
+        raise ValueError(f"No CPI value for baseline date {baseline_date!r}.")
+
+    before = len(df)
+    merged = df.merge(cpi, how="left", left_on="review_date", right_on="date")
+    if len(merged) != before:
+        raise ValueError(
+            f"CPI merge changed the row count ({before} -> {len(merged)})."
+        )
+    return merged.assign(
+        price_usd_adj=lambda d: np.where(
+            d["cpi"].isna(),
+            d["price_usd"],
+            (d["price_usd"] * baseline.iloc[0] / d["cpi"]).round(2),
+        )
+    )
+
+
+def price_per_lb(df: pd.DataFrame) -> pd.DataFrame:
+    """The comparable figure: inflation-adjusted USD per pound."""
+    return df.assign(
+        price_usd_adj_per_lb=lambda d: np.round(
+            d["price_usd_adj"] / d["quantity_in_lbs"], 2
+        )
+    )
+
+
+def clean_origin(df: pd.DataFrame) -> pd.DataFrame:
+    """Extract origin countries from the coffee_origin text.
+
+    Falls back to the original text when no country matches, so unresolved
+    origins stay visible for manual reconciliation instead of becoming blank.
+    """
+    pattern = _country_pattern()
+    origin = df["coffee_origin"].str.lower()
+
+    def match(text: str) -> str:
+        if pd.isna(text) or text == "":
+            return ""
+        found = pattern.findall(text)
+        return ";".join(sorted(set(found))) if found else text
+
+    return df.assign(coffee_origin=origin, origin_country=origin.apply(match))
+
+
+def clean_roaster_location(df: pd.DataFrame) -> pd.DataFrame:
+    """Split roaster_location into a country and, for the US, a state.
+
+    The site writes locations most-specific-first ("Portland, Oregon"), so the
+    last comma-separated part is the region — and a US address names the STATE
+    there rather than the country, which is why states are checked first.
+
+    The source text is messy in ways worth handling: trailing periods
+    ("Montana."), the site's apostrophe spelling of Hawai'i, a missing comma
+    ("Scottsdale Arizona"), and common names pycountry does not carry.
+    """
+    states = _us_states()
+
+    def split(text: object) -> tuple[str, str]:
+        if pd.isna(text) or not str(text).strip():
+            return "", ""
+        region = re.sub(
+            r"\s+", " ", unidecode(str(text).split(",")[-1]).lower().replace("'", "")
+        ).strip(" .")
+
+        if region in states:
+            return "united states", region
+        for state in states:
+            if region.endswith(" " + state):
+                return "united states", state
+        if region.startswith("big island of hawaii") or region == "hawaii":
+            return "united states", "hawaii"
+        return COUNTRY_ALIASES.get(region, region), ""
+
+    parts = df["roaster_location"].apply(split)
+    return df.assign(
+        roaster_country=[country for country, _ in parts],
+        roaster_us_state=[state for _, state in parts],
+    )
+
+
+def apply_roaster_crosswalk(df: pd.DataFrame, crosswalk: pd.DataFrame) -> pd.DataFrame:
+    """Add the canonical roaster name beside the raw one.
+
+    The raw spelling is KEPT: the cleaned layer adds to what was scraped rather
+    than overwriting it, so a bad merge stays traceable to its source.
+    Unresolved names fall back to their own spelling.
+    """
+    mapping = dict(zip(crosswalk["raw_name"], crosswalk["canonical_name"], strict=True))
+    return df.assign(
+        roaster_canonical=lambda d: d["roaster"].map(mapping).fillna(d["roaster"])
+    )
+
+
+# ==========================================================================
+# The layer
+# ==========================================================================
+
+
+def clean_reviews(
+    raw: pd.DataFrame,
+    *,
+    exchange_rates: pd.DataFrame,
+    cpi: pd.DataFrame,
+    crosswalk: pd.DataFrame | None = None,
+    baseline_date: str = DEFAULT_BASELINE_DATE,
+    max_agtron: int = DEFAULT_MAX_AGTRON,
+) -> pd.DataFrame:
+    """Raw scraped reviews in, cleaned layer out."""
+    cleaned = (
+        raw.pipe(clean_columns)
+        .pipe(normalise_types, max_agtron=max_agtron)
+        .pipe(split_price_and_quantity)
+        .pipe(convert_to_lbs)
+        .pipe(clean_currency)
+        .pipe(convert_currency, exchange_rates)
+        .pipe(cpi_adjust_price, cpi, baseline_date)
+        .pipe(price_per_lb)
+        .pipe(clean_origin)
+        .pipe(clean_roaster_location)
+    )
+    if crosswalk is not None:
+        cleaned = cleaned.pipe(apply_roaster_crosswalk, crosswalk)
+    return cleaned

@@ -14,6 +14,12 @@ from pathlib import Path
 
 import pandas as pd
 
+from coffee.clean import (
+    DEFAULT_BASELINE_DATE,
+    clean_reviews,
+    load_cpi,
+    load_exchange_rates,
+)
 from coffee.config import DATA_DIR, openexchangerates_api_id
 from coffee.exchange_rates import (
     DEFAULT_OUTPUT,
@@ -35,6 +41,7 @@ from coffee.roaster_resolution import (
 from coffee.storage import CsvReviewStore
 
 __all__ = [
+    "clean_reviews_command",
     "fetch_exchange_rates",
     "resolve_roasters",
     "scrape_reviews",
@@ -272,3 +279,61 @@ def resolve_roasters(argv: list[str] | None = None) -> None:
             "both\n   (often a collaboration, e.g. 'A & B Coffee'). Record a "
             "split against\n   that bridging name too."
         )
+
+
+def clean_reviews_command(argv: list[str] | None = None) -> None:
+    """Build the cleaned layer from the raw scrape."""
+    parser = argparse.ArgumentParser(description=clean_reviews_command.__doc__)
+    parser.add_argument(
+        "-i", "--input", type=Path, default=DATA_DIR / "raw" / "reviews.csv"
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        type=Path,
+        default=DATA_DIR / "processed" / "reviews_cleaned.csv",
+    )
+    parser.add_argument(
+        "--rates",
+        type=Path,
+        default=DATA_DIR / "external" / "openex_exchange_rates.json",
+    )
+    parser.add_argument(
+        "--cpi", type=Path, default=DATA_DIR / "external" / "consumer_price_index.csv"
+    )
+    parser.add_argument(
+        "--crosswalk",
+        type=Path,
+        default=DATA_DIR / "processed" / "roaster_crosswalk.csv",
+        help="roaster crosswalk; skipped if absent",
+    )
+    parser.add_argument(
+        "--baseline-date",
+        default=DEFAULT_BASELINE_DATE,
+        help="month whose dollars adjusted prices are expressed in",
+    )
+    args = parser.parse_args(argv)
+
+    _configure_logging()
+    raw = pd.read_csv(args.input)
+    crosswalk = pd.read_csv(args.crosswalk) if args.crosswalk.exists() else None
+    if crosswalk is None:
+        logger.warning(
+            "No crosswalk at %s; roaster spellings stay unresolved.", args.crosswalk
+        )
+
+    cleaned = clean_reviews(
+        raw,
+        exchange_rates=load_exchange_rates(args.rates),
+        cpi=load_cpi(args.cpi),
+        crosswalk=crosswalk,
+        baseline_date=args.baseline_date,
+    )
+
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    cleaned.to_csv(args.output, index=False)
+    dropped = len(raw) - len(cleaned)
+    print(
+        f"{len(raw)} raw -> {len(cleaned)} cleaned ({dropped} dropped as agtron typos)"
+    )
+    print(f"prices in {args.baseline_date} dollars -> {args.output}")
