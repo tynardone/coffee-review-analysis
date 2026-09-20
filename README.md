@@ -15,6 +15,7 @@ This project is a complete data pipeline for scraping coffee reviews from [Coffe
 - [Code Layout](#code-layout)
 - [Usage](#usage)
 - [Resolving roaster names](#resolving-roaster-names)
+- [Notebooks](#notebooks)
 - [Tests](#tests)
 - [References](#references)
 
@@ -339,6 +340,31 @@ This follows from the asymmetry of the errors: a false merge is silent and
 corrupts every downstream average, while a false split is obvious the moment a
 roaster appears twice in a table. See the module docstring in
 `coffee/roaster_resolution.py` for the full reasoning.
+
+## Notebooks
+
+Run them in order; each depends on the previous one's output.
+
+| notebook | reads | writes |
+|---|---|---|
+| `01-data-cleaning` | `data/raw/reviews.csv` | `data/processed/reviews_cleaned.csv` |
+| `02-data-EDA` | `data/processed/reviews_cleaned.csv` | charts |
+| `03-text-features` | `data/processed/reviews_cleaned.csv` | wordclouds in `imgs/` |
+
+`reviews_cleaned.csv` is gitignored — notebook 01 regenerates it, so run that
+first on a fresh checkout. Committed data is limited to the scrape itself and
+to outputs carrying human judgement (the roaster crosswalk and decisions).
+
+Notebook 03 needs two data downloads that are not Python packages. It fetches
+the NLTK corpora itself; the spaCy model you install once:
+
+```bash
+uv run python -m spacy download en_core_web_sm
+```
+
+Notebook outputs are cleared before committing — they ran to 13MB of embedded
+images against a repo whose history is already large. The figures that matter
+are written to `imgs/`.
 
 ## Tests
 

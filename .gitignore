@@ -158,3 +158,9 @@ cython_debug/
 
 # credentials
 credentials.json
+
+# Notebook 01 regenerates this from data/raw/reviews.csv. Committed data is
+# limited to the scrape itself and to outputs carrying irreproducible human
+# judgement (the roaster crosswalk and decisions); a purely mechanical
+# derivation is build output.
+data/processed/reviews_cleaned.csv
