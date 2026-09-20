@@ -14,12 +14,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from coffee.clean import (
-    DEFAULT_BASELINE_DATE,
-    clean_reviews,
-    load_cpi,
-    load_exchange_rates,
-)
+from coffee.clean import clean_reviews
 from coffee.config import DATA_DIR, openexchangerates_api_id
 from coffee.exchange_rates import (
     DEFAULT_OUTPUT,
@@ -321,23 +316,10 @@ def clean_reviews_command(argv: list[str] | None = None) -> None:
         default=DATA_DIR / "clean" / "reviews.csv",
     )
     parser.add_argument(
-        "--rates",
-        type=Path,
-        default=DATA_DIR / "external" / "openex_exchange_rates.json",
-    )
-    parser.add_argument(
-        "--cpi", type=Path, default=DATA_DIR / "external" / "consumer_price_index.csv"
-    )
-    parser.add_argument(
         "--crosswalk",
         type=Path,
         default=DATA_DIR / "processed" / "roaster_crosswalk.csv",
         help="roaster crosswalk; skipped if absent",
-    )
-    parser.add_argument(
-        "--baseline-date",
-        default=DEFAULT_BASELINE_DATE,
-        help="month whose dollars adjusted prices are expressed in",
     )
     args = parser.parse_args(argv)
 
@@ -349,13 +331,7 @@ def clean_reviews_command(argv: list[str] | None = None) -> None:
             "No crosswalk at %s; roaster spellings stay unresolved.", args.crosswalk
         )
 
-    cleaned = clean_reviews(
-        raw,
-        exchange_rates=load_exchange_rates(args.rates),
-        cpi=load_cpi(args.cpi),
-        crosswalk=crosswalk,
-        baseline_date=args.baseline_date,
-    )
+    cleaned = clean_reviews(raw, crosswalk=crosswalk)
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     cleaned.to_csv(args.output, index=False)
@@ -363,4 +339,4 @@ def clean_reviews_command(argv: list[str] | None = None) -> None:
     print(
         f"{len(raw)} raw -> {len(cleaned)} cleaned ({dropped} dropped as agtron typos)"
     )
-    print(f"prices in {args.baseline_date} dollars -> {args.output}")
+    print(f"wrote {args.output}")

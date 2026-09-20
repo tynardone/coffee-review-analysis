@@ -119,10 +119,14 @@ installed as console commands that wrap it.
   both discovery and scraping.
 - `parser.py` — turns one review's HTML into structured fields.
 - `review.py` — fetches a single review page and parses it into a record.
-- `clean.py` — the cleaned layer: types, price/currency/quantity parsing, USD
-  conversion, inflation adjustment, origin and roaster locations, and the
-  roaster crosswalk. Every step is a pure `DataFrame -> DataFrame` function;
-  reference data is passed in, not read from disk.
+- `clean.py` — the cleaned layer: types, price/currency/quantity parsing,
+  origin and roaster locations, and the roaster crosswalk. Depends on the raw
+  scrape and nothing else.
+- `enrich.py` — the step after cleaning: USD conversion at the review month's
+  rate and inflation adjustment. Separate because it needs reference data the
+  reviews do not carry. Every step in both modules is a pure
+  `DataFrame -> DataFrame` function; reference data is passed in, not read from
+  disk.
 - `pipeline.py` — the full run: discovers every review URL and fetches only
   those that are new or have changed since the last run.
 - `storage.py` — where reviews live. `CsvReviewStore` keeps
@@ -205,17 +209,16 @@ such a mixture visible.
 ### Exchange rates are incremental too
 
 `fetch-exchange-rates` reads the review months from the cleaned layer, since
-those are the months cleaning actually converts, and requests only the ones not
+those are the months enrichment converts, and requests only the ones not
 already present in `data/external/openex_exchange_rates.json`. Rates for a past
 date do not change, so a date once held is never asked for again. Re-running a
 current file costs zero requests, which matters against a free-tier limit of
 1000 per month and a corpus spanning 323 distinct months.
 
-That makes the cleaned layer both an input to this command and a consumer of its
-output. On an existing corpus the two converge in one pass, because a new review
-month reaches the cleaned layer before its rate is needed there. Starting from
-nothing takes two passes — build the layer, fetch its months, rebuild it with
-prices converted — or one, reading months from the raw scrape instead:
+The cleaned layer is built from the raw scrape alone, so this reads a file that
+already exists rather than one it is needed to produce. The order is scrape,
+clean, fetch rates, enrich. Rates can also be fetched before a cleaned layer
+exists, by reading months from the raw scrape:
 
 ```bash
 uv run fetch-exchange-rates -i data/raw/reviews.csv
@@ -387,8 +390,27 @@ reasoning.
 
 ```
 data/raw/reviews.csv     RAW      as scraped, never edited
-data/clean/reviews.csv   CLEANED  typed, priced in constant USD, roasters resolved
+data/clean/reviews.csv   CLEANED  typed, parsed, roasters resolved
 ```
+
+The cleaned layer depends on the raw scrape **and nothing else**, so it can be
+rebuilt on a fresh checkout with no external data. Putting prices in comparable
+money needs historical exchange rates and CPI, and those are fetched using the
+cleaned layer's own review months — so folding them into cleaning would have
+made the cleaned layer unbuildable until the rates existed.
+
+That conversion lives in `coffee/enrich.py` and runs after cleaning:
+
+```python
+from coffee.enrich import enrich_reviews, load_cpi, load_exchange_rates
+
+priced = enrich_reviews(df, exchange_rates=..., cpi=...)
+```
+
+It adds `price_usd`, `price_usd_adj` and `price_usd_adj_per_lb`, leaving
+`price_value`, `price_currency` and `quantity_in_lbs` as the cleaned layer
+recorded them. There is no `enrich-reviews` command and no enriched layer on
+disk yet; the notebooks apply it in memory.
 
 **Field names are settled at the raw boundary, not later.** `coffee/parser.py`
 normalises each scraped table label (`"Est. Price:"` → `est_price`) as it parses,
@@ -407,12 +429,16 @@ What cleaning does:
 
 - parses `est_price` into a value, an ISO 4217 currency and a quantity
 - converts quantities to pounds, so prices are comparable per unit
-- converts to USD at the **review month's** exchange rate
-- adjusts for inflation to a baseline month (`--baseline-date`, default
-  2024-06), so a 1997 price and a 2026 price can be compared
 - resolves origin and roaster locations to countries, and US states
 - adds `roaster_canonical` from the roaster crosswalk, **keeping** the raw
   spelling beside it
+
+What enrichment adds on top:
+
+- `price_usd`, converted at the **review month's** exchange rate
+- `price_usd_adj`, in a baseline month's dollars (default 2024-06), so a 1997
+  price and a 2026 price can be compared
+- `price_usd_adj_per_lb`, the comparable figure
 
 Rows whose agtron reading exceeds 100 are dropped as site typos; the count is
 reported on every run. Formats that are not whole-bean coffee (capsules, pods)
@@ -426,7 +452,7 @@ Run them in order; each depends on the previous one's output.
 | notebook | reads | writes |
 |---|---|---|
 | `01-data-cleaning` | `data/raw/reviews.csv` | `data/clean/reviews.csv` (same as `clean-reviews`) |
-| `02-data-EDA` | `data/clean/reviews.csv` | charts |
+| `02-data-EDA` | `data/clean/reviews.csv`, enriched in memory | charts |
 | `03-text-features` | `data/clean/reviews.csv` | wordclouds in `imgs/` |
 
 `data/clean/reviews.csv` is gitignored; notebook 01 regenerates it, so run that

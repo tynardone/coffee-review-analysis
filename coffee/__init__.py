@@ -8,14 +8,19 @@ The pipeline runs in four steps, each exposed as a console command (see
   :mod:`review` combines those two for a single review, and :mod:`pipeline`
   drives the run. Incremental by default: only new or changed URLs are fetched.
 * **augment** (``fetch-exchange-rates``) — :mod:`exchange_rates` fetches
-  historical rates so prices from different countries and years can be
-  compared.
+  historical rates for the review months the cleaned layer holds.
 * **resolve** (``resolve-roasters``) — :mod:`roaster_resolution` clusters
   roaster-name spellings into a canonical crosswalk, combining automatic
   grouping with recorded manual verdicts.
 * **clean** (``clean-reviews``) — :mod:`clean` turns raw scraped rows into the
-  cleaned layer: parsed types, USD prices adjusted for inflation, resolved
-  origins and roaster locations.
+  cleaned layer: parsed types, parsed prices and quantities, resolved origins
+  and roaster locations. Depends on the raw scrape and nothing else.
+
+:mod:`enrich` is the step after that, putting prices in comparable money using
+exchange rates and CPI. It is kept separate because it needs reference data the
+reviews do not carry, and because the cleaned layer must be buildable without
+it. It has no command and no layer on disk yet; the notebooks apply it in
+memory.
 
 This produces two data layers: ``data/raw/reviews.csv`` as scraped, and
 ``data/clean/reviews.csv`` ready for analysis. :mod:`storage` sits between the

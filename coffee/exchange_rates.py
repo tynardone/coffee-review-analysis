@@ -2,16 +2,14 @@
 
 Reads the unique review months from the cleaned layer and downloads the
 historical rate for each one. Those months are what
-:func:`coffee.clean.convert_currency` merges against, so taking them from the
+:func:`coffee.enrich.convert_currency` merges against, so taking them from the
 cleaned layer requests exactly the rates that will be used, rather than also
 requesting rates for rows that cleaning drops.
 
-That makes the cleaned layer an input here as well as a consumer of the result.
-The two converge in one pass on an existing corpus, since a new review month
-appears in the cleaned layer before its rate is needed there. Bootstrapping
-from nothing takes two: build the cleaned layer, fetch rates for its months,
-then rebuild it with the prices converted. :func:`load_review_dates` also reads
-the raw layer, which is the other way out of that.
+The cleaned layer is built from the raw scrape alone, so this reads a file that
+already exists rather than one this command is needed to produce. The order is
+scrape, clean, fetch rates, enrich. :func:`load_review_dates` also accepts the
+raw layer, for fetching rates before a cleaned layer has been built.
 
 Runs incrementally. Rates for a past date do not change, so a date already held
 is never re-fetched. This matters because free-tier accounts are limited to
