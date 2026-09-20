@@ -139,7 +139,7 @@ def resolve_roasters(argv: list[str] | None = None) -> None:
     parser.add_argument("--column", default="roaster", help="column holding the names")
     parser.add_argument(
         "--location-column",
-        default="roaster location",
+        default="roaster_location",
         help="column holding each roaster's location; '' disables the signal",
     )
     parser.add_argument("--outdir", type=Path, default=DATA_DIR / "processed")

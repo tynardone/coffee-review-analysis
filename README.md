@@ -364,13 +364,21 @@ data/raw/reviews.csv     RAW      as scraped, never edited
 data/clean/reviews.csv   CLEANED  typed, priced in constant USD, roasters resolved
 ```
 
+**Field names are settled at the raw boundary, not later.** `coffee/parser.py`
+normalises each scraped table label (`"Est. Price:"` → `est_price`) as it parses,
+so the raw layer lands with the names the rest of the project uses. The scraped
+label is presentation; the field name is schema. Cleaning is therefore about
+*data* only — `clean_reviews` starts by asserting the names are already right
+rather than fixing them, so a file that predates this fails immediately and
+says so instead of dying in a merge several steps later.
+
 `uv run clean-reviews` builds the second from the first. The transformation
 lives in `coffee/clean.py` rather than in a notebook, so it is tested and runs
 in CI — it decides what every downstream number means.
 
 What cleaning does:
 
-- parses `est. price` into a value, an ISO 4217 currency and a quantity
+- parses `est_price` into a value, an ISO 4217 currency and a quantity
 - converts quantities to pounds, so prices are comparable per unit
 - converts to USD at the **review month's** exchange rate
 - adjusts for inflation to a baseline month (`--baseline-date`, default

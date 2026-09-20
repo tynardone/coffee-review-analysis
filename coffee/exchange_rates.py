@@ -45,7 +45,7 @@ def load_review_dates(path: Path) -> list[date]:
 
     # Review dates are stored as "Month Year", e.g. "November 2016".
     review_dates = pd.to_datetime(
-        readers[path.suffix](path)["review date"], format="%B %Y"
+        readers[path.suffix](path)["review_date"], format="%B %Y"
     )
     return (
         review_dates[review_dates >= EARLIEST_DATE]
