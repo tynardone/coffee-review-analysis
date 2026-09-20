@@ -161,7 +161,7 @@ virtual environment without needing to activate it:
 # Update data/raw/reviews.{csv,json}, fetching only what changed
 uv run scrape-reviews
 
-# Fetch historical exchange rates for the dates in a scraped file
+# Fetch historical exchange rates for any review months not already held
 uv run fetch-exchange-rates -i data/raw/reviews.csv
 
 # Resolve roaster-name variants into a canonical crosswalk
@@ -201,6 +201,24 @@ Use it after changing `coffee/parser.py`. An incremental run re-parses only the
 pages it re-fetches, so without `--full` a parser fix reaches new rows only and
 the corpus becomes a mixture of two parser versions. `scraped_at` is what makes
 such a mixture visible.
+
+### Exchange rates are incremental too
+
+`fetch-exchange-rates` requests only the review months not already present in
+`data/external/openex_exchange_rates.json`. Rates for a past date do not change,
+so a date once held is never asked for again. Re-running a current file costs
+zero requests, which matters against a free-tier limit of 1000 per month and a
+corpus spanning 323 distinct months.
+
+Two properties protect the stored file, which is the only copy of that data:
+
+- a failed request is never written, so a rate-limited run cannot replace
+  populated dates with blanks
+- results are checkpointed during the run, so an interrupted one keeps the
+  requests it already spent
+
+A date whose request failed is left unheld and retried next run. `--refetch`
+re-requests everything, and exists only for repairing a corrupt file.
 
 ## Resolving roaster names
 

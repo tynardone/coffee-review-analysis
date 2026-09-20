@@ -24,8 +24,9 @@ from coffee.config import DATA_DIR, openexchangerates_api_id
 from coffee.exchange_rates import (
     DEFAULT_OUTPUT,
     fetch_rates,
+    load_rates,
     load_review_dates,
-    save_rates,
+    unfetched_dates,
 )
 from coffee.pipeline import (
     DEFAULT_CONCURRENCY,
@@ -113,6 +114,12 @@ def fetch_exchange_rates(argv: list[str] | None = None) -> None:
         default=DEFAULT_OUTPUT,
         help="Destination JSON file for exchange rates.",
     )
+    parser.add_argument(
+        "--refetch",
+        action="store_true",
+        help="re-request dates already held. Rates for a past date do not "
+        "change, so this is only for repairing a corrupt file.",
+    )
     args = parser.parse_args(argv)
 
     _configure_logging()
@@ -121,15 +128,26 @@ def fetch_exchange_rates(argv: list[str] | None = None) -> None:
         raise SystemExit("OPENEXCHANGERATES_API_ID is not set (add it to your .env).")
 
     dates = load_review_dates(args.input)
-    logger.info("Fetching rates for %d unique dates", len(dates))
-    rates = fetch_rates(dates, app_id)
+    held = load_rates(args.output)
+    pending = dates if args.refetch else unfetched_dates(dates, held)
 
-    failures = sum(1 for rate in rates.values() if not rate)
-    if failures:
-        logger.warning("%d/%d dates returned no rates", failures, len(dates))
+    print(
+        f"{len(dates)} review month(s); {len(dates) - len(pending)} already held, "
+        f"{len(pending)} to fetch"
+    )
+    if not pending:
+        print(f"Nothing to fetch; {args.output} is already current.")
+        return
 
-    save_rates(rates, args.output)
-    logger.info("Wrote exchange rates to %s", args.output)
+    rates = fetch_rates(dates, app_id, args.output, refetch=args.refetch)
+
+    missing = [str(day) for day in dates if not rates.get(str(day))]
+    if missing:
+        print(
+            f"{len(missing)} date(s) still have no rates and will be retried "
+            f"next run, starting with {missing[0]}"
+        )
+    print(f"Wrote {sum(1 for r in rates.values() if r)} dated rates to {args.output}")
 
 
 def resolve_roasters(argv: list[str] | None = None) -> None:
