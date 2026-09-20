@@ -3,70 +3,73 @@ A&E Coffee & Tea,3,12,A&E Coffee & Tea,4,60.0,True
 A&E Roastery,3,12,A&E Coffee & Tea,4,60.0,True
 A&E Custom Coffee Roasters,1,12,A&E Coffee & Tea,4,60.0,True
 A&E Custom Coffee Roastery,1,12,A&E Coffee & Tea,4,60.0,True
-Illy Espresso,2,669,Illy Espresso,4,100.0,False
-Illy,1,669,Illy Espresso,4,100.0,False
-Illy Caffe,1,669,Illy Espresso,4,100.0,False
-Illy Caffè,1,669,Illy Espresso,4,100.0,False
-Millstone Coffee,4,920,Millstone Coffee,4,100.0,False
-Millstone,1,920,Millstone Coffee,4,100.0,False
-Millstone Coffee Company,1,920,Millstone Coffee,4,100.0,False
-Millstone Coffees,1,920,Millstone Coffee,4,100.0,False
-Nescafé,5,980,Nescafé,4,47.1,True
-Nestle USA,2,980,Nescafé,4,47.1,True
-Nescafe,1,980,Nescafé,4,47.1,True
-Nescafé (Nestle USA),1,980,Nescafé,4,47.1,True
-Red Rooster Coffee Roaster,113,1128,Red Rooster Coffee Roaster,4,28.6,True
-RND,1,1128,Red Rooster Coffee Roaster,4,28.6,True
-RND & Red Rooster Coffee Roaster,1,1128,Red Rooster Coffee Roaster,4,28.6,True
-Red Rooster Coffee Roasters,1,1128,Red Rooster Coffee Roaster,4,28.6,True
+Illy Espresso,2,667,Illy Espresso,4,100.0,False
+Illy,1,667,Illy Espresso,4,100.0,False
+Illy Caffe,1,667,Illy Espresso,4,100.0,False
+Illy Caffè,1,667,Illy Espresso,4,100.0,False
+Millstone Coffee,4,917,Millstone Coffee,4,100.0,False
+Millstone,1,917,Millstone Coffee,4,100.0,False
+Millstone Coffee Company,1,917,Millstone Coffee,4,100.0,False
+Millstone Coffees,1,917,Millstone Coffee,4,100.0,False
+Nescafé,5,977,Nescafé,4,47.1,True
+Nestle USA,2,977,Nescafé,4,47.1,True
+Nescafe,1,977,Nescafé,4,47.1,True
+Nescafé (Nestle USA),1,977,Nescafé,4,47.1,True
+Red Rooster Coffee Roaster,113,1125,Red Rooster Coffee Roaster,4,28.6,True
+RND,1,1125,Red Rooster Coffee Roaster,4,28.6,True
+RND & Red Rooster Coffee Roaster,1,1125,Red Rooster Coffee Roaster,4,28.6,True
+Red Rooster Coffee Roasters,1,1125,Red Rooster Coffee Roaster,4,28.6,True
 Alpen Sierra Coffee Roasters,5,31,Alpen Sierra Coffee Roasters,3,100.0,False
 Alpen Sierra Coffee,4,31,Alpen Sierra Coffee Roasters,3,100.0,False
 Alpen Sierra,2,31,Alpen Sierra Coffee Roasters,3,100.0,False
-Cafe Del Mundo,2,185,Cafe Del Mundo,3,100.0,False
-Café Del Mundo,2,185,Cafe Del Mundo,3,100.0,False
-Café del Mundo,2,185,Cafe Del Mundo,3,100.0,False
-Cafe Valverde,2,202,Cafe Valverde Coffee Roasters,3,100.0,False
-Cafe Valverde Coffee Roasters,2,202,Cafe Valverde Coffee Roasters,3,100.0,False
-Valverde Coffee Roasters,1,202,Cafe Valverde Coffee Roasters,3,100.0,False
-Equator Coffees & Teas,26,471,Equator Coffees & Teas,3,100.0,False
-Equator Estate Coffees & Teas,8,471,Equator Coffees & Teas,3,100.0,False
-Equator Coffees and Teas,1,471,Equator Coffees & Teas,3,100.0,False
-India Mysore Plantation A,2,681,India Mysore Plantation A,3,100.0,False
-India Mysore,1,681,India Mysore Plantation A,3,100.0,False
-India Mysore Plantation A.,1,681,India Mysore Plantation A,3,100.0,False
-Counter Culture Coffee,46,809,Counter Culture Coffee,3,100.0,False
-Counter Culture Coffee Roasters,3,809,Counter Culture Coffee,3,100.0,False
-La Golondrina by Counter Culture Coffee,1,809,Counter Culture Coffee,3,100.0,False
-Las Chicas Del Café,5,821,Las Chicas Del Café,3,100.0,False
-Las Chicas Del Cafe,1,821,Las Chicas Del Café,3,100.0,False
-Las Chicas del Cafe,1,821,Las Chicas Del Café,3,100.0,False
-Olympia Coffee Roasting,21,1024,Olympia Coffee Roasting,3,100.0,False
-Olympia Coffee,3,1024,Olympia Coffee Roasting,3,100.0,False
-Olympia Coffee Roasting Co.,3,1024,Olympia Coffee Roasting,3,100.0,False
-PT's Coffee Roasting Co.,132,1046,PT's Coffee Roasting Co.,3,100.0,False
-PT's Coffee Roasting,8,1046,PT's Coffee Roasting Co.,3,100.0,False
-PT’s Coffee Roasting Co.,1,1046,PT's Coffee Roasting Co.,3,100.0,False
-Peet's Coffee & Tea,22,1074,Peet's Coffee & Tea,3,100.0,False
-Peet's Coffee and Tea,2,1074,Peet's Coffee & Tea,3,100.0,False
-Peet's Coffee & Tea (Costco),1,1074,Peet's Coffee & Tea,3,100.0,False
-Roadmap CoffeeWorks,61,1162,Roadmap CoffeeWorks,3,100.0,False
-Roadmap Coffeeworks,2,1162,Roadmap CoffeeWorks,3,100.0,False
-RoadMap CoffeeWorks,1,1162,Roadmap CoffeeWorks,3,100.0,False
-Simon Hsieh's Aroma Roast Coffees,50,1247,Simon Hsieh's Aroma Roast Coffees,3,97.9,False
-Simon Hsieh Aroma Roast Coffees,20,1247,Simon Hsieh's Aroma Roast Coffees,3,97.9,False
-Simon Hsieh’s Aroma Roast Coffees,7,1247,Simon Hsieh's Aroma Roast Coffees,3,97.9,False
-Temple Coffee and Tea,104,1337,Temple Coffee and Tea,3,100.0,False
-Temple Coffee Roasters,42,1337,Temple Coffee and Tea,3,100.0,False
-Temple Coffee,39,1337,Temple Coffee and Tea,3,100.0,False
-Tony's Coffees & Teas,10,1378,Tony's Coffees & Teas,3,100.0,False
-Tony's Coffees and Teas,3,1378,Tony's Coffees & Teas,3,100.0,False
-Tony's Coffee,2,1378,Tony's Coffees & Teas,3,100.0,False
-Topeca Coffee Roasters,24,1379,Topeca Coffee Roasters,3,100.0,False
-Topeca Coffee,2,1379,Topeca Coffee Roasters,3,100.0,False
-Topéca Coffee Roasters,1,1379,Topeca Coffee Roasters,3,100.0,False
-Torreo Coffee,5,1384,Torreo Coffee,3,100.0,False
-Torreo Coffee Roasters,4,1384,Torreo Coffee,3,100.0,False
-Torreo Coffee and Tea,2,1384,Torreo Coffee,3,100.0,False
+Cafe Del Mundo,2,184,Cafe Del Mundo,3,100.0,False
+Café Del Mundo,2,184,Cafe Del Mundo,3,100.0,False
+Café del Mundo,2,184,Cafe Del Mundo,3,100.0,False
+Cafe Valverde,2,201,Cafe Valverde Coffee Roasters,3,100.0,False
+Cafe Valverde Coffee Roasters,2,201,Cafe Valverde Coffee Roasters,3,100.0,False
+Valverde Coffee Roasters,1,201,Cafe Valverde Coffee Roasters,3,100.0,False
+Equator Coffees & Teas,26,470,Equator Coffees & Teas,3,100.0,False
+Equator Estate Coffees & Teas,8,470,Equator Coffees & Teas,3,100.0,False
+Equator Coffees and Teas,1,470,Equator Coffees & Teas,3,100.0,False
+India Mysore Plantation A,2,679,India Mysore Plantation A,3,100.0,False
+India Mysore,1,679,India Mysore Plantation A,3,100.0,False
+India Mysore Plantation A.,1,679,India Mysore Plantation A,3,100.0,False
+Counter Culture Coffee,46,806,Counter Culture Coffee,3,100.0,False
+Counter Culture Coffee Roasters,3,806,Counter Culture Coffee,3,100.0,False
+La Golondrina by Counter Culture Coffee,1,806,Counter Culture Coffee,3,100.0,False
+Las Chicas Del Café,5,818,Las Chicas Del Café,3,100.0,False
+Las Chicas Del Cafe,1,818,Las Chicas Del Café,3,100.0,False
+Las Chicas del Cafe,1,818,Las Chicas Del Café,3,100.0,False
+Martinez Fine Coffees,6,887,Martinez Fine Coffees,3,88.9,True
+J. Martinez & Co.,1,887,Martinez Fine Coffees,3,88.9,True
+J. Martinez & Company,1,887,Martinez Fine Coffees,3,88.9,True
+Olympia Coffee Roasting,21,1021,Olympia Coffee Roasting,3,100.0,False
+Olympia Coffee,3,1021,Olympia Coffee Roasting,3,100.0,False
+Olympia Coffee Roasting Co.,3,1021,Olympia Coffee Roasting,3,100.0,False
+PT's Coffee Roasting Co.,132,1043,PT's Coffee Roasting Co.,3,100.0,False
+PT's Coffee Roasting,8,1043,PT's Coffee Roasting Co.,3,100.0,False
+PT’s Coffee Roasting Co.,1,1043,PT's Coffee Roasting Co.,3,100.0,False
+Peet's Coffee & Tea,22,1071,Peet's Coffee & Tea,3,100.0,False
+Peet's Coffee and Tea,2,1071,Peet's Coffee & Tea,3,100.0,False
+Peet's Coffee & Tea (Costco),1,1071,Peet's Coffee & Tea,3,100.0,False
+Roadmap CoffeeWorks,61,1159,Roadmap CoffeeWorks,3,100.0,False
+Roadmap Coffeeworks,2,1159,Roadmap CoffeeWorks,3,100.0,False
+RoadMap CoffeeWorks,1,1159,Roadmap CoffeeWorks,3,100.0,False
+Simon Hsieh's Aroma Roast Coffees,50,1244,Simon Hsieh's Aroma Roast Coffees,3,97.9,False
+Simon Hsieh Aroma Roast Coffees,20,1244,Simon Hsieh's Aroma Roast Coffees,3,97.9,False
+Simon Hsieh’s Aroma Roast Coffees,7,1244,Simon Hsieh's Aroma Roast Coffees,3,97.9,False
+Temple Coffee and Tea,104,1334,Temple Coffee and Tea,3,100.0,False
+Temple Coffee Roasters,42,1334,Temple Coffee and Tea,3,100.0,False
+Temple Coffee,39,1334,Temple Coffee and Tea,3,100.0,False
+Tony's Coffees & Teas,10,1375,Tony's Coffees & Teas,3,100.0,False
+Tony's Coffees and Teas,3,1375,Tony's Coffees & Teas,3,100.0,False
+Tony's Coffee,2,1375,Tony's Coffees & Teas,3,100.0,False
+Topeca Coffee Roasters,24,1376,Topeca Coffee Roasters,3,100.0,False
+Topeca Coffee,2,1376,Topeca Coffee Roasters,3,100.0,False
+Topéca Coffee Roasters,1,1376,Topeca Coffee Roasters,3,100.0,False
+Torreo Coffee,5,1381,Torreo Coffee,3,100.0,False
+Torreo Coffee Roasters,4,1381,Torreo Coffee,3,100.0,False
+Torreo Coffee and Tea,2,1381,Torreo Coffee,3,100.0,False
 1980 CAFE,38,1,1980 CAFE,2,100.0,False
 1980 Cafe,3,1,1980 CAFE,2,100.0,False
 49th Parallel Coffee Roasters,7,6,49th Parallel Coffee Roasters,2,100.0,False
@@ -93,264 +96,266 @@ BeanFruit Coffee Co.,19,101,BeanFruit Coffee Co.,2,100.0,False
 Beanfruit Coffee Co.,1,101,BeanFruit Coffee Co.,2,100.0,False
 Bear Lake Coffee,35,104,Bear Lake Coffee,2,100.0,False
 Bear Lake Coffee Co.,4,104,Bear Lake Coffee,2,100.0,False
-Café Britt,4,182,Café Britt,2,100.0,False
-Cafe Britt,1,182,Café Britt,2,100.0,False
-Cafe Campesino,2,183,Cafe Campesino,2,100.0,False
-Café Campesino,1,183,Cafe Campesino,2,100.0,False
-Cafe Excellence,7,190,Cafe Excellence,2,100.0,False
-Café Excellence,2,190,Cafe Excellence,2,100.0,False
-Cafe Grumpy,23,193,Cafe Grumpy,2,100.0,False
-Café Grumpy,3,193,Cafe Grumpy,2,100.0,False
-Café Moto,3,195,Café Moto,2,100.0,False
-Cafe Moto,2,195,Café Moto,2,100.0,False
-Cafe P11,1,196,Cafe P11,2,100.0,False
-Café P11,1,196,Cafe P11,2,100.0,False
-Cafe Rey,1,199,Cafe Rey,2,100.0,False
-Café Rey,1,199,Cafe Rey,2,100.0,False
-Cafe de Impression,3,206,Cafe de Impression,2,100.0,False
-Café de Impression,1,206,Cafe de Impression,2,100.0,False
-Café Mystique Coffee,2,245,Café Mystique Coffee,2,100.0,False
-Café Mystique,1,245,Café Mystique Coffee,2,100.0,False
-Santos Coffee,2,246,Santos Coffee,2,100.0,False
-Café Organico Mesa de Los Santos,1,246,Santos Coffee,2,100.0,False
-Café Society Coffee,2,247,Café Society Coffee,2,100.0,False
-Café Society,1,247,Café Society Coffee,2,100.0,False
-Caldi Coffee,3,251,Caldi Coffee,2,100.0,False
-Caldi Cafe,2,251,Caldi Coffee,2,100.0,False
-Capricorn Coffees,4,262,Capricorn Coffees,2,100.0,False
-Capricorn Coffee,2,262,Capricorn Coffees,2,100.0,False
-Cherry Smile,3,286,Cherry Smile,2,100.0,False
-Cherry Smile Specialty Coffee,1,286,Cherry Smile,2,100.0,False
-Chromatic Coffee,10,295,Chromatic Coffee,2,100.0,False
-Chromatic x Dripdash Collab,1,295,Chromatic Coffee,2,100.0,False
-Coffee By Design,25,318,Coffee By Design,2,100.0,False
-Coffee by Design,8,318,Coffee By Design,2,100.0,False
-Coffee By The Grand,5,319,Coffee By The Grand,2,100.0,False
-Coffee by the Grand,2,319,Coffee By The Grand,2,100.0,False
-CoffeeAM,1,336,CoffeeAM.com,2,100.0,False
-CoffeeAM.com,1,336,CoffeeAM.com,2,100.0,False
-Coffeemaria,7,338,Coffeemaria,2,100.0,False
-CoffeeMaria,3,338,Coffeemaria,2,100.0,False
-Colibrije Specialty Coffee,4,346,Colibrije Specialty Coffee,2,100.0,False
-Colobrije Specialty Coffee,2,346,Colibrije Specialty Coffee,2,100.0,False
-Compelling & Rich,4,356,Compelling & Rich,2,100.0,False
-Compelling & Rich Coffee,2,356,Compelling & Rich,2,100.0,False
-Conscious Coffee,8,358,Conscious Coffee,2,100.0,False
-Conscious Coffees,1,358,Conscious Coffee,2,100.0,False
-Cooperativa de Café Boquete,1,361,Cooperativa de Productores de Café Boquete,2,100.0,False
-Cooperativa de Productores de Café Boquete,1,361,Cooperativa de Productores de Café Boquete,2,100.0,False
-Corvus Coffee Roasters,17,363,Corvus Coffee Roasters,2,100.0,False
-Corvus Coffee,14,363,Corvus Coffee Roasters,2,100.0,False
-Crimson Cup Coffee & Tea,3,370,Crimson Cup Coffee & Tea,2,100.0,False
-Crimson Cup Coffee and Tea,2,370,Crimson Cup Coffee & Tea,2,100.0,False
-D&M Coffee,2,380,D&M Coffee,2,100.0,False
-D & M Coffee,1,380,D&M Coffee,2,100.0,False
-DOMA Coffee Roasting Company,8,383,DOMA Coffee Roasting Company,2,100.0,False
-Doma Coffee Roasting Company,2,383,DOMA Coffee Roasting Company,2,100.0,False
-Dawn Isle Cafe Studio,2,396,Dawn Isle Cafe Studio,2,100.0,False
-Dawn Isle Coffee Studio,1,396,Dawn Isle Cafe Studio,2,100.0,False
-Desolate Cafe,7,411,Desolate Cafe,2,100.0,False
-Desolate Café,3,411,Desolate Cafe,2,100.0,False
-Diedrich Coffee,12,413,Diedrich Coffee,2,100.0,False
-Diedrich Coffee Roasters,1,413,Diedrich Coffee,2,100.0,False
-DoubleShot Coffee,1,433,DoubleShot Coffee Company,2,100.0,False
-DoubleShot Coffee Company,1,433,DoubleShot Coffee Company,2,100.0,False
-Duluth Coffee,3,443,Duluth Coffee Company,2,100.0,False
-Duluth Coffee Company,3,443,Duluth Coffee Company,2,100.0,False
-Dunn Brothers,2,445,Dunn Brothers,2,100.0,False
-Dunn Bros. Coffee,1,445,Dunn Brothers,2,100.0,False
-Durango Coffee Company,40,446,Durango Coffee Company,2,100.0,False
-Durango Coffee,1,446,Durango Coffee Company,2,100.0,False
-Eight O'Clock Coffee,8,455,Eight O'Clock Coffee,2,100.0,False
-Eight O'Clock Coffee (Walmart),1,455,Eight O'Clock Coffee,2,100.0,False
-El Gran Cafe,64,457,El Gran Cafe,2,100.0,False
-El Gran Café,8,457,El Gran Cafe,2,100.0,False
-El Tucan Estate,1,458,El Tucan Honduras Estate Coffee,2,100.0,False
-El Tucan Honduras Estate Coffee,1,458,El Tucan Honduras Estate Coffee,2,100.0,False
-Espresso Vivace,2,477,Espresso Vivace,2,100.0,False
-Vivace Espresso,1,477,Espresso Vivace,2,100.0,False
-Euphora Coffee,32,480,Euphora Coffee,2,100.0,False
-Euphora,1,480,Euphora Coffee,2,100.0,False
-Evie's Cafe,9,483,Evie's Cafe,2,100.0,False
-Evie’s Cafe,1,483,Evie's Cafe,2,100.0,False
-Fazenda Lagoa,1,492,Fazenda Lagoa do Morro,2,100.0,False
-Fazenda Lagoa do Morro,1,492,Fazenda Lagoa do Morro,2,100.0,False
-Fidalgo Bay Coffee,2,497,Fidalgo Bay Coffee,2,100.0,False
-Fidalgo Coffee,2,497,Fidalgo Bay Coffee,2,100.0,False
-Finca Idealista,2,501,Finca Idealista/Benjamin Weiner,2,100.0,False
-Finca Idealista/Benjamin Weiner,2,501,Finca Idealista/Benjamin Weiner,2,100.0,False
-First Colony Coffee & Tea,3,510,First Colony Coffee & Tea,2,100.0,False
-First Colony Coffee & Teas,1,510,First Colony Coffee & Tea,2,100.0,False
-Flavia Beverage Systems,4,514,Flavia Beverage Systems,2,100.0,False
-Flavia,2,514,Flavia Beverage Systems,2,100.0,False
-Fresh Coffee Beans & Tea House,2,536,Fresh Coffee Beans & Tea House,2,100.0,False
-Fresh Coffee and Tea House,2,536,Fresh Coffee Beans & Tea House,2,100.0,False
-Fumi Coffee,5,542,Fumi Coffee Company,2,100.0,False
-Fumi Coffee Company,5,542,Fumi Coffee Company,2,100.0,False
-George Howell Coffee Company,5,555,George Howell Coffee Company,2,100.0,False
-George Howell Coffee,1,555,George Howell Coffee Company,2,100.0,False
-Giv COFFEE,6,563,Giv COFFEE,2,100.0,False
-Giv Coffee,3,563,Giv COFFEE,2,100.0,False
-"Good Chance Biotechnology, Ltd.",4,570,"Good Chance Biotechnology, Ltd.",2,100.0,False
-Good Chance Biotechnology,1,570,"Good Chance Biotechnology, Ltd.",2,100.0,False
-Green Mountain Coffee,175,592,Green Mountain Coffee,2,100.0,False
-Green Mountain Coffee Roasters,11,592,Green Mountain Coffee,2,100.0,False
-Greyfriar's Coffee and Tea,2,598,Greyfriar's Coffee and Tea,2,100.0,False
-Greyfriar's Coffee & Tea,1,598,Greyfriar's Coffee and Tea,2,100.0,False
-Heritage Coffee,3,632,Heritage Coffee Company,2,100.0,False
-Heritage Coffee Company,3,632,Heritage Coffee Company,2,100.0,False
-Hevla Coffee Company,3,633,Hevla Coffee Company,2,100.0,False
-Hevla Coffee,2,633,Hevla Coffee Company,2,100.0,False
-Holland Coffee Group,7,643,Holland Coffee Group,2,100.0,False
-Holland Coffee,1,643,Holland Coffee Group,2,100.0,False
-Hula Daddy Kona Coffee,47,659,Hula Daddy Kona Coffee,2,100.0,False
-Hula Daddy,20,659,Hula Daddy Kona Coffee,2,100.0,False
-Huzaza Cafe,1,663,Huzaza Cafe,2,100.0,False
-Huzaza Café,1,663,Huzaza Cafe,2,100.0,False
-Devon Plantations,1,678,India Devon Plantations,2,100.0,False
-India Devon Plantations,1,678,India Devon Plantations,2,100.0,False
-Intelligentsia Coffee,27,689,Intelligentsia Coffee,2,100.0,False
-Intelligentsia Coffee Roasters,17,689,Intelligentsia Coffee,2,100.0,False
-Island Joe's Coffee,6,701,Island Joe's Coffee,2,100.0,False
-Island Joe's Gourmet Coffee,2,701,Island Joe's Coffee,2,100.0,False
-J. Martinez & Co.,1,703,J. Martinez & Company,2,100.0,False
-J. Martinez & Company,1,703,J. Martinez & Company,2,100.0,False
-JBC Coffee Roasters,514,706,JBC Coffee Roasters,2,100.0,False
-JBC,1,706,JBC Coffee Roasters,2,100.0,False
-Jacob's Estate Musicaffe Workshop,1,710,Jacob's Estate Musicaffe Workshop,2,100.0,False
-Musicaffe Workshop,1,710,Jacob's Estate Musicaffe Workshop,2,100.0,False
-Jampot Poorock Abbey,2,714,Jampot Poorrock Abbey,2,100.0,False
-Jampot Poorrock Abbey,2,714,Jampot Poorrock Abbey,2,100.0,False
-Java D'Oro,1,720,Java D'oro Gourmet Coffee,2,100.0,False
-Java D'oro Gourmet Coffee,1,720,Java D'oro Gourmet Coffee,2,100.0,False
-Jeremiah's Pick Coffee,5,724,Jeremiah's Pick Coffee,2,100.0,False
-Jeremiah's Pick Gourmet Coffee,4,724,Jeremiah's Pick Coffee,2,100.0,False
-Joe Van Gogh,4,731,Joe Van Gogh,2,100.0,False
-Joe Van Gogh Coffee,2,731,Joe Van Gogh,2,100.0,False
-Josuma Coffee,3,737,Josuma Coffee,2,100.0,False
-Josuma Coffee Company,1,737,Josuma Coffee,2,100.0,False
-Kakalove Cafe,308,756,Kakalove Cafe,2,100.0,False
-Kakalove Café,3,756,Kakalove Cafe,2,100.0,False
-Kaldi's Coffee Roasting,7,759,Kaldi's Coffee Roasting,2,100.0,False
-Kaldi's Coffee,2,759,Kaldi's Coffee Roasting,2,100.0,False
-Kauai Coffee Company,7,763,Kauai Coffee Company,2,100.0,False
-Kauai Coffee,1,763,Kauai Coffee Company,2,100.0,False
-Kean Coffee,22,766,Kean Coffee,2,100.0,False
-Kéan Coffee,1,766,Kean Coffee,2,100.0,False
-La Colombe,2,805,La Colombe,2,100.0,False
-La Colombe Torrefaction,1,805,La Colombe,2,100.0,False
-La Mill Coffee,2,811,La Mill Coffee,2,100.0,False
-Lamill Coffee,2,811,La Mill Coffee,2,100.0,False
-La Victoria Estate,1,813,Las Victorias Estate,2,100.0,False
-Las Victorias Estate,1,813,Las Victorias Estate,2,100.0,False
-Larry's Beans,1,819,Larry's Coffee,2,100.0,False
-Larry's Coffee,1,819,Larry's Coffee,2,100.0,False
-Lavazza,6,825,Lavazza,2,100.0,False
-Lavazza for the Rivo system,2,825,Lavazza,2,100.0,False
-Marcheur Roaster,2,886,Marcheur Roaster,2,100.0,False
-Marcheur Roastery,1,886,Marcheur Roaster,2,100.0,False
-Maxwell House,5,899,Maxwell House,2,100.0,False
-Maxwell House Premium Cup,1,899,Maxwell House,2,100.0,False
-Mellow Coffee,4,908,Mellow Coffee,2,100.0,False
-Mellow Coffee & Tea,1,908,Mellow Coffee,2,100.0,False
-Modern Times Coffee,8,926,Modern Times Coffee,2,100.0,False
-Modern Times,2,926,Modern Times Coffee,2,100.0,False
-Monte Alegre,2,935,Monte Alegre,2,100.0,False
-Monte Alegre Natural,1,935,Monte Alegre,2,100.0,False
-Noble Coffee Roasting,10,990,Noble Coffee Roasting,2,100.0,False
-Noble Coffee Roastiing,1,990,Noble Coffee Roasting,2,100.0,False
-North Pole Coffee Roasters,2,1000,North Pole Coffee Roasters,2,100.0,False
-North Pole Coffee Roasting,1,1000,North Pole Coffee Roasters,2,100.0,False
-Novo Coffee,10,1007,Novo Coffee,2,100.0,False
-Novo Coffee Roasters,1,1007,Novo Coffee,2,100.0,False
-Oliver's Custom Coffee,5,1023,Oliver's Custom Coffee,2,100.0,False
-Oliver's Custom Coffees,1,1023,Oliver's Custom Coffee,2,100.0,False
-Organic Coffee Company,1,1034,Organic Coffee Company,2,100.0,False
-The Organic Coffee Co.,1,1034,Organic Coffee Company,2,100.0,False
-Oro Caffe for the Singolo espresso system,2,1039,Oro Caffe for the Singolo espresso system,2,100.0,False
-Oro Caffe,1,1039,Oro Caffe for the Singolo espresso system,2,100.0,False
-P&F Coffee,3,1042,P&F Coffee,2,100.0,False
-P & F Coffee,1,1042,P&F Coffee,2,100.0,False
-Paradise Roasters,357,1060,Paradise Roasters,2,100.0,False
-Paradise Coffee Roasters,1,1060,Paradise Roasters,2,100.0,False
-Peerless Coffee,1,1072,Peerless Coffee and Tea,2,100.0,False
-Peerless Coffee and Tea,1,1072,Peerless Coffee and Tea,2,100.0,False
-Per'la Specialty Roasters,5,1077,Per'la Specialty Roasters,2,100.0,False
-Per’la Specialty Roasters,1,1077,Per'la Specialty Roasters,2,100.0,False
-Quartermaine Coffee Roasters,5,1120,Quartermaine Coffee Roasters,2,100.0,False
-Quartermaine Coffee Roasters (Sam's Club),1,1120,Quartermaine Coffee Roasters,2,100.0,False
-RamsHead Coffee Roasters,56,1133,RamsHead Coffee Roasters,2,100.0,False
-Ramshead Coffee Roasters,4,1133,RamsHead Coffee Roasters,2,100.0,False
-Red Rock Roasters,6,1144,Red Rock Roasters,2,100.0,False
-Red Rock Coffee Roasters,3,1144,Red Rock Roasters,2,100.0,False
-Reunion Island Coffee,15,1153,Reunion Island Coffee,2,100.0,False
-Reunion Coffee Roasters,3,1153,Reunion Island Coffee,2,100.0,False
-Roast House,9,1165,Roast House,2,100.0,False
-Roast House Coffee,1,1165,Roast House,2,100.0,False
-Roytawan,1,1179,Roytawan Coffee Roaster,2,100.0,False
-Roytawan Coffee Roaster,1,1179,Roytawan Coffee Roaster,2,100.0,False
-Rusty's Hawaiian,24,1186,Rusty's Hawaiian,2,100.0,False
-Rusty’s Hawaiian,1,1186,Rusty's Hawaiian,2,100.0,False
-SOT Coffee Roaster,17,1191,SOT Coffee Roaster,2,100.0,False
-SÖT Coffee Roaster,7,1191,SOT Coffee Roaster,2,100.0,False
-Sacred Grounds Organic Coffee,1,1193,Sacred Grounds Organic Coffee Roasters,2,100.0,False
-Sacred Grounds Organic Coffee Roasters,1,1193,Sacred Grounds Organic Coffee Roasters,2,100.0,False
-Salt Spring Coffee,1,1199,Salt Spring Roasting Company,2,100.0,False
-Salt Spring Roasting Company,1,1199,Salt Spring Roasting Company,2,100.0,False
-San Francisco Bay Coffee,16,1205,San Francisco Bay Coffee,2,100.0,False
-San Francisco Bay Coffee (Costco),1,1205,San Francisco Bay Coffee,2,100.0,False
-Santa Cruz Coffee Company,2,1216,Santa Cruz Coffee Company,2,100.0,False
-Santa Cruz Coffee Roasting,1,1216,Santa Cruz Coffee Company,2,100.0,False
-Sara Lee Coffee & Tea,1,1218,Sara Lee Coffee and Tea,2,100.0,False
-Sara Lee Coffee and Tea,1,1218,Sara Lee Coffee and Tea,2,100.0,False
-Satur Specialty Coffee,5,1219,Satur Specialty Coffee,2,100.0,False
-Satur Coffee,1,1219,Satur Specialty Coffee,2,100.0,False
-"Shanghai Carmo Trading Co., LTD",1,1236,"Shanghai Carmo Trading Co., Ltd.",2,100.0,False
-"Shanghai Carmo Trading Co., Ltd.",1,1236,"Shanghai Carmo Trading Co., Ltd.",2,100.0,False
-Side By Each Brewing Co.,8,1241,Side By Each Brewing Co.,2,100.0,False
-Side by Each Brewing Co.,2,1241,Side By Each Brewing Co.,2,100.0,False
-Small Eyes Cafe,23,1258,Small Eyes Cafe,2,100.0,False
-Small Eyes Café,1,1258,Small Eyes Cafe,2,100.0,False
-Spyhouse Coffee Roasters,3,1274,Spyhouse Coffee Roasters,2,100.0,False
-Spyhouse Coffee Roasting,2,1274,Spyhouse Coffee Roasters,2,100.0,False
-Starbucks Coffee,53,1277,Starbucks Coffee,2,100.0,False
-Starbucks,5,1277,Starbucks Coffee,2,100.0,False
-States Coffee & Mercantile,10,1281,States Coffee & Mercantile,2,100.0,False
-States Coffee,7,1281,States Coffee & Mercantile,2,100.0,False
-Steady State Roasting Company,5,1284,Steady State Roasting Company,2,100.0,False
-Steady State Roasting,2,1284,Steady State Roasting Company,2,100.0,False
-The Supreme Bean,12,1310,The Supreme Bean,2,100.0,False
-Supreme Bean Coffee Roasters,11,1310,The Supreme Bean,2,100.0,False
-Taokas Coffee,1,1326,Taokas Coffee Studio,2,100.0,False
-Taokas Coffee Studio,1,1326,Taokas Coffee Studio,2,100.0,False
-Taster's Coffee,8,1329,Taster's Coffee,2,100.0,False
-Taster’s Coffee,2,1329,Taster's Coffee,2,100.0,False
-Terroir Coffee,66,1339,Terroir Coffee,2,100.0,False
-Terroir Select Coffees,7,1339,Terroir Coffee,2,100.0,False
-Thanksgiving Coffee,35,1343,Thanksgiving Coffee,2,100.0,False
-Thanksgiving Coffee Company,7,1343,Thanksgiving Coffee,2,100.0,False
-The Curve Coffee Roasting Co.,6,1353,The Curve Coffee Roasting Co.,2,100.0,False
-The Curve Coffee Roasting,1,1353,The Curve Coffee Roasting Co.,2,100.0,False
-The WestBean Coffee Roasters,19,1364,The WestBean Coffee Roasters,2,100.0,False
-The WestBean Coffee Roasers,2,1364,The WestBean Coffee Roasters,2,100.0,False
-Van Houtte Cafe,4,1414,Van Houtte Cafe,2,100.0,False
-Van Houtte,1,1414,Van Houtte Cafe,2,100.0,False
-Wallenford,1,1438,Wallenford Blue,2,100.0,False
-Wallenford Blue,1,1438,Wallenford Blue,2,100.0,False
-Water Avenue Coffee,9,1441,Water Avenue Coffee,2,100.0,False
-Water Avenue Coffee Company,5,1441,Water Avenue Coffee,2,100.0,False
-Wheelys Cafe Taiwan,2,1446,Wheelys Cafe Taiwan,2,100.0,False
-Wheelys Café Taiwan,1,1446,Wheelys Cafe Taiwan,2,100.0,False
-Willoughby's Coffee & Tea,62,1461,Willoughby's Coffee & Tea,2,100.0,False
-Willoughby's Coffee and Tea,1,1461,Willoughby's Coffee & Tea,2,100.0,False
-Wolfgang Puck Coffee,2,1463,Wolfgang Puck Coffee,2,100.0,False
-Wolfgang Puck European Style Coffee,1,1463,Wolfgang Puck Coffee,2,100.0,False
-Yo el Rey Roasting,2,1480,Yo el Rey Roasting,2,100.0,False
-Yo El Rey Roasting,1,1480,Yo el Rey Roasting,2,100.0,False
-Yuban,9,1483,Yuban,2,100.0,False
-Yuban Coffee Company,1,1483,Yuban,2,100.0,False
-modcup coffee,31,1496,modcup coffee,2,100.0,False
-modcup,14,1496,modcup coffee,2,100.0,False
+Boyds Coffee,3,154,Boyds Coffee,2,100.0,False
+Boyd Coffee,1,154,Boyds Coffee,2,100.0,False
+Café Britt,4,181,Café Britt,2,100.0,False
+Cafe Britt,1,181,Café Britt,2,100.0,False
+Cafe Campesino,2,182,Cafe Campesino,2,100.0,False
+Café Campesino,1,182,Cafe Campesino,2,100.0,False
+Cafe Excellence,7,189,Cafe Excellence,2,100.0,False
+Café Excellence,2,189,Cafe Excellence,2,100.0,False
+Cafe Grumpy,23,192,Cafe Grumpy,2,100.0,False
+Café Grumpy,3,192,Cafe Grumpy,2,100.0,False
+Café Moto,3,194,Café Moto,2,100.0,False
+Cafe Moto,2,194,Café Moto,2,100.0,False
+Cafe P11,1,195,Cafe P11,2,100.0,False
+Café P11,1,195,Cafe P11,2,100.0,False
+Cafe Rey,1,198,Cafe Rey,2,100.0,False
+Café Rey,1,198,Cafe Rey,2,100.0,False
+Cafe de Impression,3,205,Cafe de Impression,2,100.0,False
+Café de Impression,1,205,Cafe de Impression,2,100.0,False
+Café Mystique Coffee,2,244,Café Mystique Coffee,2,100.0,False
+Café Mystique,1,244,Café Mystique Coffee,2,100.0,False
+Santos Coffee,2,245,Santos Coffee,2,100.0,False
+Café Organico Mesa de Los Santos,1,245,Santos Coffee,2,100.0,False
+Café Society Coffee,2,246,Café Society Coffee,2,100.0,False
+Café Society,1,246,Café Society Coffee,2,100.0,False
+Caldi Coffee,3,250,Caldi Coffee,2,100.0,False
+Caldi Cafe,2,250,Caldi Coffee,2,100.0,False
+Capricorn Coffees,4,261,Capricorn Coffees,2,100.0,False
+Capricorn Coffee,2,261,Capricorn Coffees,2,100.0,False
+Cherry Smile,3,285,Cherry Smile,2,100.0,False
+Cherry Smile Specialty Coffee,1,285,Cherry Smile,2,100.0,False
+Chromatic Coffee,10,294,Chromatic Coffee,2,100.0,False
+Chromatic x Dripdash Collab,1,294,Chromatic Coffee,2,100.0,False
+Coffee By Design,25,317,Coffee By Design,2,100.0,False
+Coffee by Design,8,317,Coffee By Design,2,100.0,False
+Coffee By The Grand,5,318,Coffee By The Grand,2,100.0,False
+Coffee by the Grand,2,318,Coffee By The Grand,2,100.0,False
+CoffeeAM,1,335,CoffeeAM.com,2,100.0,False
+CoffeeAM.com,1,335,CoffeeAM.com,2,100.0,False
+Coffeemaria,7,337,Coffeemaria,2,100.0,False
+CoffeeMaria,3,337,Coffeemaria,2,100.0,False
+Colibrije Specialty Coffee,4,345,Colibrije Specialty Coffee,2,100.0,False
+Colobrije Specialty Coffee,2,345,Colibrije Specialty Coffee,2,100.0,False
+Compelling & Rich,4,355,Compelling & Rich,2,100.0,False
+Compelling & Rich Coffee,2,355,Compelling & Rich,2,100.0,False
+Conscious Coffee,8,357,Conscious Coffee,2,100.0,False
+Conscious Coffees,1,357,Conscious Coffee,2,100.0,False
+Cooperativa de Café Boquete,1,360,Cooperativa de Productores de Café Boquete,2,100.0,False
+Cooperativa de Productores de Café Boquete,1,360,Cooperativa de Productores de Café Boquete,2,100.0,False
+Corvus Coffee Roasters,17,362,Corvus Coffee Roasters,2,100.0,False
+Corvus Coffee,14,362,Corvus Coffee Roasters,2,100.0,False
+Crimson Cup Coffee & Tea,3,369,Crimson Cup Coffee & Tea,2,100.0,False
+Crimson Cup Coffee and Tea,2,369,Crimson Cup Coffee & Tea,2,100.0,False
+D&M Coffee,2,379,D&M Coffee,2,100.0,False
+D & M Coffee,1,379,D&M Coffee,2,100.0,False
+DOMA Coffee Roasting Company,8,382,DOMA Coffee Roasting Company,2,100.0,False
+Doma Coffee Roasting Company,2,382,DOMA Coffee Roasting Company,2,100.0,False
+Dawn Isle Cafe Studio,2,395,Dawn Isle Cafe Studio,2,100.0,False
+Dawn Isle Coffee Studio,1,395,Dawn Isle Cafe Studio,2,100.0,False
+Desolate Cafe,7,410,Desolate Cafe,2,100.0,False
+Desolate Café,3,410,Desolate Cafe,2,100.0,False
+Diedrich Coffee,12,412,Diedrich Coffee,2,100.0,False
+Diedrich Coffee Roasters,1,412,Diedrich Coffee,2,100.0,False
+DoubleShot Coffee,1,432,DoubleShot Coffee Company,2,100.0,False
+DoubleShot Coffee Company,1,432,DoubleShot Coffee Company,2,100.0,False
+Duluth Coffee,3,442,Duluth Coffee Company,2,100.0,False
+Duluth Coffee Company,3,442,Duluth Coffee Company,2,100.0,False
+Dunn Brothers,2,444,Dunn Brothers,2,100.0,False
+Dunn Bros. Coffee,1,444,Dunn Brothers,2,100.0,False
+Durango Coffee Company,40,445,Durango Coffee Company,2,100.0,False
+Durango Coffee,1,445,Durango Coffee Company,2,100.0,False
+Eight O'Clock Coffee,8,454,Eight O'Clock Coffee,2,100.0,False
+Eight O'Clock Coffee (Walmart),1,454,Eight O'Clock Coffee,2,100.0,False
+El Gran Cafe,64,456,El Gran Cafe,2,100.0,False
+El Gran Café,8,456,El Gran Cafe,2,100.0,False
+El Tucan Estate,1,457,El Tucan Honduras Estate Coffee,2,100.0,False
+El Tucan Honduras Estate Coffee,1,457,El Tucan Honduras Estate Coffee,2,100.0,False
+Espresso Vivace,2,476,Espresso Vivace,2,100.0,False
+Vivace Espresso,1,476,Espresso Vivace,2,100.0,False
+Euphora Coffee,32,479,Euphora Coffee,2,100.0,False
+Euphora,1,479,Euphora Coffee,2,100.0,False
+Evie's Cafe,9,482,Evie's Cafe,2,100.0,False
+Evie’s Cafe,1,482,Evie's Cafe,2,100.0,False
+Fazenda Lagoa,1,491,Fazenda Lagoa do Morro,2,100.0,False
+Fazenda Lagoa do Morro,1,491,Fazenda Lagoa do Morro,2,100.0,False
+Fidalgo Bay Coffee,2,496,Fidalgo Bay Coffee,2,100.0,False
+Fidalgo Coffee,2,496,Fidalgo Bay Coffee,2,100.0,False
+Finca Idealista,2,500,Finca Idealista/Benjamin Weiner,2,100.0,False
+Finca Idealista/Benjamin Weiner,2,500,Finca Idealista/Benjamin Weiner,2,100.0,False
+First Colony Coffee & Tea,3,509,First Colony Coffee & Tea,2,100.0,False
+First Colony Coffee & Teas,1,509,First Colony Coffee & Tea,2,100.0,False
+Flavia Beverage Systems,4,513,Flavia Beverage Systems,2,100.0,False
+Flavia,2,513,Flavia Beverage Systems,2,100.0,False
+Fresh Coffee Beans & Tea House,2,535,Fresh Coffee Beans & Tea House,2,100.0,False
+Fresh Coffee and Tea House,2,535,Fresh Coffee Beans & Tea House,2,100.0,False
+Fumi Coffee,5,541,Fumi Coffee Company,2,100.0,False
+Fumi Coffee Company,5,541,Fumi Coffee Company,2,100.0,False
+George Howell Coffee Company,5,554,George Howell Coffee Company,2,100.0,False
+George Howell Coffee,1,554,George Howell Coffee Company,2,100.0,False
+Giv COFFEE,6,562,Giv COFFEE,2,100.0,False
+Giv Coffee,3,562,Giv COFFEE,2,100.0,False
+"Good Chance Biotechnology, Ltd.",4,569,"Good Chance Biotechnology, Ltd.",2,100.0,False
+Good Chance Biotechnology,1,569,"Good Chance Biotechnology, Ltd.",2,100.0,False
+Great Value (Wal-Mart),1,587,Great Value (Wal-Mart),2,100.0,False
+Great Value (Walmart),1,587,Great Value (Wal-Mart),2,100.0,False
+Green Mountain Coffee,175,590,Green Mountain Coffee,2,100.0,False
+Green Mountain Coffee Roasters,11,590,Green Mountain Coffee,2,100.0,False
+Greyfriar's Coffee and Tea,2,596,Greyfriar's Coffee and Tea,2,100.0,False
+Greyfriar's Coffee & Tea,1,596,Greyfriar's Coffee and Tea,2,100.0,False
+Heritage Coffee,3,630,Heritage Coffee Company,2,100.0,False
+Heritage Coffee Company,3,630,Heritage Coffee Company,2,100.0,False
+Hevla Coffee Company,3,631,Hevla Coffee Company,2,100.0,False
+Hevla Coffee,2,631,Hevla Coffee Company,2,100.0,False
+Holland Coffee Group,7,641,Holland Coffee Group,2,100.0,False
+Holland Coffee,1,641,Holland Coffee Group,2,100.0,False
+Hula Daddy Kona Coffee,47,657,Hula Daddy Kona Coffee,2,100.0,False
+Hula Daddy,20,657,Hula Daddy Kona Coffee,2,100.0,False
+Huzaza Cafe,1,661,Huzaza Cafe,2,100.0,False
+Huzaza Café,1,661,Huzaza Cafe,2,100.0,False
+Devon Plantations,1,676,India Devon Plantations,2,100.0,False
+India Devon Plantations,1,676,India Devon Plantations,2,100.0,False
+Intelligentsia Coffee,27,687,Intelligentsia Coffee,2,100.0,False
+Intelligentsia Coffee Roasters,17,687,Intelligentsia Coffee,2,100.0,False
+Island Joe's Coffee,6,699,Island Joe's Coffee,2,100.0,False
+Island Joe's Gourmet Coffee,2,699,Island Joe's Coffee,2,100.0,False
+JBC Coffee Roasters,514,703,JBC Coffee Roasters,2,100.0,False
+JBC,1,703,JBC Coffee Roasters,2,100.0,False
+Jacob's Estate Musicaffe Workshop,1,707,Jacob's Estate Musicaffe Workshop,2,100.0,False
+Musicaffe Workshop,1,707,Jacob's Estate Musicaffe Workshop,2,100.0,False
+Jampot Poorock Abbey,2,711,Jampot Poorrock Abbey,2,100.0,False
+Jampot Poorrock Abbey,2,711,Jampot Poorrock Abbey,2,100.0,False
+Java D'Oro,1,717,Java D'oro Gourmet Coffee,2,100.0,False
+Java D'oro Gourmet Coffee,1,717,Java D'oro Gourmet Coffee,2,100.0,False
+Jeremiah's Pick Coffee,5,721,Jeremiah's Pick Coffee,2,100.0,False
+Jeremiah's Pick Gourmet Coffee,4,721,Jeremiah's Pick Coffee,2,100.0,False
+Joe Van Gogh,4,728,Joe Van Gogh,2,100.0,False
+Joe Van Gogh Coffee,2,728,Joe Van Gogh,2,100.0,False
+Josuma Coffee,3,734,Josuma Coffee,2,100.0,False
+Josuma Coffee Company,1,734,Josuma Coffee,2,100.0,False
+Kakalove Cafe,308,753,Kakalove Cafe,2,100.0,False
+Kakalove Café,3,753,Kakalove Cafe,2,100.0,False
+Kaldi's Coffee Roasting,7,756,Kaldi's Coffee Roasting,2,100.0,False
+Kaldi's Coffee,2,756,Kaldi's Coffee Roasting,2,100.0,False
+Kauai Coffee Company,7,760,Kauai Coffee Company,2,100.0,False
+Kauai Coffee,1,760,Kauai Coffee Company,2,100.0,False
+Kean Coffee,22,763,Kean Coffee,2,100.0,False
+Kéan Coffee,1,763,Kean Coffee,2,100.0,False
+La Colombe,2,802,La Colombe,2,100.0,False
+La Colombe Torrefaction,1,802,La Colombe,2,100.0,False
+La Mill Coffee,2,808,La Mill Coffee,2,100.0,False
+Lamill Coffee,2,808,La Mill Coffee,2,100.0,False
+La Victoria Estate,1,810,Las Victorias Estate,2,100.0,False
+Las Victorias Estate,1,810,Las Victorias Estate,2,100.0,False
+Larry's Beans,1,816,Larry's Coffee,2,100.0,False
+Larry's Coffee,1,816,Larry's Coffee,2,100.0,False
+Lavazza,6,822,Lavazza,2,100.0,False
+Lavazza for the Rivo system,2,822,Lavazza,2,100.0,False
+Marcheur Roaster,2,883,Marcheur Roaster,2,100.0,False
+Marcheur Roastery,1,883,Marcheur Roaster,2,100.0,False
+Maxwell House,5,896,Maxwell House,2,100.0,False
+Maxwell House Premium Cup,1,896,Maxwell House,2,100.0,False
+Mellow Coffee,4,905,Mellow Coffee,2,100.0,False
+Mellow Coffee & Tea,1,905,Mellow Coffee,2,100.0,False
+Modern Times Coffee,8,923,Modern Times Coffee,2,100.0,False
+Modern Times,2,923,Modern Times Coffee,2,100.0,False
+Monte Alegre,2,932,Monte Alegre,2,100.0,False
+Monte Alegre Natural,1,932,Monte Alegre,2,100.0,False
+Noble Coffee Roasting,10,987,Noble Coffee Roasting,2,100.0,False
+Noble Coffee Roastiing,1,987,Noble Coffee Roasting,2,100.0,False
+North Pole Coffee Roasters,2,997,North Pole Coffee Roasters,2,100.0,False
+North Pole Coffee Roasting,1,997,North Pole Coffee Roasters,2,100.0,False
+Novo Coffee,10,1004,Novo Coffee,2,100.0,False
+Novo Coffee Roasters,1,1004,Novo Coffee,2,100.0,False
+Oliver's Custom Coffee,5,1020,Oliver's Custom Coffee,2,100.0,False
+Oliver's Custom Coffees,1,1020,Oliver's Custom Coffee,2,100.0,False
+Organic Coffee Company,1,1031,Organic Coffee Company,2,100.0,False
+The Organic Coffee Co.,1,1031,Organic Coffee Company,2,100.0,False
+Oro Caffe for the Singolo espresso system,2,1036,Oro Caffe for the Singolo espresso system,2,100.0,False
+Oro Caffe,1,1036,Oro Caffe for the Singolo espresso system,2,100.0,False
+P&F Coffee,3,1039,P&F Coffee,2,100.0,False
+P & F Coffee,1,1039,P&F Coffee,2,100.0,False
+Paradise Roasters,357,1057,Paradise Roasters,2,100.0,False
+Paradise Coffee Roasters,1,1057,Paradise Roasters,2,100.0,False
+Peerless Coffee,1,1069,Peerless Coffee and Tea,2,100.0,False
+Peerless Coffee and Tea,1,1069,Peerless Coffee and Tea,2,100.0,False
+Per'la Specialty Roasters,5,1074,Per'la Specialty Roasters,2,100.0,False
+Per’la Specialty Roasters,1,1074,Per'la Specialty Roasters,2,100.0,False
+Quartermaine Coffee Roasters,5,1117,Quartermaine Coffee Roasters,2,100.0,False
+Quartermaine Coffee Roasters (Sam's Club),1,1117,Quartermaine Coffee Roasters,2,100.0,False
+RamsHead Coffee Roasters,56,1130,RamsHead Coffee Roasters,2,100.0,False
+Ramshead Coffee Roasters,4,1130,RamsHead Coffee Roasters,2,100.0,False
+Red Rock Roasters,6,1141,Red Rock Roasters,2,100.0,False
+Red Rock Coffee Roasters,3,1141,Red Rock Roasters,2,100.0,False
+Reunion Island Coffee,15,1150,Reunion Island Coffee,2,100.0,False
+Reunion Coffee Roasters,3,1150,Reunion Island Coffee,2,100.0,False
+Roast House,9,1162,Roast House,2,100.0,False
+Roast House Coffee,1,1162,Roast House,2,100.0,False
+Roytawan,1,1176,Roytawan Coffee Roaster,2,100.0,False
+Roytawan Coffee Roaster,1,1176,Roytawan Coffee Roaster,2,100.0,False
+Rusty's Hawaiian,24,1183,Rusty's Hawaiian,2,100.0,False
+Rusty’s Hawaiian,1,1183,Rusty's Hawaiian,2,100.0,False
+SOT Coffee Roaster,17,1188,SOT Coffee Roaster,2,100.0,False
+SÖT Coffee Roaster,7,1188,SOT Coffee Roaster,2,100.0,False
+Sacred Grounds Organic Coffee,1,1190,Sacred Grounds Organic Coffee Roasters,2,100.0,False
+Sacred Grounds Organic Coffee Roasters,1,1190,Sacred Grounds Organic Coffee Roasters,2,100.0,False
+Salt Spring Coffee,1,1196,Salt Spring Roasting Company,2,100.0,False
+Salt Spring Roasting Company,1,1196,Salt Spring Roasting Company,2,100.0,False
+San Francisco Bay Coffee,16,1202,San Francisco Bay Coffee,2,100.0,False
+San Francisco Bay Coffee (Costco),1,1202,San Francisco Bay Coffee,2,100.0,False
+Santa Cruz Coffee Company,2,1213,Santa Cruz Coffee Company,2,100.0,False
+Santa Cruz Coffee Roasting,1,1213,Santa Cruz Coffee Company,2,100.0,False
+Sara Lee Coffee & Tea,1,1215,Sara Lee Coffee and Tea,2,100.0,False
+Sara Lee Coffee and Tea,1,1215,Sara Lee Coffee and Tea,2,100.0,False
+Satur Specialty Coffee,5,1216,Satur Specialty Coffee,2,100.0,False
+Satur Coffee,1,1216,Satur Specialty Coffee,2,100.0,False
+"Shanghai Carmo Trading Co., LTD",1,1233,"Shanghai Carmo Trading Co., Ltd.",2,100.0,False
+"Shanghai Carmo Trading Co., Ltd.",1,1233,"Shanghai Carmo Trading Co., Ltd.",2,100.0,False
+Side By Each Brewing Co.,8,1238,Side By Each Brewing Co.,2,100.0,False
+Side by Each Brewing Co.,2,1238,Side By Each Brewing Co.,2,100.0,False
+Small Eyes Cafe,23,1255,Small Eyes Cafe,2,100.0,False
+Small Eyes Café,1,1255,Small Eyes Cafe,2,100.0,False
+Spyhouse Coffee Roasters,3,1271,Spyhouse Coffee Roasters,2,100.0,False
+Spyhouse Coffee Roasting,2,1271,Spyhouse Coffee Roasters,2,100.0,False
+Starbucks Coffee,53,1274,Starbucks Coffee,2,100.0,False
+Starbucks,5,1274,Starbucks Coffee,2,100.0,False
+States Coffee & Mercantile,10,1278,States Coffee & Mercantile,2,100.0,False
+States Coffee,7,1278,States Coffee & Mercantile,2,100.0,False
+Steady State Roasting Company,5,1281,Steady State Roasting Company,2,100.0,False
+Steady State Roasting,2,1281,Steady State Roasting Company,2,100.0,False
+The Supreme Bean,12,1307,The Supreme Bean,2,100.0,False
+Supreme Bean Coffee Roasters,11,1307,The Supreme Bean,2,100.0,False
+Taokas Coffee,1,1323,Taokas Coffee Studio,2,100.0,False
+Taokas Coffee Studio,1,1323,Taokas Coffee Studio,2,100.0,False
+Taster's Coffee,8,1326,Taster's Coffee,2,100.0,False
+Taster’s Coffee,2,1326,Taster's Coffee,2,100.0,False
+Terroir Coffee,66,1336,Terroir Coffee,2,100.0,False
+Terroir Select Coffees,7,1336,Terroir Coffee,2,100.0,False
+Thanksgiving Coffee,35,1340,Thanksgiving Coffee,2,100.0,False
+Thanksgiving Coffee Company,7,1340,Thanksgiving Coffee,2,100.0,False
+The Curve Coffee Roasting Co.,6,1350,The Curve Coffee Roasting Co.,2,100.0,False
+The Curve Coffee Roasting,1,1350,The Curve Coffee Roasting Co.,2,100.0,False
+The WestBean Coffee Roasters,19,1361,The WestBean Coffee Roasters,2,100.0,False
+The WestBean Coffee Roasers,2,1361,The WestBean Coffee Roasters,2,100.0,False
+Van Houtte Cafe,4,1411,Van Houtte Cafe,2,100.0,False
+Van Houtte,1,1411,Van Houtte Cafe,2,100.0,False
+Wallenford,1,1435,Wallenford Blue,2,100.0,False
+Wallenford Blue,1,1435,Wallenford Blue,2,100.0,False
+Water Avenue Coffee,9,1438,Water Avenue Coffee,2,100.0,False
+Water Avenue Coffee Company,5,1438,Water Avenue Coffee,2,100.0,False
+Wheelys Cafe Taiwan,2,1443,Wheelys Cafe Taiwan,2,100.0,False
+Wheelys Café Taiwan,1,1443,Wheelys Cafe Taiwan,2,100.0,False
+Willoughby's Coffee & Tea,62,1458,Willoughby's Coffee & Tea,2,100.0,False
+Willoughby's Coffee and Tea,1,1458,Willoughby's Coffee & Tea,2,100.0,False
+Wolfgang Puck Coffee,2,1460,Wolfgang Puck Coffee,2,100.0,False
+Wolfgang Puck European Style Coffee,1,1460,Wolfgang Puck Coffee,2,100.0,False
+Yo el Rey Roasting,2,1477,Yo el Rey Roasting,2,100.0,False
+Yo El Rey Roasting,1,1477,Yo el Rey Roasting,2,100.0,False
+Yuban,9,1480,Yuban,2,100.0,False
+Yuban Coffee Company,1,1480,Yuban,2,100.0,False
+modcup coffee,31,1493,modcup coffee,2,100.0,False
+modcup,14,1493,modcup coffee,2,100.0,False
 1951 Coffee Company,1,0,1951 Coffee Company,1,100.0,False
 3-19 Coffee,1,2,3-19 Coffee,1,100.0,False
 4 Plus Coffee,1,3,4 Plus Coffee,1,100.0,False
@@ -490,1199 +495,1194 @@ Bootstrap Coffee Roasters,3,150,Bootstrap Coffee Roasters,1,100.0,False
 Boutet Estate,1,151,Boutet Estate,1,100.0,False
 Bows Coffee Roasters,1,152,Bows Coffee Roasters,1,100.0,False
 Boxcar Coffee Roasters,1,153,Boxcar Coffee Roasters,1,100.0,False
-Boyd Coffee,1,154,Boyd Coffee,1,100.0,False
-Boyds Coffee,3,155,Boyds Coffee,1,100.0,False
-Brain Helmet,2,156,Brain Helmet,1,100.0,False
-Branch Street Coffee Roasters,13,157,Branch Street Coffee Roasters,1,100.0,False
-Brand 425,1,158,Brand 425,1,100.0,False
-Breck Coffee Roasters,1,159,Breck Coffee Roasters,1,100.0,False
-Bridge Coffee Co.,2,160,Bridge Coffee Co.,1,100.0,False
-Bridgetown Coffee,2,161,Bridgetown Coffee,1,100.0,False
-Brioso Coffee,2,162,Brioso Coffee,1,100.0,False
-Broadsheet Coffee,1,163,Broadsheet Coffee,1,100.0,False
-Brocade Specialty Coffee,3,164,Brocade Specialty Coffee,1,100.0,False
-Brown Gold,5,165,Brown Gold,1,100.0,False
-Buckmaster Coffee,1,166,Buckmaster Coffee,1,100.0,False
-Bucks County Coffee,14,167,Bucks County Coffee,1,100.0,False
-Buddha's Cup,2,168,Buddha's Cup,1,100.0,False
-Buena Vista Coffee (Jewel-Osco),1,169,Buena Vista Coffee (Jewel-Osco),1,100.0,False
-Bull Run Roasting,4,170,Bull Run Roasting,1,100.0,False
-Buon Caffe,109,171,Buon Caffe,1,100.0,False
-CAFELINO,1,172,CAFELINO,1,100.0,False
-CATAMONA,2,173,CATAMONA,1,100.0,False
-CC's Coffee,8,174,CC's Coffee,1,100.0,False
-CMYK Coffee,5,175,CMYK Coffee,1,100.0,False
-Cachoeira Fernando Paiva,1,176,Cachoeira Fernando Paiva,1,100.0,False
-Cadence Cold Brew Coffee,4,177,Cadence Cold Brew Coffee,1,100.0,False
-Cafe Arles,1,178,Cafe Arles,1,100.0,False
-Cafe Arome,1,179,Cafe Arome,1,100.0,False
-Cafe Backstage,1,180,Cafe Backstage,1,100.0,False
-Cafe Bello,1,181,Cafe Bello,1,100.0,False
-Cafe Choisi,2,184,Cafe Choisi,1,100.0,False
-Cafe Don Pablo,1,186,Cafe Don Pablo,1,100.0,False
-Cafe Douceur,1,187,Cafe Douceur,1,100.0,False
-Cafe El Meson,1,188,Cafe El Meson,1,100.0,False
-Cafe Est,4,189,Cafe Est,1,100.0,False
-Cafe Femenino,1,191,Cafe Femenino,1,100.0,False
-Cafe Fugu Roasters,5,192,Cafe Fugu Roasters,1,100.0,False
-Cafe Kreyol,16,194,Cafe Kreyol,1,100.0,False
-Cafe Pilao,1,197,Cafe Pilao,1,100.0,False
-Cafe Red Bean Shop,4,198,Cafe Red Bean Shop,1,100.0,False
-Cafe Sunrise,2,200,Cafe Sunrise,1,100.0,False
-Cafe Unido,1,201,Cafe Unido,1,100.0,False
-Cafe Virtuoso,20,203,Cafe Virtuoso,1,100.0,False
-Cafe Vivo,3,204,Cafe Vivo,1,100.0,False
-Cafe de Fiore,1,205,Cafe de Fiore,1,100.0,False
-Cafe de Lya,1,207,Cafe de Lya,1,100.0,False
-Cafe330,2,208,Cafe330,1,100.0,False
-CafeTaster,14,209,CafeTaster,1,100.0,False
-Cafecita,1,210,Cafecita,1,100.0,False
-Cafetalera Fernandez,1,211,Cafetalera Fernandez,1,100.0,False
-Cafetera de Chaparral,1,212,Cafetera de Chaparral,1,100.0,False
-Caffe Appassionato,5,213,Caffe Appassionato,1,100.0,False
-Caffe Artigiano,1,214,Caffe Artigiano,1,100.0,False
-Caffe Artigiano-49th Parallel Roasters,1,215,Caffe Artigiano-49th Parallel Roasters,1,100.0,False
-Caffe Bomrad,2,216,Caffe Bomrad,1,100.0,False
-Caffe Botanica,2,217,Caffe Botanica,1,100.0,False
-Caffe D'Arte,1,218,Caffe D'Arte,1,100.0,False
-Caffe Fiore,1,219,Caffe Fiore,1,100.0,False
-Caffe Fresco,2,220,Caffe Fresco,1,100.0,False
-Caffe Ibis,5,221,Caffe Ibis,1,100.0,False
-Caffe Ladro,4,222,Caffe Ladro,1,100.0,False
-Caffe Ladro (Taiwan),1,223,Caffe Ladro (Taiwan),1,100.0,False
-Caffe Lusso Coffee Roasters,1,224,Caffe Lusso Coffee Roasters,1,100.0,False
-Caffe Luxxe,23,225,Caffe Luxxe,1,100.0,False
-Caffe Manaresi,1,226,Caffe Manaresi,1,100.0,False
-Caffe Pronto Coffee Roastery,11,227,Caffe Pronto Coffee Roastery,1,100.0,False
-Caffe Vita Coffee Roasting Co.,5,228,Caffe Vita Coffee Roasting Co.,1,100.0,False
-Caffeic,4,229,Caffeic,1,100.0,False
-Caffeination,1,230,Caffeination,1,100.0,False
-Caffé Artigiano Taiwan,1,231,Caffé Artigiano Taiwan,1,100.0,False
-Caffé Trieste,1,232,Caffé Trieste,1,100.0,False
-Caffé Umbria,2,233,Caffé Umbria,1,100.0,False
-Café Buen Dia,1,234,Café Buen Dia,1,100.0,False
-Café Bustelo,1,235,Café Bustelo,1,100.0,False
-Café Capricho,1,236,Café Capricho,1,100.0,False
-Café Chiayi J11,1,237,Café Chiayi J11,1,100.0,False
-Café Flor de Apia,1,238,Café Flor de Apia,1,100.0,False
-Café Garrido,1,239,Café Garrido,1,100.0,False
-Café Godiva,1,240,Café Godiva,1,100.0,False
-Café Guanes,1,241,Café Guanes,1,100.0,False
-Café Hubert Saint-Jean,1,242,Café Hubert Saint-Jean,1,100.0,False
-Café Juquila,1,243,Café Juquila,1,100.0,False
-Café La Semeuse,1,244,Café La Semeuse,1,100.0,False
-Café Xaragua Single Origin Coffee,1,248,Café Xaragua Single Origin Coffee,1,100.0,False
-Café d'Alma,3,249,Café d'Alma,1,100.0,False
-Caféine Coffee,1,250,Caféine Coffee,1,100.0,False
-California Coffee Roasters,7,252,California Coffee Roasters,1,100.0,False
-Calistoga Roastery,1,253,Calistoga Roastery,1,100.0,False
-Cama Cafe,2,254,Cama Cafe,1,100.0,False
-Camano Island Coffee Roasters,1,255,Camano Island Coffee Roasters,1,100.0,False
-Cambria Coffee,1,256,Cambria Coffee,1,100.0,False
-Cameron’s Coffee,1,257,Cameron’s Coffee,1,100.0,False
-Camino Real Coffee Roasters,2,258,Camino Real Coffee Roasters,1,100.0,False
-Campos Coffee,5,259,Campos Coffee,1,100.0,False
-Canterbury Coffee,9,260,Canterbury Coffee,1,100.0,False
-Caoban Coffee,5,261,Caoban Coffee,1,100.0,False
-Caravali Coffee,2,263,Caravali Coffee,1,100.0,False
-Caravan Coffee,4,264,Caravan Coffee,1,100.0,False
-Caribeans,1,265,Caribeans,1,100.0,False
-Caribou Coffee,46,266,Caribou Coffee,1,100.0,False
-Carmen Cafe,1,267,Carmen Cafe,1,100.0,False
-Carrboro Coffee Roasters,1,268,Carrboro Coffee Roasters,1,100.0,False
-Carte Noire,1,269,Carte Noire,1,100.0,False
-Cartel Coffee Lab,2,270,Cartel Coffee Lab,1,100.0,False
-Carvalho Coffee,2,271,Carvalho Coffee,1,100.0,False
-Casa Ruiz,1,272,Casa Ruiz,1,100.0,False
-Casa Toral,1,273,Casa Toral,1,100.0,False
-Central Coast Coffee Roasting,1,274,Central Coast Coffee Roasting,1,100.0,False
-Central Perk Coffee Co.,1,275,Central Perk Coffee Co.,1,100.0,False
-Ceremony Coffee Roasters,1,276,Ceremony Coffee Roasters,1,100.0,False
-Cerro Grande,1,277,Cerro Grande,1,100.0,False
-ChacolaTAY,11,278,ChacolaTAY,1,100.0,False
-ChadLou's Coffee Roasters,1,279,ChadLou's Coffee Roasters,1,100.0,False
-Chamberlain Coffee,1,280,Chamberlain Coffee,1,100.0,False
-Chaos Coffee Company,2,281,Chaos Coffee Company,1,100.0,False
-Charlotte Coffee Company,3,282,Charlotte Coffee Company,1,100.0,False
-Cheer Beans,3,283,Cheer Beans,1,100.0,False
-Chen Sheng-Le,1,284,Chen Sheng-Le,1,100.0,False
-"Cherry Coffee Estate, Gukeng",1,285,"Cherry Coffee Estate, Gukeng",1,100.0,False
-Chez Cafe,1,287,Chez Cafe,1,100.0,False
-Chia Hua Tsai,1,288,Chia Hua Tsai,1,100.0,False
-Chiming Coffee,2,289,Chiming Coffee,1,100.0,False
-Ching Ye Coffee Estate,1,290,Ching Ye Coffee Estate,1,100.0,False
-Chock Full O'Nuts Coffee,1,291,Chock Full O'Nuts Coffee,1,100.0,False
-Chocolate Fish Coffee Roasters,17,292,Chocolate Fish Coffee Roasters,1,100.0,False
-Choosy Gourmet,3,293,Choosy Gourmet,1,100.0,False
-Chousin Coffee Collection,2,294,Chousin Coffee Collection,1,100.0,False
-Chuck's Roast,7,296,Chuck's Roast,1,100.0,False
-Cimarron Coffee Roasters,8,297,Cimarron Coffee Roasters,1,100.0,False
-City Bean Coffee,6,298,City Bean Coffee,1,100.0,False
-City Boy Coffee,9,299,City Boy Coffee,1,100.0,False
-City Roast,1,300,City Roast,1,100.0,False
-City Steam Coffee,1,301,City Steam Coffee,1,100.0,False
-Classic Coffees Roasting Co.,2,302,Classic Coffees Roasting Co.,1,100.0,False
-Clifton Coffee Roasters,1,303,Clifton Coffee Roasters,1,100.0,False
-Climpson & Sons Coffee Roasters,2,304,Climpson & Sons Coffee Roasters,1,100.0,False
-Clive Coffee,1,305,Clive Coffee,1,100.0,False
-Cloud City Coffee,2,306,Cloud City Coffee,1,100.0,False
-Coastal Peaks Coffee,1,307,Coastal Peaks Coffee,1,100.0,False
-Coava Coffee Roasters,52,308,Coava Coffee Roasters,1,100.0,False
-Coda Coffee,2,309,Coda Coffee,1,100.0,False
-CofFeeling,14,310,CofFeeling,1,100.0,False
-Coffea Guatemala,1,311,Coffea Guatemala,1,100.0,False
-Coffea Roasterie,17,312,Coffea Roasterie,1,100.0,False
-Coffea Roasters,3,313,Coffea Roasters,1,100.0,False
-Coffee Alchemy,1,314,Coffee Alchemy,1,100.0,False
-Coffee Bean Direct,3,315,Coffee Bean Direct,1,100.0,False
-Coffee Bean International,4,316,Coffee Bean International,1,100.0,False
-Coffee Bros.,3,317,Coffee Bros.,1,100.0,False
-Coffee City USA,2,320,Coffee City USA,1,100.0,False
-Coffee Club,3,321,Coffee Club,1,100.0,False
-Coffee Cycle Roasting,9,322,Coffee Cycle Roasting,1,100.0,False
-Coffee Dusk Roasters,3,323,Coffee Dusk Roasters,1,100.0,False
-Coffee Emergency,3,324,Coffee Emergency,1,100.0,False
-Coffee Express,3,325,Coffee Express,1,100.0,False
-Coffee Factorial,3,326,Coffee Factorial,1,100.0,False
-Coffee From Panama,1,327,Coffee From Panama,1,100.0,False
-Coffee Hound,2,328,Coffee Hound,1,100.0,False
-Coffee Legends,1,329,Coffee Legends,1,100.0,False
-Coffee Masters,10,330,Coffee Masters,1,100.0,False
-Coffee People,2,331,Coffee People,1,100.0,False
-Coffee Please,16,332,Coffee Please,1,100.0,False
-Coffee Roasters Avenue,1,333,Coffee Roasters Avenue,1,100.0,False
-Coffee Roasters of Pasadena,3,334,Coffee Roasters of Pasadena,1,100.0,False
-Coffee Tea Etc.,1,335,Coffee Tea Etc.,1,100.0,False
-CoffeeIndy.com,2,337,CoffeeIndy.com,1,100.0,False
-Coffeebar,2,339,Coffeebar,1,100.0,False
-Coffeebox Coffee,19,340,Coffeebox Coffee,1,100.0,False
-Coffeeboy,2,341,Coffeeboy,1,100.0,False
-Coffeeland,9,342,Coffeeland,1,100.0,False
-Coffees of Hawaii,2,343,Coffees of Hawaii,1,100.0,False
-Coffees of the World (Sam's Club),1,344,Coffees of the World (Sam's Club),1,100.0,False
-Colectivo Coffee,1,345,Colectivo Coffee,1,100.0,False
-Collage Coffee,8,347,Collage Coffee,1,100.0,False
-Colombian Coffee Federation,5,348,Colombian Coffee Federation,1,100.0,False
-Colombian Gourmet Products,1,349,Colombian Gourmet Products,1,100.0,False
-Color Coffee,1,350,Color Coffee,1,100.0,False
-Colter Coffee,1,351,Colter Coffee,1,100.0,False
-Columbia Street Roastery,1,352,Columbia Street Roastery,1,100.0,False
-Come True Coffee,1,353,Come True Coffee,1,100.0,False
-Comestible Master Company,5,354,Comestible Master Company,1,100.0,False
-Community Coffee,3,355,Community Coffee,1,100.0,False
-Conduit Coffee,2,357,Conduit Coffee,1,100.0,False
-Conscious Cup Coffee Roasters,23,359,Conscious Cup Coffee Roasters,1,100.0,False
-"Conservatory for Coffee, Tea and Cocoa",2,360,"Conservatory for Coffee, Tea and Cocoa",1,100.0,False
-Copan Trade Coffee Roasters,1,362,Copan Trade Coffee Roasters,1,100.0,False
-Courier Coffee,1,364,Courier Coffee,1,100.0,False
-Cozy House Coffee,19,365,Cozy House Coffee,1,100.0,False
-Cravens Coffee,1,366,Cravens Coffee,1,100.0,False
-Creation Food Co.,14,367,Creation Food Co.,1,100.0,False
-Crescendo Coffee Roasters,3,368,Crescendo Coffee Roasters,1,100.0,False
-Crescent Moon Coffee & Tea,2,369,Crescent Moon Coffee & Tea,1,100.0,False
-Crown & Fancy,1,371,Crown & Fancy,1,100.0,False
-Cuchamatan,1,372,Cuchamatan,1,100.0,False
-Cultiva Fine Coffee,1,373,Cultiva Fine Coffee,1,100.0,False
-Cultivar Coffee Roasting Co.,2,374,Cultivar Coffee Roasting Co.,1,100.0,False
-Cup to Cup Coffee Roasters,4,375,Cup to Cup Coffee Roasters,1,100.0,False
-Cupping Room,1,376,Cupping Room,1,100.0,False
-Cups Espresso Cafe,1,377,Cups Espresso Cafe,1,100.0,False
-Cutbow Coffee,1,378,Cutbow Coffee,1,100.0,False
-Cuvee Coffee,3,379,Cuvee Coffee,1,100.0,False
-DCR Coffee (Dillanos Coffee Roasters),1,381,DCR Coffee (Dillanos Coffee Roasters),1,100.0,False
-DF Spices,1,382,DF Spices,1,100.0,False
-DTS8 Coffee,1,384,DTS8 Coffee,1,100.0,False
-Da-Dai Coffee,1,385,Da-Dai Coffee,1,100.0,False
-Daily Offerings Coffee Roastery,1,386,Daily Offerings Coffee Roastery,1,100.0,False
-Daktari Coffee,5,387,Daktari Coffee,1,100.0,False
-Dallis Bros. Coffee,8,388,Dallis Bros. Coffee,1,100.0,False
-DanCeing Coffee,1,389,DanCeing Coffee,1,100.0,False
-Dante Coffee,3,390,Dante Coffee,1,100.0,False
-Dapper & Wise,1,391,Dapper & Wise,1,100.0,False
-Dauphin Kaffee,1,392,Dauphin Kaffee,1,100.0,False
-David's Nose,19,393,David's Nose,1,100.0,False
-Dawencho G/H/D Bunna Amrach,1,394,Dawencho G/H/D Bunna Amrach,1,100.0,False
-Dawn & Dusk Coffee Roastery,2,395,Dawn & Dusk Coffee Roastery,1,100.0,False
-Dawson Taylor Coffee Roasters,1,397,Dawson Taylor Coffee Roasters,1,100.0,False
-Daybreak Coffee Roasters,1,398,Daybreak Coffee Roasters,1,100.0,False
-Daylight Mind Coffee Company,1,399,Daylight Mind Coffee Company,1,100.0,False
-Dazbog Coffee,1,400,Dazbog Coffee,1,100.0,False
-De Clieu Coffee,6,401,De Clieu Coffee,1,100.0,False
-De La Paz Coffee,2,402,De La Paz Coffee,1,100.0,False
-Dean & Deluca,3,403,Dean & Deluca,1,100.0,False
-Dean's Beans,4,404,Dean's Beans,1,100.0,False
-Dear John Coffee,1,405,Dear John Coffee,1,100.0,False
-Death Wish Coffee,1,406,Death Wish Coffee,1,100.0,False
-Deeper Roots Coffee,1,407,Deeper Roots Coffee,1,100.0,False
-DeerFriend Coffee Company,1,408,DeerFriend Coffee Company,1,100.0,False
-Deludelu Coffee Roasters,3,409,Deludelu Coffee Roasters,1,100.0,False
-Desert Sun Coffee Roasters,3,410,Desert Sun Coffee Roasters,1,100.0,False
-Detour Coffee Roasters,2,412,Detour Coffee Roasters,1,100.0,False
-Difference Coffee,8,414,Difference Coffee,1,100.0,False
-Dilworth Coffee,2,415,Dilworth Coffee,1,100.0,False
-Dinwei Cafe,1,416,Dinwei Cafe,1,100.0,False
-Dios Mio Coffee,1,417,Dios Mio Coffee,1,100.0,False
-Direct Coffee,3,418,Direct Coffee,1,100.0,False
-DoDo Kaffa,2,419,DoDo Kaffa,1,100.0,False
-Doho Coffee Roasters,10,420,Doho Coffee Roasters,1,100.0,False
-Doi Chaang Coffee,18,421,Doi Chaang Coffee,1,100.0,False
-Domain Coffee,2,422,Domain Coffee,1,100.0,False
-Don Bosco Estate,1,423,Don Bosco Estate,1,100.0,False
-Don Francisco's Coffee,9,424,Don Francisco's Coffee,1,100.0,False
-Don Hilario,1,425,Don Hilario,1,100.0,False
-Donkey Cafe,1,426,Donkey Cafe,1,100.0,False
-Door County Coffee and Tea,1,427,Door County Coffee and Tea,1,100.0,False
-Dory Coffee Roasters,5,428,Dory Coffee Roasters,1,100.0,False
-Dos Marias,1,429,Dos Marias,1,100.0,False
-Dose Coffee,3,430,Dose Coffee,1,100.0,False
-Dou Sun Cafe,1,431,Dou Sun Cafe,1,100.0,False
-Dou Zhai Coffee & Roastery,30,432,Dou Zhai Coffee & Roastery,1,100.0,False
-Douwe Egberts,4,434,Douwe Egberts,1,100.0,False
-Downtown Coffee,1,435,Downtown Coffee,1,100.0,False
-Dr. Bean's Coffee Roasters,1,436,Dr. Bean's Coffee Roasters,1,100.0,False
-Dr. Danger Coffee,2,437,Dr. Danger Coffee,1,100.0,False
-Dr. Young Cafe,1,438,Dr. Young Cafe,1,100.0,False
-Dragonfly Coffee Roasters,75,439,Dragonfly Coffee Roasters,1,100.0,False
-Drift Away Coffee,1,440,Drift Away Coffee,1,100.0,False
-Drink Coffee Do Stuff,17,441,Drink Coffee Do Stuff,1,100.0,False
-Dukes Coffee Roasters,1,442,Dukes Coffee Roasters,1,100.0,False
-Dunkin' Donuts,6,444,Dunkin' Donuts,1,100.0,False
-Dávila Kafe,3,447,Dávila Kafe,1,100.0,False
-EBENICA Coffee,3,448,EBENICA Coffee,1,100.0,False
-EK Roast Studio,2,449,EK Roast Studio,1,100.0,False
-Eagle Valley Coffee,1,450,Eagle Valley Coffee,1,100.0,False
-Early Bird Coffee Roasters,1,451,Early Bird Coffee Roasters,1,100.0,False
-Eccentricity Coffee Co.,1,452,Eccentricity Coffee Co.,1,100.0,False
-Ecco Caffe,12,453,Ecco Caffe,1,100.0,False
-Eden Way Coffee,1,454,Eden Way Coffee,1,100.0,False
-El Borbollon,1,456,El Borbollon,1,100.0,False
-Elevator Coffee,1,459,Elevator Coffee,1,100.0,False
-"Elias and Shady Bayter, El Vergel Estate",1,460,"Elias and Shady Bayter, El Vergel Estate",1,100.0,False
-Elk Hill Estates,1,461,Elk Hill Estates,1,100.0,False
-Elm City Roasters,2,462,Elm City Roasters,1,100.0,False
-Ember Coffee Co.,1,463,Ember Coffee Co.,1,100.0,False
-Emiliani Coffee,3,464,Emiliani Coffee,1,100.0,False
-Encounter Coffee Roasters,2,465,Encounter Coffee Roasters,1,100.0,False
-Endless World Coffee,1,466,Endless World Coffee,1,100.0,False
-Entrebox,2,467,Entrebox,1,100.0,False
-Equal Exchange,4,468,Equal Exchange,1,100.0,False
-Equator Coffee Roasters,1,469,Equator Coffee Roasters,1,100.0,False
-Equator Coffees,36,470,Equator Coffees,1,100.0,False
-Equiano Coffee,2,472,Equiano Coffee,1,100.0,False
-Esmar - Don Lipe,1,473,Esmar - Don Lipe,1,100.0,False
-Espresso Express,1,474,Espresso Express,1,100.0,False
-Espresso Havana,1,475,Espresso Havana,1,100.0,False
-Espresso Republic,27,476,Espresso Republic,1,100.0,False
-Ethical Bean Coffee,2,478,Ethical Bean Coffee,1,100.0,False
-Ethiopian Highland Coffee,4,479,Ethiopian Highland Coffee,1,100.0,False
-Evans Brothers Coffee Roasters,6,481,Evans Brothers Coffee Roasters,1,100.0,False
-EverJoy Cafe,2,482,EverJoy Cafe,1,100.0,False
-Excelsa Coffee Company,5,484,Excelsa Coffee Company,1,100.0,False
-Expocafe,1,485,Expocafe,1,100.0,False
-Exportadora de Café Condor,2,486,Exportadora de Café Condor,1,100.0,False
-Fabbrica Coffee,1,487,Fabbrica Coffee,1,100.0,False
-Fair Mountain Coffee Roasters,1,488,Fair Mountain Coffee Roasters,1,100.0,False
-Faustino Coffee,6,489,Faustino Coffee,1,100.0,False
-Fazenda Aguas Claras,1,490,Fazenda Aguas Claras,1,100.0,False
-Fazenda Capim Branco,1,491,Fazenda Capim Branco,1,100.0,False
-Fazenda Turmalina,1,493,Fazenda Turmalina,1,100.0,False
-Felala Coffee Lab,1,494,Felala Coffee Lab,1,100.0,False
-Fellow Coffee,1,495,Fellow Coffee,1,100.0,False
-Ferroni Brothers,2,496,Ferroni Brothers,1,100.0,False
-Fieldheads Coffee Roasting,9,498,Fieldheads Coffee Roasting,1,100.0,False
-Fifth Heaven Coffee,4,499,Fifth Heaven Coffee,1,100.0,False
-Finca El Rey,1,500,Finca El Rey,1,100.0,False
-Finca La Tacita,1,502,Finca La Tacita,1,100.0,False
-Finca Las Nieves,3,503,Finca Las Nieves,1,100.0,False
-Finca Specialty Coffee,1,504,Finca Specialty Coffee,1,100.0,False
-Finca Tasta,3,505,Finca Tasta,1,100.0,False
-Finca Tres Soles,2,506,Finca Tres Soles,1,100.0,False
-Finger Lakes Coffee Roasters,1,507,Finger Lakes Coffee Roasters,1,100.0,False
-Fire Ridge Coffee,1,508,Fire Ridge Coffee,1,100.0,False
-Firelight Coffee,2,509,Firelight Coffee,1,100.0,False
-Fitzgerald Estate,1,511,Fitzgerald Estate,1,100.0,False
-Flamenco Organic Coffee,4,512,Flamenco Organic Coffee,1,100.0,False
-Flattop Coffee Roastery,1,513,Flattop Coffee Roastery,1,100.0,False
-Flight Coffee Co.,43,515,Flight Coffee Co.,1,100.0,False
-Floating Cloud Castle's Madwu Cafe,1,516,Floating Cloud Castle's Madwu Cafe,1,100.0,False
-Flower & Moon Coffee,1,517,Flower & Moon Coffee,1,100.0,False
-Flower Child Coffee,1,518,Flower Child Coffee,1,100.0,False
-Flower Coffee Workshop,2,519,Flower Coffee Workshop,1,100.0,False
-Flying Goat Coffee,29,520,Flying Goat Coffee,1,100.0,False
-Foggy Hills Coffee Company,1,521,Foggy Hills Coffee Company,1,100.0,False
-Folgers,9,522,Folgers,1,100.0,False
-Folgers (Costco),1,523,Folgers (Costco),1,100.0,False
-Folgers Gourmet Selections,2,524,Folgers Gourmet Selections,1,100.0,False
-Folklore Coffee,1,525,Folklore Coffee,1,100.0,False
-Folly Coffee Roasters,2,526,Folly Coffee Roasters,1,100.0,False
-Fong Da Coffee,1,527,Fong Da Coffee,1,100.0,False
-Forest Roasting,2,528,Forest Roasting,1,100.0,False
-Forgotten Forest,1,529,Forgotten Forest,1,100.0,False
-Four Barrel Coffee,6,530,Four Barrel Coffee,1,100.0,False
-Fratelli Lollino,1,531,Fratelli Lollino,1,100.0,False
-Fratello Coffee Roasters,33,532,Fratello Coffee Roasters,1,100.0,False
-Freedom Coffee Roasters,1,533,Freedom Coffee Roasters,1,100.0,False
-French Market,1,534,French Market,1,100.0,False
-Frequent Coffee,3,535,Frequent Coffee,1,100.0,False
-Fresh Cup Roastery Cafe,4,537,Fresh Cup Roastery Cafe,1,100.0,False
-Fresh Roasted Coffee,4,538,Fresh Roasted Coffee,1,100.0,False
-FreshCoffeeNow.com,2,539,FreshCoffeeNow.com,1,100.0,False
-Frontier Coffee,1,540,Frontier Coffee,1,100.0,False
-Fulcrum Coffee Roasters,2,541,Fulcrum Coffee Roasters,1,100.0,False
-Future Factory,1,543,Future Factory,1,100.0,False
-GIGA Coffee,1,544,GIGA Coffee,1,100.0,False
-GK Coffee,84,545,GK Coffee,1,100.0,False
-GT Coffee,1,546,GT Coffee,1,100.0,False
-Gathangu,1,547,Gathangu,1,100.0,False
-Gatomboya,1,548,Gatomboya,1,100.0,False
-Gaturiri,1,549,Gaturiri,1,100.0,False
-Gavagai,5,550,Gavagai,1,100.0,False
-Gavina Gourmet Coffee,2,551,Gavina Gourmet Coffee,1,100.0,False
-Gee Coffee Roasters,3,552,Gee Coffee Roasters,1,100.0,False
-Geisha Coffee Roaster,9,553,Geisha Coffee Roaster,1,100.0,False
-Genesis Coffee Lab,4,554,Genesis Coffee Lab,1,100.0,False
-Gevalia,4,556,Gevalia,1,100.0,False
-Gevalia Kaffe,3,557,Gevalia Kaffe,1,100.0,False
-Gevalia-Tassimo,1,558,Gevalia-Tassimo,1,100.0,False
-Ghost Bird Coffee,2,559,Ghost Bird Coffee,1,100.0,False
-Ghost Town Coffee Roasters,10,560,Ghost Town Coffee Roasters,1,100.0,False
-Gillies Coffee Co.,1,561,Gillies Coffee Co.,1,100.0,False
-Gimme! Coffee,6,562,Gimme! Coffee,1,100.0,False
-GivCOFFEE,1,564,GivCOFFEE,1,100.0,False
-Gloria Jean's Coffees,1,565,Gloria Jean's Coffees,1,100.0,False
-Glory Brew,1,566,Glory Brew,1,100.0,False
-Goca Coffee,1,567,Goca Coffee,1,100.0,False
-Golden Ratio,1,568,Golden Ratio,1,100.0,False
-Golin Coffee Roasters,3,569,Golin Coffee Roasters,1,100.0,False
-Good Coffee Club,1,571,Good Coffee Club,1,100.0,False
-Good Day Coffee,2,572,Good Day Coffee,1,100.0,False
-Good Folks Coffee,2,573,Good Folks Coffee,1,100.0,False
-Good Land Organics,1,574,Good Land Organics,1,100.0,False
-Goodboybob,1,575,Goodboybob,1,100.0,False
-Goodfun Coffee Farm (賴彥合),1,576,Goodfun Coffee Farm (賴彥合),1,100.0,False
-Gorilla Conservation Coffee,1,577,Gorilla Conservation Coffee,1,100.0,False
-Gourmesso,2,578,Gourmesso,1,100.0,False
-Gourmet Coffee Project,4,579,Gourmet Coffee Project,1,100.0,False
-Gourmet Coffee Shop,1,580,Gourmet Coffee Shop,1,100.0,False
-Gourmet's Choice Coffee,1,581,Gourmet's Choice Coffee,1,100.0,False
-Gracenote Coffee Roasters,4,582,Gracenote Coffee Roasters,1,100.0,False
-Graffeo Coffee,2,583,Graffeo Coffee,1,100.0,False
-Granja Paraiso 92,4,584,Granja Paraiso 92,1,100.0,False
-Grass Coffee Roaster,2,585,Grass Coffee Roaster,1,100.0,False
-Great Northern Gourmet Coffees,2,586,Great Northern Gourmet Coffees,1,100.0,False
-Great Plains Coffee Roasting,2,587,Great Plains Coffee Roasting,1,100.0,False
-Great Value (Wal-Mart),1,588,Great Value (Wal-Mart),1,100.0,False
-Great Value (Walmart),1,589,Great Value (Walmart),1,100.0,False
-Greater Goods Coffee Roasters,16,590,Greater Goods Coffee Roasters,1,100.0,False
-Green Dragon Coffee,2,591,Green Dragon Coffee,1,100.0,False
-Green Stone Coffee,18,593,Green Stone Coffee,1,100.0,False
-GreenAlives,12,594,GreenAlives,1,100.0,False
-Greenwell Farms,2,595,Greenwell Farms,1,100.0,False
-Greenwich Mountain Estate,1,596,Greenwich Mountain Estate,1,100.0,False
-Greybox Coffee,1,597,Greybox Coffee,1,100.0,False
-Gridge's Coffee & Roasting,2,599,Gridge's Coffee & Roasting,1,100.0,False
-Grounds for Change,9,600,Grounds for Change,1,100.0,False
-Groundwork Coffee,2,601,Groundwork Coffee,1,100.0,False
-Growers Alliance Coffee,1,602,Growers Alliance Coffee,1,100.0,False
-GuKeng Farmers Association,13,603,GuKeng Farmers Association,1,100.0,False
-Guillermo Botero Mejia,1,604,Guillermo Botero Mejia,1,100.0,False
-Guorizi Zhai Coffee,1,605,Guorizi Zhai Coffee,1,100.0,False
-Guyer Farms,1,606,Guyer Farms,1,100.0,False
-HANX,1,607,HANX,1,100.0,False
-HMM,1,608,HMM,1,100.0,False
-HT Traders,1,609,HT Traders,1,100.0,False
-HWC Coffee,21,610,HWC Coffee,1,100.0,False
-Hair Raiser Coffee,1,611,Hair Raiser Coffee,1,100.0,False
-Haitian Bleu,1,612,Haitian Bleu,1,100.0,False
-Hala Tree Kona Coffee,13,613,Hala Tree Kona Coffee,1,100.0,False
-Hale Coffee Company,1,614,Hale Coffee Company,1,100.0,False
-Hamasaki Estate,1,615,Hamasaki Estate,1,100.0,False
-Hanalei Coffee Roasters,1,616,Hanalei Coffee Roasters,1,100.0,False
-Handlebar Coffee Roasters,4,617,Handlebar Coffee Roasters,1,100.0,False
-Happy Coffee,7,618,Happy Coffee,1,100.0,False
-Has Beans,1,619,Has Beans,1,100.0,False
-Hatch Coffee,2,620,Hatch Coffee,1,100.0,False
-Hauma,2,621,Hauma,1,100.0,False
-Hayman Coffee,1,622,Hayman Coffee,1,100.0,False
-Heady Cup Coffee Roasters,9,623,Heady Cup Coffee Roasters,1,100.0,False
-HealthWise Gourmet Low Acid Coffee,1,624,HealthWise Gourmet Low Acid Coffee,1,100.0,False
-Heart Coffee Roasters,2,625,Heart Coffee Roasters,1,100.0,False
-Heat Coffee,26,626,Heat Coffee,1,100.0,False
-Heavenly Hawaiian,1,627,Heavenly Hawaiian,1,100.0,False
-Heavenly Hawaiian Coffee,1,628,Heavenly Hawaiian Coffee,1,100.0,False
-Heine Brothers Coffee,1,629,Heine Brothers Coffee,1,100.0,False
-Heist,2,630,Heist,1,100.0,False
-Henry's House of Coffee,1,631,Henry's House of Coffee,1,100.0,False
-Hey Brown,1,634,Hey Brown,1,100.0,False
-HiLine Coffee,2,635,HiLine Coffee,1,100.0,False
-Hidden Coffee HK,4,636,Hidden Coffee HK,1,100.0,False
-Higher Grounds Trading Company,2,637,Higher Grounds Trading Company,1,100.0,False
-Highfalutin Coffee Roasters,1,638,Highfalutin Coffee Roasters,1,100.0,False
-Highwire Coffee Roasters,6,639,Highwire Coffee Roasters,1,100.0,False
-Hill's Bros. Coffee,1,640,Hill's Bros. Coffee,1,100.0,False
-Hills Bros.,2,641,Hills Bros.,1,100.0,False
-Ho Soo Tsai,3,642,Ho Soo Tsai,1,100.0,False
-Home Barista Workshop,2,644,Home Barista Workshop,1,100.0,False
-Home in Harmony,3,645,Home in Harmony,1,100.0,False
-Homlamoon Coffee,1,646,Homlamoon Coffee,1,100.0,False
-Hongdou Sweet Hank Coffee,3,647,Hongdou Sweet Hank Coffee,1,100.0,False
-Honolulu Coffee,1,648,Honolulu Coffee,1,100.0,False
-Honomalino Estate,1,649,Honomalino Estate,1,100.0,False
-Honta Coffee,2,650,Honta Coffee,1,100.0,False
-Hood River Coffee,3,651,Hood River Coffee,1,100.0,False
-Horqueta Estate,1,652,Horqueta Estate,1,100.0,False
-Horsham Coffee Roaster,1,653,Horsham Coffee Roaster,1,100.0,False
-Hsus Cafe,1,654,Hsus Cafe,1,100.0,False
-Hua Xi Tian Manor Cafe,1,655,Hua Xi Tian Manor Cafe,1,100.0,False
-Hualalai Roasting and Coffee Company,1,656,Hualalai Roasting and Coffee Company,1,100.0,False
-Huang Ting Coffee Estate (陳榮豐),1,657,Huang Ting Coffee Estate (陳榮豐),1,100.0,False
-Hub Coffee Roasters,4,658,Hub Coffee Roasters,1,100.0,False
-Humboldt Bay Coffee,5,660,Humboldt Bay Coffee,1,100.0,False
-Hunter Bay Coffee Roasters,4,661,Hunter Bay Coffee Roasters,1,100.0,False
-Hutu Cafe Roastery,6,662,Hutu Cafe Roastery,1,100.0,False
-ICC,1,664,ICC,1,100.0,False
-ILSE Coffee Roasters,1,665,ILSE Coffee Roasters,1,100.0,False
-Ichamara,1,666,Ichamara,1,100.0,False
-Iconik Coffee Roasters,1,667,Iconik Coffee Roasters,1,100.0,False
-Illuminista Coffee Roasters,1,668,Illuminista Coffee Roasters,1,100.0,False
-IllyCaffe,4,670,IllyCaffe,1,100.0,False
-Ilustre Specialty Coffees,2,671,Ilustre Specialty Coffees,1,100.0,False
-In Taipei Roaster,1,672,In Taipei Roaster,1,100.0,False
-Indaba Coffee Roasters,17,673,Indaba Coffee Roasters,1,100.0,False
-Index Coffee,3,674,Index Coffee,1,100.0,False
-India Badra Estates,2,675,India Badra Estates,1,100.0,False
-India Balanoor Plantations,1,676,India Balanoor Plantations,1,100.0,False
-India Betta Crown Blue Pearl,1,677,India Betta Crown Blue Pearl,1,100.0,False
-India Emerald Valley Estate,1,679,India Emerald Valley Estate,1,100.0,False
-India Honnamatti Estate,1,680,India Honnamatti Estate,1,100.0,False
-India Pearl Mountain Estate,1,682,India Pearl Mountain Estate,1,100.0,False
-Indigenous Coffees,2,683,Indigenous Coffees,1,100.0,False
-Industrial Joe Coffee,1,684,Industrial Joe Coffee,1,100.0,False
-Inferno Dynamics Coffee Roastery,1,685,Inferno Dynamics Coffee Roastery,1,100.0,False
-Ingenuity Coffee Roastery,2,686,Ingenuity Coffee Roastery,1,100.0,False
-Ink Coffee,2,687,Ink Coffee,1,100.0,False
-Insight Coffee Roasters,1,688,Insight Coffee Roasters,1,100.0,False
-InterAmerican Commodities,4,690,InterAmerican Commodities,1,100.0,False
-Interlude Coffee Roasters,1,691,Interlude Coffee Roasters,1,100.0,False
-Interpretation Coffee,3,692,Interpretation Coffee,1,100.0,False
-Intrinsic Coffee Roasters,1,693,Intrinsic Coffee Roasters,1,100.0,False
-Intuition Coffee,22,694,Intuition Coffee,1,100.0,False
-Ipanema Gourmet,1,695,Ipanema Gourmet,1,100.0,False
-Ipanema Ouro Preto,1,696,Ipanema Ouro Preto,1,100.0,False
-Iron Brew Coffee,2,697,Iron Brew Coffee,1,100.0,False
-Ironclad Coffee Roasters,3,698,Ironclad Coffee Roasters,1,100.0,False
-Irving Farm Coffee Roasters,1,699,Irving Farm Coffee Roasters,1,100.0,False
-Islamorada Coffee Roasters,1,700,Islamorada Coffee Roasters,1,100.0,False
-Ithaca Coffee Company,3,702,Ithaca Coffee Company,1,100.0,False
-J. Tudor Estate,1,704,J. Tudor Estate,1,100.0,False
-J.J. Darboven,2,705,J.J. Darboven,1,100.0,False
-JH Roaster,1,707,JH Roaster,1,100.0,False
-JYL Cafe,1,708,JYL Cafe,1,100.0,False
-Jackrabbit Java,33,709,Jackrabbit Java,1,100.0,False
-Jacobs Coffee,1,711,Jacobs Coffee,1,100.0,False
-Jade Cafe,1,712,Jade Cafe,1,100.0,False
-Jameson Coffee,1,713,Jameson Coffee,1,100.0,False
-Japanese Coffee Co.,1,715,Japanese Coffee Co.,1,100.0,False
-Jason C Yang Beverage Expert Enterprise,1,716,Jason C Yang Beverage Expert Enterprise,1,100.0,False
-Jaunt Coffee Roasters,44,717,Jaunt Coffee Roasters,1,100.0,False
-Java Blend Coffee Roasters,7,718,Java Blend Coffee Roasters,1,100.0,False
-Java City,2,719,Java City,1,100.0,False
-Java Trading Company,2,721,Java Trading Company,1,100.0,False
-Javaloha,1,722,Javaloha,1,100.0,False
-Jebena Coffees,5,723,Jebena Coffees,1,100.0,False
-Jersey Shore Coffee Roasters,1,725,Jersey Shore Coffee Roasters,1,100.0,False
-Jesus Mountain Estate,1,726,Jesus Mountain Estate,1,100.0,False
-Ji Shan Cafe,2,727,Ji Shan Cafe,1,100.0,False
-Jim's Burger Cafe,2,728,Jim's Burger Cafe,1,100.0,False
-Jiva Cubes Instant Coffee Packets,1,729,Jiva Cubes Instant Coffee Packets,1,100.0,False
-Joe Bean Roasters,6,730,Joe Bean Roasters,1,100.0,False
-Joe to Go,1,732,Joe to Go,1,100.0,False
-Joe's Coffee House,1,733,Joe's Coffee House,1,100.0,False
-Jojo's Specialty Coffee & Tea,2,734,Jojo's Specialty Coffee & Tea,1,100.0,False
-Jolly Caffe,1,735,Jolly Caffe,1,100.0,False
-Jones Coffee,1,736,Jones Coffee,1,100.0,False
-Joyful-House,1,738,Joyful-House,1,100.0,False
-Juan Valdez,1,739,Juan Valdez,1,100.0,False
-Julian Coffee Roasters,2,740,Julian Coffee Roasters,1,100.0,False
-Julius Meinl,2,741,Julius Meinl,1,100.0,False
-Just Coffee,3,742,Just Coffee,1,100.0,False
-Just Coffee Cooperative,1,743,Just Coffee Cooperative,1,100.0,False
-Just Love Coffee Roasters,4,744,Just Love Coffee Roasters,1,100.0,False
-K & F Select,1,745,K & F Select,1,100.0,False
-K Brew,2,746,K Brew,1,100.0,False
-KNOT Koffee,1,747,KNOT Koffee,1,100.0,False
-Ka'u Specialty Coffee,2,748,Ka'u Specialty Coffee,1,100.0,False
-Kaanapali Estate Coffee,3,749,Kaanapali Estate Coffee,1,100.0,False
-Kaapi Royale,1,750,Kaapi Royale,1,100.0,False
-Kafe 1804,2,751,Kafe 1804,1,100.0,False
-Kafe Coffee Roastery,24,752,Kafe Coffee Roastery,1,100.0,False
-Kaffe Magnum Opus,9,753,Kaffe Magnum Opus,1,100.0,False
-Kaffetre,1,754,Kaffetre,1,100.0,False
-Kahawa 1893,1,755,Kahawa 1893,1,100.0,False
-Kaladi Brothers Coffee,1,757,Kaladi Brothers Coffee,1,100.0,False
-Kaldi's Best Sustainable Coffees,4,758,Kaldi's Best Sustainable Coffees,1,100.0,False
-Kapi Coffee,1,760,Kapi Coffee,1,100.0,False
-Kapi Dow Coffee Roasters,2,761,Kapi Dow Coffee Roasters,1,100.0,False
-Kasasagi Coffee Roasters,3,762,Kasasagi Coffee Roasters,1,100.0,False
-Kavanaugh Coffee,2,764,Kavanaugh Coffee,1,100.0,False
-Kaya Imports,1,765,Kaya Imports,1,100.0,False
-KenntaRoast,1,767,KenntaRoast,1,100.0,False
-Kili Caffe,1,768,Kili Caffe,1,100.0,False
-King's Gambit Coffee,1,769,King's Gambit Coffee,1,100.0,False
-King's Koffee,1,770,King's Koffee,1,100.0,False
-Kingha Estate,1,771,Kingha Estate,1,100.0,False
-Kirkland Signature (Costco),5,772,Kirkland Signature (Costco),1,100.0,False
-Kiunyu AA,1,773,Kiunyu AA,1,100.0,False
-Klatch Coffee,90,774,Klatch Coffee,1,100.0,False
-Knockbox Coffee,1,775,Knockbox Coffee,1,100.0,False
-Knutsen Coffees,1,776,Knutsen Coffees,1,100.0,False
-Kobricks Coffee,1,777,Kobricks Coffee,1,100.0,False
-Koffie Kàn,1,778,Koffie Kàn,1,100.0,False
-Kokopelli Coffee and Tea,1,779,Kokopelli Coffee and Tea,1,100.0,False
-Kona Blue Sky Coffee,2,780,Kona Blue Sky Coffee,1,100.0,False
-Kona Cafe,2,781,Kona Cafe,1,100.0,False
-Kona Coffee Purveyors,1,782,Kona Coffee Purveyors,1,100.0,False
-Kona Earth Coffee,2,783,Kona Earth Coffee,1,100.0,False
-Kona Farm Direct,9,784,Kona Farm Direct,1,100.0,False
-Kona Hills Coffee,1,785,Kona Hills Coffee,1,100.0,False
-Kona Kimo Coffee,1,786,Kona Kimo Coffee,1,100.0,False
-Kona Love Coffee Co.,4,787,Kona Love Coffee Co.,1,100.0,False
-Kona Luna Coffee,1,788,Kona Luna Coffee,1,100.0,False
-Kona Mountain Coffee,1,789,Kona Mountain Coffee,1,100.0,False
-Kona Premium Coffee,1,790,Kona Premium Coffee,1,100.0,False
-Kona Roasted,3,791,Kona Roasted,1,100.0,False
-Kona View Coffee,1,792,Kona View Coffee,1,100.0,False
-Koolbreeze Distribution,1,793,Koolbreeze Distribution,1,100.0,False
-Kopi Ibrik,1,794,Kopi Ibrik,1,100.0,False
-Kowa,1,795,Kowa,1,100.0,False
-Kraft Foods,3,796,Kraft Foods,1,100.0,False
-Kuma Coffee,10,797,Kuma Coffee,1,100.0,False
-"Kunshan Kokei co., LTD",4,798,"Kunshan Kokei co., LTD",1,100.0,False
-Kura Java Coffee,1,799,Kura Java Coffee,1,100.0,False
-Kustomcoffee,1,800,Kustomcoffee,1,100.0,False
-LB Coffee,1,801,LB Coffee,1,100.0,False
-LECO Coffee,4,802,LECO Coffee,1,100.0,False
-La Bean Coffee,5,803,La Bean Coffee,1,100.0,False
-La Berlina Estate,1,804,La Berlina Estate,1,100.0,False
-La Costa Coffee Roasting,1,806,La Costa Coffee Roasting,1,100.0,False
-La Familia del Cafe,1,807,La Familia del Cafe,1,100.0,False
-La Flor del Cafe,1,808,La Flor del Cafe,1,100.0,False
-La Lucie Estate,1,810,La Lucie Estate,1,100.0,False
-La Torcaza Estate,1,812,La Torcaza Estate,1,100.0,False
-La Vida Java Coffee & Micro-Roastery,1,814,La Vida Java Coffee & Micro-Roastery,1,100.0,False
-Lab 146,1,815,Lab 146,1,100.0,False
-Lamppost Coffee Roasters,1,816,Lamppost Coffee Roasters,1,100.0,False
-Lao Mountain Coffee,1,817,Lao Mountain Coffee,1,100.0,False
-Larin,2,818,Larin,1,100.0,False
-Las Brumas Rainforest Coffee,2,820,Las Brumas Rainforest Coffee,1,100.0,False
-Las Lajas Cooperative,1,822,Las Lajas Cooperative,1,100.0,False
-Lasaters Coffee & Tea,1,823,Lasaters Coffee & Tea,1,100.0,False
-Latitude 23.5,1,824,Latitude 23.5,1,100.0,False
-Lavender Coffee Boutique,1,826,Lavender Coffee Boutique,1,100.0,False
-Le Brewlife,7,827,Le Brewlife,1,100.0,False
-Lean Coffee Roasters,1,828,Lean Coffee Roasters,1,100.0,False
-Lee Dong Coffee,12,829,Lee Dong Coffee,1,100.0,False
-Left Bank Cafe,1,830,Left Bank Cafe,1,100.0,False
-Lenny's Lab Coffee,1,831,Lenny's Lab Coffee,1,100.0,False
-Leopard Forest Coffee,4,832,Leopard Forest Coffee,1,100.0,False
-Lerida Estate,1,833,Lerida Estate,1,100.0,False
-Level Ground Trading,3,834,Level Ground Trading,1,100.0,False
-Lexington Coffee Roasters,75,835,Lexington Coffee Roasters,1,100.0,False
-Libero Coffee,3,836,Libero Coffee,1,100.0,False
-Lighthouse Roasters,1,837,Lighthouse Roasters,1,100.0,False
-Lin Jen Wei’s Black Jar Coffee,18,838,Lin Jen Wei’s Black Jar Coffee,1,100.0,False
-Lin's Home Roasters,1,839,Lin's Home Roasters,1,100.0,False
-Lina Premium Coffee,5,840,Lina Premium Coffee,1,100.0,False
-Linea Caffe S.F.,1,841,Linea Caffe S.F.,1,100.0,False
-Linking Coffee,2,842,Linking Coffee,1,100.0,False
-Lino Cafe,1,843,Lino Cafe,1,100.0,False
-Lino'spresso,1,844,Lino'spresso,1,100.0,False
-Linsun Coffee,1,845,Linsun Coffee,1,100.0,False
-Lion Coffee,2,846,Lion Coffee,1,100.0,False
-Little City Coffee Roaster,1,847,Little City Coffee Roaster,1,100.0,False
-Little Feet Coffee,1,848,Little Feet Coffee,1,100.0,False
-Little Waves Coffee,9,849,Little Waves Coffee,1,100.0,False
-Little While,1,850,Little While,1,100.0,False
-Little Wolf Coffee,1,851,Little Wolf Coffee,1,100.0,False
-Lofty Coffee Co.,1,852,Lofty Coffee Co.,1,100.0,False
-Lone Coffee,4,853,Lone Coffee,1,100.0,False
-Lone Oak Coffee Company,4,854,Lone Oak Coffee Company,1,100.0,False
-Lone Pine Coffee Roasters,2,855,Lone Pine Coffee Roasters,1,100.0,False
-Longbottom Coffee and Tea,1,856,Longbottom Coffee and Tea,1,100.0,False
-Looking Homeward Coffee,1,857,Looking Homeward Coffee,1,100.0,False
-Los Alpes Estate,1,858,Los Alpes Estate,1,100.0,False
-Los Ausoles Cooperative,1,859,Los Ausoles Cooperative,1,100.0,False
-Los Gatos Coffee Roasting Company,1,860,Los Gatos Coffee Roasting Company,1,100.0,False
-Lost Dutchman Coffee Roasters,1,861,Lost Dutchman Coffee Roasters,1,100.0,False
-Lu's Coffee,1,862,Lu's Coffee,1,100.0,False
-Lucaff?,1,863,Lucaff?,1,100.0,False
-Luck Bros' Coffee,1,864,Luck Bros' Coffee,1,100.0,False
-Lucky Cafe,2,865,Lucky Cafe,1,100.0,False
-Lucky Stores,1,866,Lucky Stores,1,100.0,False
-Luv Moshi,4,867,Luv Moshi,1,100.0,False
-Luwak Coffee,2,868,Luwak Coffee,1,100.0,False
-MJ Bear Coffee,1,869,MJ Bear Coffee,1,100.0,False
-MJB,3,870,MJB,1,100.0,False
-MK Coffee Roasters,6,871,MK Coffee Roasters,1,100.0,False
-MT49 Cafe,2,872,MT49 Cafe,1,100.0,False
-Madcap Coffee,1,873,Madcap Coffee,1,100.0,False
-Madera Coffee,1,874,Madera Coffee,1,100.0,False
-Madness Roastworks,3,875,Madness Roastworks,1,100.0,False
-Magic Hat Cafe,1,876,Magic Hat Cafe,1,100.0,False
-Magnolia Coffee,46,877,Magnolia Coffee,1,100.0,False
-Magpie Coffee Roasters,2,878,Magpie Coffee Roasters,1,100.0,False
-Majik Coffee,1,879,Majik Coffee,1,100.0,False
-Mama Cata Estate,1,880,Mama Cata Estate,1,100.0,False
-Mamechamame Coffee,1,881,Mamechamame Coffee,1,100.0,False
-ManLao River Coffee Company,2,882,ManLao River Coffee Company,1,100.0,False
-Manchill Roasteria,4,883,Manchill Roasteria,1,100.0,False
-Mango Cafe,1,884,Mango Cafe,1,100.0,False
-Manzanita Roasting Company,7,885,Manzanita Roasting Company,1,100.0,False
-Market Lane Coffee,1,887,Market Lane Coffee,1,100.0,False
-Marley Coffee,2,888,Marley Coffee,1,100.0,False
-Marques de Paiva (Sam's Club),2,889,Marques de Paiva (Sam's Club),1,100.0,False
-Martinez Fine Coffees,6,890,Martinez Fine Coffees,1,100.0,False
-Martinson Coffee,2,891,Martinson Coffee,1,100.0,False
-Marua,1,892,Marua,1,100.0,False
-Maskal Fine Coffee,1,893,Maskal Fine Coffee,1,100.0,False
-Matt's Wood-Roasted Organic Coffee,4,894,Matt's Wood-Roasted Organic Coffee,1,100.0,False
-Maui 'Oma,1,895,Maui 'Oma,1,100.0,False
-Maunier Estate,1,896,Maunier Estate,1,100.0,False
-Mavis Bank,1,897,Mavis Bank,1,100.0,False
-Maxim Coffee,1,898,Maxim Coffee,1,100.0,False
-Mayorga Coffee Roasters,1,900,Mayorga Coffee Roasters,1,100.0,False
-McCafe,1,901,McCafe,1,100.0,False
-McClure Farms,1,902,McClure Farms,1,100.0,False
-McNulty's Tea & Coffee,1,903,McNulty's Tea & Coffee,1,100.0,False
-Mecca Coffee,1,904,Mecca Coffee,1,100.0,False
-Medalgia d’Oro,1,905,Medalgia d’Oro,1,100.0,False
-Melitta,5,906,Melitta,1,100.0,False
-Mellelo Coffee Roasters,1,907,Mellelo Coffee Roasters,1,100.0,False
-Mellower Coffee,2,909,Mellower Coffee,1,100.0,False
-Member's Mark (Sam's Club),1,910,Member's Mark (Sam's Club),1,100.0,False
-Mercurys Coffee Co.,1,911,Mercurys Coffee Co.,1,100.0,False
-Merge Coffee Company,17,912,Merge Coffee Company,1,100.0,False
-Metropolis Coffee,10,913,Metropolis Coffee,1,100.0,False
-Metropolitan Fine Coffees,1,914,Metropolitan Fine Coffees,1,100.0,False
-Mi's Cafe,4,915,Mi's Cafe,1,100.0,False
-Michael Caffé,1,916,Michael Caffé,1,100.0,False
-Mighty Beast Coffee Roasters,2,917,Mighty Beast Coffee Roasters,1,100.0,False
-Mikava Coffee,2,918,Mikava Coffee,1,100.0,False
-Milagro Coffee y Espresso,2,919,Milagro Coffee y Espresso,1,100.0,False
-Milone Bros. Coffee,1,921,Milone Bros. Coffee,1,100.0,False
-Min Enjoy Cafe,2,922,Min Enjoy Cafe,1,100.0,False
-Ming's Coffee Playroom,1,923,Ming's Coffee Playroom,1,100.0,False
-Miranda's Farms,1,924,Miranda's Farms,1,100.0,False
-Mocha Joe's Specialty Coffee Roasters,1,925,Mocha Joe's Specialty Coffee Roasters,1,100.0,False
-Mojo Coffee Roasters,4,927,Mojo Coffee Roasters,1,100.0,False
-Moka Joe Coffee,1,928,Moka Joe Coffee,1,100.0,False
-Moksha Coffee Roasting,2,929,Moksha Coffee Roasting,1,100.0,False
-Moledina Commodities,2,930,Moledina Commodities,1,100.0,False
-Monarch Coffee,4,931,Monarch Coffee,1,100.0,False
-Montana Coffee Traders,8,932,Montana Coffee Traders,1,100.0,False
-Montana Cowboy Coffee,1,933,Montana Cowboy Coffee,1,100.0,False
-Montanas Cresta,1,934,Montanas Cresta,1,100.0,False
-Mooju Coffee,1,936,Mooju Coffee,1,100.0,False
-MoonMoon Coffee,3,937,MoonMoon Coffee,1,100.0,False
-Moonstruck Farm,1,938,Moonstruck Farm,1,100.0,False
-Moore Coffee,11,939,Moore Coffee,1,100.0,False
-Moplaco Trading,1,940,Moplaco Trading,1,100.0,False
-Morghan Rake Coffee,1,941,Morghan Rake Coffee,1,100.0,False
-Moriah Coffee,2,942,Moriah Coffee,1,100.0,False
-Morning Star Coffee,2,943,Morning Star Coffee,1,100.0,False
-Mortem Labs,5,944,Mortem Labs,1,100.0,False
-Mostra Coffee,27,945,Mostra Coffee,1,100.0,False
-Mother Earth Coffee,2,946,Mother Earth Coffee,1,100.0,False
-Mother Pigeons,2,947,Mother Pigeons,1,100.0,False
-Motif Roasters,1,948,Motif Roasters,1,100.0,False
-Mountain Air Roasting,1,949,Mountain Air Roasting,1,100.0,False
-Mountanos Brothers Coffee Company,1,950,Mountanos Brothers Coffee Company,1,100.0,False
-Moye Forest Coffee,1,951,Moye Forest Coffee,1,100.0,False
-Mozart's Coffee Roasters,3,952,Mozart's Coffee Roasters,1,100.0,False
-Mr. Chao Coffee,5,953,Mr. Chao Coffee,1,100.0,False
-Mr. Espresso,14,954,Mr. Espresso,1,100.0,False
-Mt. Whitney Coffee Roasters,2,955,Mt. Whitney Coffee Roasters,1,100.0,False
-Mtn. Air Roasting,1,956,Mtn. Air Roasting,1,100.0,False
-Mud Bay Coffee,2,957,Mud Bay Coffee,1,100.0,False
-Muddy Dog Roasting,4,958,Muddy Dog Roasting,1,100.0,False
-Muddy Waters Coffee,3,959,Muddy Waters Coffee,1,100.0,False
-Mudhouse Coffee Roasters,6,960,Mudhouse Coffee Roasters,1,100.0,False
-Muggswigz Coffee and Tea,1,961,Muggswigz Coffee and Tea,1,100.0,False
-Muka Coffee,2,962,Muka Coffee,1,100.0,False
-Multatuli Coffee Merchants,1,963,Multatuli Coffee Merchants,1,100.0,False
-Mustard Seed Cafe,1,964,Mustard Seed Cafe,1,100.0,False
-Mute Roaster,3,965,Mute Roaster,1,100.0,False
-Muthewathi,1,966,Muthewathi,1,100.0,False
-My's Coffee,1,967,My's Coffee,1,100.0,False
-Mystic Monk Coffee,75,968,Mystic Monk Coffee,1,100.0,False
-NINETYs Roastery,2,969,NINETYs Roastery,1,100.0,False
-Naked Coffee,1,970,Naked Coffee,1,100.0,False
-Namusairo Coffee,10,971,Namusairo Coffee,1,100.0,False
-Nandipura Coffee,2,972,Nandipura Coffee,1,100.0,False
-Nani Kona Coffee,1,973,Nani Kona Coffee,1,100.0,False
-Nantou Specialty,1,974,Nantou Specialty,1,100.0,False
-Natchitoches Coffee Company,1,975,Natchitoches Coffee Company,1,100.0,False
-Neighbors Coffee,8,976,Neighbors Coffee,1,100.0,False
-Nella's SOGOOD Coffee,1,977,Nella's SOGOOD Coffee,1,100.0,False
-Nemesis Coffee,1,978,Nemesis Coffee,1,100.0,False
-Neosoul,1,979,Neosoul,1,100.0,False
-Nespresso,9,981,Nespresso,1,100.0,False
-Nestle Beverage Company,2,982,Nestle Beverage Company,1,100.0,False
-New Harvest Coffee Roasters,6,983,New Harvest Coffee Roasters,1,100.0,False
-New Mexico Pinon Coffee,1,984,New Mexico Pinon Coffee,1,100.0,False
-Ngandu,1,985,Ngandu,1,100.0,False
-Nguyen Coffee Supply,2,986,Nguyen Coffee Supply,1,100.0,False
-Night & Bean Coffee,3,987,Night & Bean Coffee,1,100.0,False
-Nine Point Coffee,5,988,Nine Point Coffee,1,100.0,False
-Nirvana Soul Coffee Purveyors,1,989,Nirvana Soul Coffee Purveyors,1,100.0,False
-Nobletree Coffee,1,991,Nobletree Coffee,1,100.0,False
-Nodi Coffee,2,992,Nodi Coffee,1,100.0,False
-Noelia Coffee,3,993,Noelia Coffee,1,100.0,False
-Nomadic Bean,1,994,Nomadic Bean,1,100.0,False
-"Nongfu Spring Co., Ltd.",3,995,"Nongfu Spring Co., Ltd.",1,100.0,False
-Nook Bakery & Coffee Bar,1,996,Nook Bakery & Coffee Bar,1,100.0,False
-Normandy Coffee Thai Cuisine,1,997,Normandy Coffee Thai Cuisine,1,100.0,False
-North Coast Coffee Roasting,1,998,North Coast Coffee Roasting,1,100.0,False
-North Koffee Artisan Roasters,1,999,North Koffee Artisan Roasters,1,100.0,False
-North Star Micro Roasters,1,1001,North Star Micro Roasters,1,100.0,False
-Northbound Coffee Roasters,9,1002,Northbound Coffee Roasters,1,100.0,False
-Nossa Familia Coffee,5,1003,Nossa Familia Coffee,1,100.0,False
-Nostalgia Coffee Roasters,25,1004,Nostalgia Coffee Roasters,1,100.0,False
-Notch Coffee,4,1005,Notch Coffee,1,100.0,False
-Novel Coffee Roasters,2,1006,Novel Coffee Roasters,1,100.0,False
-Nuvia Coffee,2,1008,Nuvia Coffee,1,100.0,False
-Nyaithee,1,1009,Nyaithee,1,100.0,False
-O'Henry's Coffees,1,1010,O'Henry's Coffees,1,100.0,False
-OLI Cafe Roaster,3,1011,OLI Cafe Roaster,1,100.0,False
-OQ Coffee Co.,11,1012,OQ Coffee Co.,1,100.0,False
-Oak & Bond Coffee Co.,13,1013,Oak & Bond Coffee Co.,1,100.0,False
-Oak Cliff Coffee Roasters,2,1014,Oak Cliff Coffee Roasters,1,100.0,False
-Oceana Coffee,13,1015,Oceana Coffee,1,100.0,False
-Old Bisbee Roasters,1,1016,Old Bisbee Roasters,1,100.0,False
-Old City Coffee,2,1017,Old City Coffee,1,100.0,False
-Old Soul Co.,46,1018,Old Soul Co.,1,100.0,False
-Old Tavern Estate,7,1019,Old Tavern Estate,1,100.0,False
-Old Town Roasting,1,1020,Old Town Roasting,1,100.0,False
-Old World Coffee Roasters,20,1021,Old World Coffee Roasters,1,100.0,False
-Oliera Cafe,1,1022,Oliera Cafe,1,100.0,False
-Omine Coffee,1,1025,Omine Coffee,1,100.0,False
-Once N Cafe Etude,2,1026,Once N Cafe Etude,1,100.0,False
-One Fresh Cup,2,1027,One Fresh Cup,1,100.0,False
-One Village Coffee,1,1028,One Village Coffee,1,100.0,False
-Open Seas Coffee,1,1029,Open Seas Coffee,1,100.0,False
-Orange Roasters,1,1030,Orange Roasters,1,100.0,False
-Orazure Hand Roasted Coffee,1,1031,Orazure Hand Roasted Coffee,1,100.0,False
-Oregon Coffee Roaster,1,1032,Oregon Coffee Roaster,1,100.0,False
-Oren's Daily Roast,5,1033,Oren's Daily Roast,1,100.0,False
-Organic Planet Coffee & Tea,1,1035,Organic Planet Coffee & Tea,1,100.0,False
-Origin Coffee Roasters,8,1036,Origin Coffee Roasters,1,100.0,False
-Origins Coffee Roasterie,2,1037,Origins Coffee Roasterie,1,100.0,False
-Orleans Coffee Exchange,14,1038,Orleans Coffee Exchange,1,100.0,False
-Oughtred Roasting Works,1,1040,Oughtred Roasting Works,1,100.0,False
-Our Coffee Barn,4,1041,Our Coffee Barn,1,100.0,False
-P.T. Mega Agmist Indonesia,1,1043,P.T. Mega Agmist Indonesia,1,100.0,False
-PERC Coffee Roasters,4,1044,PERC Coffee Roasters,1,100.0,False
-PJ's Coffee & Tea,4,1045,PJ's Coffee & Tea,1,100.0,False
-Pa Mano Cafe,2,1047,Pa Mano Cafe,1,100.0,False
-Pacas Martinez Tonita,1,1048,Pacas Martinez Tonita,1,100.0,False
-Pachamama Coffee Cooperative,5,1049,Pachamama Coffee Cooperative,1,100.0,False
-Pacific Bay Coffee Company,2,1050,Pacific Bay Coffee Company,1,100.0,False
-Pacific Coffee Research,1,1051,Pacific Coffee Research,1,100.0,False
-Palm Coffee Roasters,2,1052,Palm Coffee Roasters,1,100.0,False
-Pamma Coffee,1,1053,Pamma Coffee,1,100.0,False
-Panache Coffee,1,1054,Panache Coffee,1,100.0,False
-Pannikin Coffee & Tea,2,1055,Pannikin Coffee & Tea,1,100.0,False
-Panorama Coffee,1,1056,Panorama Coffee,1,100.0,False
-Panther Coffee,2,1057,Panther Coffee,1,100.0,False
-Papa Lin's Coffee Roasting,20,1058,Papa Lin's Coffee Roasting,1,100.0,False
-Papa Nicholas Coffee,2,1059,Papa Nicholas Coffee,1,100.0,False
-Parisi Artisan Coffee,12,1061,Parisi Artisan Coffee,1,100.0,False
-Park Avenue Coffee,1,1062,Park Avenue Coffee,1,100.0,False
-Passion Cafe,2,1063,Passion Cafe,1,100.0,False
-Path Coffee Roasters,2,1064,Path Coffee Roasters,1,100.0,False
-Pathmark's Mountain Harvest,1,1065,Pathmark's Mountain Harvest,1,100.0,False
-Peaberry's Coffee & Tea,1,1066,Peaberry's Coffee & Tea,1,100.0,False
-Peace Coffee Roasters,2,1067,Peace Coffee Roasters,1,100.0,False
-Peach Coffee Roasters,19,1068,Peach Coffee Roasters,1,100.0,False
-Peacock Coffee Roaster,2,1069,Peacock Coffee Roaster,1,100.0,False
-Pebble Coffee,2,1070,Pebble Coffee,1,100.0,False
-Pedestrian Coffee,1,1071,Pedestrian Coffee,1,100.0,False
-Peet's Coffee,5,1073,Peet's Coffee,1,100.0,False
-Pegasus Coffee,2,1075,Pegasus Coffee,1,100.0,False
-Pele Plantations,2,1076,Pele Plantations,1,100.0,False
-Peri Coffee,1,1078,Peri Coffee,1,100.0,False
-Persnickety Tim's Coffee,1,1079,Persnickety Tim's Coffee,1,100.0,False
-Phil & Sebastian Coffee Roasters,2,1080,Phil & Sebastian Coffee Roasters,1,100.0,False
-Philipsburg Coffee Roasters,2,1081,Philipsburg Coffee Roasters,1,100.0,False
-Philz Coffee,1,1082,Philz Coffee,1,100.0,False
-Pier 40 Roastery,1,1083,Pier 40 Roastery,1,100.0,False
-Pier Coffee,1,1084,Pier Coffee,1,100.0,False
-Pigeonhole Coffee,1,1085,Pigeonhole Coffee,1,100.0,False
-Pine Coffee Supply,1,1086,Pine Coffee Supply,1,100.0,False
-Pink Elephant Coffee,1,1087,Pink Elephant Coffee,1,100.0,False
-Pinup Coffee Co.,7,1088,Pinup Coffee Co.,1,100.0,False
-Pioneer Coffee Roasting,1,1089,Pioneer Coffee Roasting,1,100.0,False
-Placer Roasting,2,1090,Placer Roasting,1,100.0,False
-Plantation A. Bababudangiri,1,1091,Plantation A. Bababudangiri,1,100.0,False
-Plantation Coffee Roasters,1,1092,Plantation Coffee Roasters,1,100.0,False
-Plat Coffee Roastery,14,1093,Plat Coffee Roastery,1,100.0,False
-Plowshares Coffee Roasters,1,1094,Plowshares Coffee Roasters,1,100.0,False
-Podhead,5,1095,Podhead,1,100.0,False
-Polly's Gourmet Coffee,3,1096,Polly's Gourmet Coffee,1,100.0,False
-Pop Coffee Works,2,1097,Pop Coffee Works,1,100.0,False
-Poppets Coffee,1,1098,Poppets Coffee,1,100.0,False
-Port of Mokha,2,1099,Port of Mokha,1,100.0,False
-Portland Roasting,7,1100,Portland Roasting,1,100.0,False
-Porto Rico Importing Co.,1,1101,Porto Rico Importing Co.,1,100.0,False
-Portola Handcrafted Coffee Roasters,2,1102,Portola Handcrafted Coffee Roasters,1,100.0,False
-Portrait Coffee,1,1103,Portrait Coffee,1,100.0,False
-Prairie Lily Coffee,2,1104,Prairie Lily Coffee,1,100.0,False
-Premier Roasters,1,1105,Premier Roasters,1,100.0,False
-Press Coffee,12,1106,Press Coffee,1,100.0,False
-Press House Coffee,2,1107,Press House Coffee,1,100.0,False
-Presta Coffee Roasters,2,1108,Presta Coffee Roasters,1,100.0,False
-Primavera Coffee Roasters,1,1109,Primavera Coffee Roasters,1,100.0,False
-Prism Coffee Works,2,1110,Prism Coffee Works,1,100.0,False
-Pro Aroma Enterprise Coffee,6,1111,Pro Aroma Enterprise Coffee,1,100.0,False
-Procter & Gamble,4,1112,Procter & Gamble,1,100.0,False
-Prodigal Coffee,1,1113,Prodigal Coffee,1,100.0,False
-Propeller Coffee,16,1114,Propeller Coffee,1,100.0,False
-Proud Mary Coffee Roasters,1,1115,Proud Mary Coffee Roasters,1,100.0,False
-Puroast,4,1116,Puroast,1,100.0,False
-Q Burger,1,1117,Q Burger,1,100.0,False
-Qima Coffee,1,1118,Qima Coffee,1,100.0,False
-Qin Mi Coffee,1,1119,Qin Mi Coffee,1,100.0,False
-Quartet Kaffe,12,1121,Quartet Kaffe,1,100.0,False
-Queen Coffee,1,1122,Queen Coffee,1,100.0,False
-Question Coffee,1,1123,Question Coffee,1,100.0,False
-Quivr,1,1124,Quivr,1,100.0,False
-R & R Beans,1,1125,R & R Beans,1,100.0,False
-R Miguel,2,1126,R Miguel,1,100.0,False
-RD Cafe,2,1127,RD Cafe,1,100.0,False
-Raccoon Coffee Roaster,1,1129,Raccoon Coffee Roaster,1,100.0,False
-Ragamuffin Coffee Roasters,6,1130,Ragamuffin Coffee Roasters,1,100.0,False
-Raggiana Coffee,1,1131,Raggiana Coffee,1,100.0,False
-Ralph's Coffee,1,1132,Ralph's Coffee,1,100.0,False
-RanGuo Coffee,1,1134,RanGuo Coffee,1,100.0,False
-Rao's Coffee Roasting,3,1135,Rao's Coffee Roasting,1,100.0,False
-Raven's Brew Coffee,1,1136,Raven's Brew Coffee,1,100.0,False
-RayJen Coffee,1,1137,RayJen Coffee,1,100.0,False
-Reading Coffee Roasters,3,1138,Reading Coffee Roasters,1,100.0,False
-Reanimator Coffee Roasters,1,1139,Reanimator Coffee Roasters,1,100.0,False
-Red Bay Coffee,2,1140,Red Bay Coffee,1,100.0,False
-Red E Café,1,1141,Red E Café,1,100.0,False
-Red Fruit Hand-Roasted Coffee,2,1142,Red Fruit Hand-Roasted Coffee,1,100.0,False
-Red Giant Coffee Roasters,1,1143,Red Giant Coffee Roasters,1,100.0,False
-Redeye Roasters,1,1145,Redeye Roasters,1,100.0,False
-Regent Coffee,19,1146,Regent Coffee,1,100.0,False
-Regular Coffee,3,1147,Regular Coffee,1,100.0,False
-Regulator Roasting,1,1148,Regulator Roasting,1,100.0,False
-Remy Sol Coffee,1,1149,Remy Sol Coffee,1,100.0,False
-Reprise Coffee Roasters,3,1150,Reprise Coffee Roasters,1,100.0,False
-Rest Coffee Roasters,1,1151,Rest Coffee Roasters,1,100.0,False
-Return Coffee Roastery,1,1152,Return Coffee Roastery,1,100.0,False
-Revel Coffee,53,1154,Revel Coffee,1,100.0,False
-Revv Coffee,2,1155,Revv Coffee,1,100.0,False
-Rex Roasting,5,1156,Rex Roasting,1,100.0,False
-Rey Mezzanotte,1,1157,Rey Mezzanotte,1,100.0,False
-Rhetoric Coffee,4,1158,Rhetoric Coffee,1,100.0,False
-Riika Cafe,2,1159,Riika Cafe,1,100.0,False
-Ritual Coffee Roasters,6,1160,Ritual Coffee Roasters,1,100.0,False
-Ritual Coffee Tasmania,1,1161,Ritual Coffee Tasmania,1,100.0,False
-Roast BKK,1,1163,Roast BKK,1,100.0,False
-Roast Co. Artisan Coffees,2,1164,Roast Co. Artisan Coffees,1,100.0,False
-Roasters Coffee House,1,1166,Roasters Coffee House,1,100.0,False
-Roasters Note,1,1167,Roasters Note,1,100.0,False
-Roasting Room,1,1168,Roasting Room,1,100.0,False
-Rocamojo,1,1169,Rocamojo,1,100.0,False
-Rocket Coffee Roasters,1,1170,Rocket Coffee Roasters,1,100.0,False
-Rocky Mountain Roastery,1,1171,Rocky Mountain Roastery,1,100.0,False
-Rooster Roastery,1,1172,Rooster Roastery,1,100.0,False
-Rosalie's Roast,1,1173,Rosalie's Roast,1,100.0,False
-Roses Coffee Corner,1,1174,Roses Coffee Corner,1,100.0,False
-Rotate Fun Club,1,1175,Rotate Fun Club,1,100.0,False
-Royal Chiaohsi Hotel,1,1176,Royal Chiaohsi Hotel,1,100.0,False
-Royal Coffee,5,1177,Royal Coffee,1,100.0,False
-Royal Flamingo Coffee,3,1178,Royal Flamingo Coffee,1,100.0,False
-Rubasse Coffee Roaster,1,1180,Rubasse Coffee Roaster,1,100.0,False
-Ruby Colorful Coffees,1,1181,Ruby Colorful Coffees,1,100.0,False
-Rudy,1,1182,Rudy,1,100.0,False
-Rufous Coffee,2,1183,Rufous Coffee,1,100.0,False
-Rusty Car Coffee,1,1184,Rusty Car Coffee,1,100.0,False
-Rusty Dog Coffee,20,1185,Rusty Dog Coffee,1,100.0,False
-S&D Coffee for Bahama Breeze Restaurants,1,1187,S&D Coffee for Bahama Breeze Restaurants,1,100.0,False
-SINOAGRI E-LNK,1,1188,SINOAGRI E-LNK,1,100.0,False
-SO Roasters,1,1189,SO Roasters,1,100.0,False
-SONGYUE Coffee Estate (郭亮志),1,1190,SONGYUE Coffee Estate (郭亮志),1,100.0,False
-Saccuzzo Boutique Coffee,1,1192,Saccuzzo Boutique Coffee,1,100.0,False
-Safari Cup,5,1194,Safari Cup,1,100.0,False
-Safeway Kitchens,1,1195,Safeway Kitchens,1,100.0,False
-Safeway Select,2,1196,Safeway Select,1,100.0,False
-"Safeway, Inc.",1,1197,"Safeway, Inc.",1,100.0,False
-Salt Lake Roasting,1,1198,Salt Lake Roasting,1,100.0,False
-Sam's Choice (Walmart),1,1200,Sam's Choice (Walmart),1,100.0,False
-Samlin Coffee,2,1201,Samlin Coffee,1,100.0,False
-San Agustin,1,1202,San Agustin,1,100.0,False
-San Alto/Oasis Coffee,3,1203,San Alto/Oasis Coffee,1,100.0,False
-San Benito Estate,1,1204,San Benito Estate,1,100.0,False
-San Francisco Coffee,1,1206,San Francisco Coffee,1,100.0,False
-San Giorgio Coffee Company,1,1207,San Giorgio Coffee Company,1,100.0,False
-San Isidro Cooperative,1,1208,San Isidro Cooperative,1,100.0,False
-San Joaquin Coffee Company,2,1209,San Joaquin Coffee Company,1,100.0,False
-San Rafael,1,1210,San Rafael,1,100.0,False
-San Rafael Coffee,1,1211,San Rafael Coffee,1,100.0,False
-SanFull Coffee Roasters,1,1212,SanFull Coffee Roasters,1,100.0,False
-Sancoffee,1,1213,Sancoffee,1,100.0,False
-Santa Adelaide Cooperative,1,1214,Santa Adelaide Cooperative,1,100.0,False
-Santa Barbara,1,1215,Santa Barbara,1,100.0,False
-Santana Coffee,1,1217,Santana Coffee,1,100.0,False
-Scent Pursuit Roasters,5,1220,Scent Pursuit Roasters,1,100.0,False
-Sea Island Coffee,9,1221,Sea Island Coffee,1,100.0,False
-Seasons Coffee Roasters,2,1222,Seasons Coffee Roasters,1,100.0,False
-Seattle Coffee Works,11,1223,Seattle Coffee Works,1,100.0,False
-Seattle's Best Coffee,7,1224,Seattle's Best Coffee,1,100.0,False
-Second Spin Roasting,1,1225,Second Spin Roasting,1,100.0,False
-Secret Squirrel,1,1226,Secret Squirrel,1,100.0,False
-"Seeker Co, Ltd.",4,1227,"Seeker Co, Ltd.",1,100.0,False
-Segafredo Zanetti,3,1228,Segafredo Zanetti,1,100.0,False
-Senseo-Douwe Egberts,1,1229,Senseo-Douwe Egberts,1,100.0,False
-Sensory House Coffee,2,1230,Sensory House Coffee,1,100.0,False
-Sensory Lab,1,1231,Sensory Lab,1,100.0,False
-Serda's Coffee,1,1232,Serda's Coffee,1,100.0,False
-Serious Coffee,2,1233,Serious Coffee,1,100.0,False
-Shan Jin Coffee Manor,1,1234,Shan Jin Coffee Manor,1,100.0,False
-Shan-Hai-Guan Hand-Made Coffee,1,1235,Shan-Hai-Guan Hand-Made Coffee,1,100.0,False
-"Shanghai Creation Trading Co, Ltd.",6,1237,"Shanghai Creation Trading Co, Ltd.",1,100.0,False
-Shearwater Organic Coffee Roasters,3,1238,Shearwater Organic Coffee Roasters,1,100.0,False
-Shibi Pure,1,1239,Shibi Pure,1,100.0,False
-Shuang Yi Coffee,4,1240,Shuang Yi Coffee,1,100.0,False
-Sightglass Coffee,2,1242,Sightglass Coffee,1,100.0,False
-Sightseer Coffee,1,1243,Sightseer Coffee,1,100.0,False
-Signature Reserve,1,1244,Signature Reserve,1,100.0,False
-Silver Canyon Coffee,2,1245,Silver Canyon Coffee,1,100.0,False
-Silverfern Coffee Roasters,1,1246,Silverfern Coffee Roasters,1,100.0,False
-Simpatico Nice Coffee,1,1248,Simpatico Nice Coffee,1,100.0,False
-Single Speed Coffee Lab & Roastery,1,1249,Single Speed Coffee Lab & Roastery,1,100.0,False
-Singsun Coffee,2,1250,Singsun Coffee,1,100.0,False
-Sip of Hope Community Coffee Roasters,1,1251,Sip of Hope Community Coffee Roasters,1,100.0,False
-SkyTop Coffee,29,1252,SkyTop Coffee,1,100.0,False
-Slake Coffee,2,1253,Slake Coffee,1,100.0,False
-Slingshot Coffee,1,1254,Slingshot Coffee,1,100.0,False
-Slow Burn Coffee Roasters,3,1255,Slow Burn Coffee Roasters,1,100.0,False
-Slowfy,2,1256,Slowfy,1,100.0,False
-Small Batch Coffee,1,1257,Small Batch Coffee,1,100.0,False
-Smit & Dorlas,4,1259,Smit & Dorlas,1,100.0,False
-Snowy Mountain Coffee,1,1260,Snowy Mountain Coffee,1,100.0,False
-Social Coffee & Tea Company,10,1261,Social Coffee & Tea Company,1,100.0,False
-Song Zhi Yuan Coffee Manor,1,1262,Song Zhi Yuan Coffee Manor,1,100.0,False
-Songyue Coffee Manor,1,1263,Songyue Coffee Manor,1,100.0,False
-Soul Work Coffee,4,1264,Soul Work Coffee,1,100.0,False
-South Slope Coffee Roasters,1,1265,South Slope Coffee Roasters,1,100.0,False
-Southeastern Roastery,1,1266,Southeastern Roastery,1,100.0,False
-Souvenir Coffee,7,1267,Souvenir Coffee,1,100.0,False
-Soyuz Coffee Roasting,7,1268,Soyuz Coffee Roasting,1,100.0,False
-SpecialtyJava.com,5,1269,SpecialtyJava.com,1,100.0,False
-Speckled Ax,8,1270,Speckled Ax,1,100.0,False
-Speedwell Coffee,14,1271,Speedwell Coffee,1,100.0,False
-Spirit Animal Coffee,1,1272,Spirit Animal Coffee,1,100.0,False
-Spix's Cafe,1,1273,Spix's Cafe,1,100.0,False
-St. Ives Coffee Roasters,3,1275,St. Ives Coffee Roasters,1,100.0,False
-St1 Cafe/Work Room,2,1276,St1 Cafe/Work Room,1,100.0,False
-Starbucks Coffee (Costco),1,1278,Starbucks Coffee (Costco),1,100.0,False
-Starbucks Reserve Roastery,8,1279,Starbucks Reserve Roastery,1,100.0,False
-Starbucks for the Verismo espresso system,2,1280,Starbucks for the Verismo espresso system,1,100.0,False
-Stauf's Coffee Roasters,2,1282,Stauf's Coffee Roasters,1,100.0,False
-Steadfast Coffee,1,1283,Steadfast Coffee,1,100.0,False
-Steaming Bean Coffee,1,1285,Steaming Bean Coffee,1,100.0,False
-Steel Oak Coffee,6,1286,Steel Oak Coffee,1,100.0,False
-Steep & Brew,3,1287,Steep & Brew,1,100.0,False
-Stereo Coffee Roasters,2,1288,Stereo Coffee Roasters,1,100.0,False
-Stockton Graham & Co,4,1289,Stockton Graham & Co,1,100.0,False
-Stone Creek Coffee,1,1290,Stone Creek Coffee,1,100.0,False
-Stone Cup Roasting,9,1291,Stone Cup Roasting,1,100.0,False
-Stoneleigh Coffee,1,1292,Stoneleigh Coffee,1,100.0,False
-Storehouse Coffee,2,1293,Storehouse Coffee,1,100.0,False
-Storyville Coffee,1,1294,Storyville Coffee,1,100.0,False
-Street Bean,1,1295,Street Bean,1,100.0,False
-Strongtree Heirloom Organic Coffees,1,1296,Strongtree Heirloom Organic Coffees,1,100.0,False
-Studio Confluence,1,1297,Studio Confluence,1,100.0,False
-Stumptown Coffee Roasters,23,1298,Stumptown Coffee Roasters,1,100.0,False
-Succulent Coffee Roasters,5,1299,Succulent Coffee Roasters,1,100.0,False
-Sucré Beans,2,1300,Sucré Beans,1,100.0,False
-Sudden Coffee,1,1301,Sudden Coffee,1,100.0,False
-Sun Bear Specialty Coffee Roasters,1,1302,Sun Bear Specialty Coffee Roasters,1,100.0,False
-Sundays on Toro,1,1303,Sundays on Toro,1,100.0,False
-Sunergos Coffee,1,1304,Sunergos Coffee,1,100.0,False
-Sunny's Coffee,6,1305,Sunny's Coffee,1,100.0,False
-Sunrise Coffee,2,1306,Sunrise Coffee,1,100.0,False
-Sunshine Organic Coffee Roasters,1,1307,Sunshine Organic Coffee Roasters,1,100.0,False
-Superba Coffee,2,1308,Superba Coffee,1,100.0,False
-Superior Coffee,2,1309,Superior Coffee,1,100.0,False
-Surf City Coffee,5,1311,Surf City Coffee,1,100.0,False
-Susan's Coffee and Tea,1,1312,Susan's Coffee and Tea,1,100.0,False
-Sweet Bloom Coffee Roasters,2,1313,Sweet Bloom Coffee Roasters,1,100.0,False
-Sweet Cafe,1,1314,Sweet Cafe,1,100.0,False
-Sweet Home Coffee,1,1315,Sweet Home Coffee,1,100.0,False
-Sweet Maria's Coffee,2,1316,Sweet Maria's Coffee,1,100.0,False
-Sweetwater Organic Coffee Roasters,1,1317,Sweetwater Organic Coffee Roasters,1,100.0,False
-Swelter Coffee,1,1318,Swelter Coffee,1,100.0,False
-Swiss Water Decaffeinated Coffee Company,2,1319,Swiss Water Decaffeinated Coffee Company,1,100.0,False
-T.M. Ward Coffee,1,1320,T.M. Ward Coffee,1,100.0,False
-T.S.E. Custom Roastery,1,1321,T.S.E. Custom Roastery,1,100.0,False
-Talitha Coffee Roasters,3,1322,Talitha Coffee Roasters,1,100.0,False
-Tambaya,1,1323,Tambaya,1,100.0,False
-Tamer International,2,1324,Tamer International,1,100.0,False
-Tandem Coffee,2,1325,Tandem Coffee,1,100.0,False
-Tas Kafe,1,1327,Tas Kafe,1,100.0,False
-Tassimo/Mastro Lorenzo,1,1328,Tassimo/Mastro Lorenzo,1,100.0,False
-Tastes of the World,1,1330,Tastes of the World,1,100.0,False
-Tata Coffee,1,1331,Tata Coffee,1,100.0,False
-Taylor Maid Farms,4,1332,Taylor Maid Farms,1,100.0,False
-Te Aro Roasted,5,1333,Te Aro Roasted,1,100.0,False
-Teapot Coffee & Tea,1,1334,Teapot Coffee & Tea,1,100.0,False
-Tehmag Foods Corporation,1,1335,Tehmag Foods Corporation,1,100.0,False
-Telluride Coffee Roasters,5,1336,Telluride Coffee Roasters,1,100.0,False
-Terranova Estate,1,1338,Terranova Estate,1,100.0,False
-Testa Rossa,1,1340,Testa Rossa,1,100.0,False
-Texas Coffee Traders,1,1341,Texas Coffee Traders,1,100.0,False
-Texas Roast Premium Gourmet Coffee,2,1342,Texas Roast Premium Gourmet Coffee,1,100.0,False
-The Angry Roaster,1,1344,The Angry Roaster,1,100.0,False
-The Bantuan Coffee Foundation,1,1345,The Bantuan Coffee Foundation,1,100.0,False
-The Beanery Coffee Roasters,3,1346,The Beanery Coffee Roasters,1,100.0,False
-The Beanstock Coffee Roasters,1,1347,The Beanstock Coffee Roasters,1,100.0,False
-The Coffee Academics,7,1348,The Coffee Academics,1,100.0,False
-The Coffee Bean & Tea Leaf,3,1349,The Coffee Bean & Tea Leaf,1,100.0,False
-The Coffee Beanery,3,1350,The Coffee Beanery,1,100.0,False
-The Coffee Roaster,1,1351,The Coffee Roaster,1,100.0,False
-The Coffee Tree Roasters,1,1352,The Coffee Tree Roasters,1,100.0,False
-The Embellished Bean,2,1354,The Embellished Bean,1,100.0,False
-The Fire Roasted Coffee,1,1355,The Fire Roasted Coffee,1,100.0,False
-The Formosa Coffee,1,1356,The Formosa Coffee,1,100.0,False
-The Fresh Market,1,1357,The Fresh Market,1,100.0,False
-The Gourmet Coffee Bean,1,1358,The Gourmet Coffee Bean,1,100.0,False
-The Groovy Mind,1,1359,The Groovy Mind,1,100.0,False
-The Organic Coffee Company,1,1360,The Organic Coffee Company,1,100.0,False
-The Reverse Orangutan,1,1361,The Reverse Orangutan,1,100.0,False
-The Roasterie,58,1362,The Roasterie,1,100.0,False
-The Sensuous Bean,1,1363,The Sensuous Bean,1,100.0,False
-The Westside Coffee Company,6,1365,The Westside Coffee Company,1,100.0,False
-Theory Coffee Roasters,8,1366,Theory Coffee Roasters,1,100.0,False
-Thirty-Thirty Coffee Co.,18,1367,Thirty-Thirty Coffee Co.,1,100.0,False
-Three Chairs Specialty Turkish Coffee,1,1368,Three Chairs Specialty Turkish Coffee,1,100.0,False
-Three Keys Coffee,5,1369,Three Keys Coffee,1,100.0,False
-Tico Coffee Roasters,2,1370,Tico Coffee Roasters,1,100.0,False
-Timothy's World Coffee,13,1371,Timothy's World Coffee,1,100.0,False
-Tinker Coffee Co.,1,1372,Tinker Coffee Co.,1,100.0,False
-Tipico Coffee,9,1373,Tipico Coffee,1,100.0,False
-Tipsy Coffee Roasters,1,1374,Tipsy Coffee Roasters,1,100.0,False
-To the moooon Black Cat Loft,1,1375,To the moooon Black Cat Loft,1,100.0,False
-Toca Coffee,1,1376,Toca Coffee,1,100.0,False
-Toms Roasting Co.,1,1377,Toms Roasting Co.,1,100.0,False
-Topeka Coffee of El Salvador,1,1380,Topeka Coffee of El Salvador,1,100.0,False
-Torque Coffee,7,1381,Torque Coffee,1,100.0,False
-Torrefazione Italia,4,1382,Torrefazione Italia,1,100.0,False
-Torrefazione Tafuri,1,1383,Torrefazione Tafuri,1,100.0,False
-Trader Joe's,13,1385,Trader Joe's,1,100.0,False
-Trailhead Coffee Roasters,2,1386,Trailhead Coffee Roasters,1,100.0,False
-Treeman Coffee,2,1387,Treeman Coffee,1,100.0,False
-Tribo Coffee,1,1388,Tribo Coffee,1,100.0,False
-Trident Coffee,2,1389,Trident Coffee,1,100.0,False
-Trifinio Coffee Company,1,1390,Trifinio Coffee Company,1,100.0,False
-Triple Coffee Co.,1,1391,Triple Coffee Co.,1,100.0,False
-TruCup Coffee,2,1392,TruCup Coffee,1,100.0,False
-True Beans Coffee Roasters,7,1393,True Beans Coffee Roasters,1,100.0,False
-True Coffee Roasters,9,1394,True Coffee Roasters,1,100.0,False
-True Coffee Roasting Studio,1,1395,True Coffee Roasting Studio,1,100.0,False
-True Stone Coffee,1,1396,True Stone Coffee,1,100.0,False
-Tug Hill Artisan Roasters,1,1397,Tug Hill Artisan Roasters,1,100.0,False
-Tully's Coffee,29,1398,Tully's Coffee,1,100.0,False
-Tumaz Coffee,1,1399,Tumaz Coffee,1,100.0,False
-Turning Point Coffee,7,1400,Turning Point Coffee,1,100.0,False
-Turnstile Coffee Roasters,5,1401,Turnstile Coffee Roasters,1,100.0,False
-Twiga Coffee,2,1402,Twiga Coffee,1,100.0,False
-Two Guys Roasting,1,1403,Two Guys Roasting,1,100.0,False
-U&Me Buna,2,1404,U&Me Buna,1,100.0,False
-UCC Ueshima Coffee,1,1405,UCC Ueshima Coffee,1,100.0,False
-Uislandscafe,3,1406,Uislandscafe,1,100.0,False
-Uncle Beanz,5,1407,Uncle Beanz,1,100.0,False
-Uncommon Grounds,6,1408,Uncommon Grounds,1,100.0,False
-Uncommon Grounds Coffee and Tea,1,1409,Uncommon Grounds Coffee and Tea,1,100.0,False
-Utopian Coffee,84,1410,Utopian Coffee,1,100.0,False
-V. Coffee,1,1411,V. Coffee,1,100.0,False
-VERYTIME,13,1412,VERYTIME,1,100.0,False
-VN Beans,1,1413,VN Beans,1,100.0,False
-Vascobelo,1,1415,Vascobelo,1,100.0,False
-Velton's Coffee,9,1416,Velton's Coffee,1,100.0,False
-Vennel Coffee,4,1417,Vennel Coffee,1,100.0,False
-Vermont Artisan Coffee & Tea,3,1418,Vermont Artisan Coffee & Tea,1,100.0,False
-Vertigo Coffee,4,1419,Vertigo Coffee,1,100.0,False
-Very Famous International,2,1420,Very Famous International,1,100.0,False
-Victorian House Concentrated Coffee,1,1421,Victorian House Concentrated Coffee,1,100.0,False
-Victrola Coffee Roasters,36,1422,Victrola Coffee Roasters,1,100.0,False
-Vienna Coffee Company,2,1423,Vienna Coffee Company,1,100.0,False
-Vigilante Coffee,2,1424,Vigilante Coffee,1,100.0,False
-Vista Clara Coffee,2,1425,Vista Clara Coffee,1,100.0,False
-Vivid Coffee,1,1426,Vivid Coffee,1,100.0,False
-Voila Coffee,4,1427,Voila Coffee,1,100.0,False
-Volcafe Specialty Coffee,1,1428,Volcafe Specialty Coffee,1,100.0,False
-Volcancito 2 Estate,1,1429,Volcancito 2 Estate,1,100.0,False
-Volcanica Coffee,3,1430,Volcanica Coffee,1,100.0,False
-Voyage Coffee,2,1431,Voyage Coffee,1,100.0,False
-Voyager Specialty Coffee,1,1432,Voyager Specialty Coffee,1,100.0,False
-Wailapa Farms,1,1433,Wailapa Farms,1,100.0,False
-Waimea Coffee,1,1434,Waimea Coffee,1,100.0,False
-Waka Coffee,1,1435,Waka Coffee,1,100.0,False
-Wal-Mart Stores,1,1436,Wal-Mart Stores,1,100.0,False
-Walla Walla Roastery,1,1437,Walla Walla Roastery,1,100.0,False
-Wandering Bear,1,1439,Wandering Bear,1,100.0,False
-Warm Air Kafe,4,1440,Warm Air Kafe,1,100.0,False
-Water Street Coffee,1,1442,Water Street Coffee,1,100.0,False
-Wei Chuan Foods Corporation,14,1443,Wei Chuan Foods Corporation,1,100.0,False
-West Oak Coffee,1,1444,West Oak Coffee,1,100.0,False
-Whatever Coffee,4,1445,Whatever Coffee,1,100.0,False
-Whidbey Coffee,2,1447,Whidbey Coffee,1,100.0,False
-Whipsaw Coffee Roasters,1,1448,Whipsaw Coffee Roasters,1,100.0,False
-White Cloud Mountain Coffee,1,1449,White Cloud Mountain Coffee,1,100.0,False
-White Coffee,1,1450,White Coffee,1,100.0,False
-White Horse Coffee & Tea,3,1451,White Horse Coffee & Tea,1,100.0,False
-White Rhino Coffee,5,1452,White Rhino Coffee,1,100.0,False
-White Rock Coffee,1,1453,White Rock Coffee,1,100.0,False
-Whole Foods Market,4,1454,Whole Foods Market,1,100.0,False
-Wicked Joe,4,1455,Wicked Joe,1,100.0,False
-Wild Goose Coffee Roasters,6,1456,Wild Goose Coffee Roasters,1,100.0,False
-Wild Hawk Coffee,1,1457,Wild Hawk Coffee,1,100.0,False
-Wildfire Coffee Roasters,1,1458,Wildfire Coffee Roasters,1,100.0,False
-Wildgoose Coffee Roasters,1,1459,Wildgoose Coffee Roasters,1,100.0,False
-Wildland Coffee,1,1460,Wildland Coffee,1,100.0,False
-Wishingvine,3,1462,Wishingvine,1,100.0,False
-Wolong Coffee Studio,1,1464,Wolong Coffee Studio,1,100.0,False
-Wonderstate Coffee,59,1465,Wonderstate Coffee,1,100.0,False
-Wood Burl Coffee Roasters,1,1466,Wood Burl Coffee Roasters,1,100.0,False
-Wood-Fire Roasted Coffee,3,1467,Wood-Fire Roasted Coffee,1,100.0,False
-World Cup Roasters,2,1468,World Cup Roasters,1,100.0,False
-Wuguo Cafe,1,1469,Wuguo Cafe,1,100.0,False
-XF Coffee,1,1470,XF Coffee,1,100.0,False
-XianJing Coffee Estate,1,1471,XianJing Coffee Estate,1,100.0,False
-Xinmao Coffee Manor,1,1472,Xinmao Coffee Manor,1,100.0,False
-Yauco Selecto,2,1473,Yauco Selecto,1,100.0,False
-Yellow Brick Coffee,3,1474,Yellow Brick Coffee,1,100.0,False
-Yemen Coffee Processing,1,1475,Yemen Coffee Processing,1,100.0,False
-Yemen Mocha Coffee Trade,2,1476,Yemen Mocha Coffee Trade,1,100.0,False
-Yes Bean Fresh Roast Café,1,1477,Yes Bean Fresh Roast Café,1,100.0,False
-Yi-Chi Coffee,2,1478,Yi-Chi Coffee,1,100.0,False
-Yipao Coffee Roasters,1,1479,Yipao Coffee Roasters,1,100.0,False
-Yong Shun Coffee Manor,1,1481,Yong Shun Coffee Manor,1,100.0,False
-Yosemite Coffee Roasting,2,1482,Yosemite Coffee Roasting,1,100.0,False
-Yum China,3,1484,Yum China,1,100.0,False
-Z Street Coffee,1,1485,Z Street Coffee,1,100.0,False
-Z&Z Fine Coffees,1,1486,Z&Z Fine Coffees,1,100.0,False
-Zacaleu,1,1487,Zacaleu,1,100.0,False
-Zeitgeist Coffee,2,1488,Zeitgeist Coffee,1,100.0,False
-Zingerman's Coffee,5,1489,Zingerman's Coffee,1,100.0,False
-Zocalo Coffee House,1,1490,Zocalo Coffee House,1,100.0,False
-Zoka Coffee Roasters,7,1491,Zoka Coffee Roasters,1,100.0,False
-Zouzhouyuan Coffee Estate,3,1492,Zouzhouyuan Coffee Estate,1,100.0,False
-Zuco Coffee Roasters,2,1493,Zuco Coffee Roasters,1,100.0,False
-caffè HABITU,1,1494,caffè HABITU,1,100.0,False
-inLove Cafe,1,1495,inLove Cafe,1,100.0,False
-Škoda,1,1497,Škoda,1,100.0,False
+Brain Helmet,2,155,Brain Helmet,1,100.0,False
+Branch Street Coffee Roasters,13,156,Branch Street Coffee Roasters,1,100.0,False
+Brand 425,1,157,Brand 425,1,100.0,False
+Breck Coffee Roasters,1,158,Breck Coffee Roasters,1,100.0,False
+Bridge Coffee Co.,2,159,Bridge Coffee Co.,1,100.0,False
+Bridgetown Coffee,2,160,Bridgetown Coffee,1,100.0,False
+Brioso Coffee,2,161,Brioso Coffee,1,100.0,False
+Broadsheet Coffee,1,162,Broadsheet Coffee,1,100.0,False
+Brocade Specialty Coffee,3,163,Brocade Specialty Coffee,1,100.0,False
+Brown Gold,5,164,Brown Gold,1,100.0,False
+Buckmaster Coffee,1,165,Buckmaster Coffee,1,100.0,False
+Bucks County Coffee,14,166,Bucks County Coffee,1,100.0,False
+Buddha's Cup,2,167,Buddha's Cup,1,100.0,False
+Buena Vista Coffee (Jewel-Osco),1,168,Buena Vista Coffee (Jewel-Osco),1,100.0,False
+Bull Run Roasting,4,169,Bull Run Roasting,1,100.0,False
+Buon Caffe,109,170,Buon Caffe,1,100.0,False
+CAFELINO,1,171,CAFELINO,1,100.0,False
+CATAMONA,2,172,CATAMONA,1,100.0,False
+CC's Coffee,8,173,CC's Coffee,1,100.0,False
+CMYK Coffee,5,174,CMYK Coffee,1,100.0,False
+Cachoeira Fernando Paiva,1,175,Cachoeira Fernando Paiva,1,100.0,False
+Cadence Cold Brew Coffee,4,176,Cadence Cold Brew Coffee,1,100.0,False
+Cafe Arles,1,177,Cafe Arles,1,100.0,False
+Cafe Arome,1,178,Cafe Arome,1,100.0,False
+Cafe Backstage,1,179,Cafe Backstage,1,100.0,False
+Cafe Bello,1,180,Cafe Bello,1,100.0,False
+Cafe Choisi,2,183,Cafe Choisi,1,100.0,False
+Cafe Don Pablo,1,185,Cafe Don Pablo,1,100.0,False
+Cafe Douceur,1,186,Cafe Douceur,1,100.0,False
+Cafe El Meson,1,187,Cafe El Meson,1,100.0,False
+Cafe Est,4,188,Cafe Est,1,100.0,False
+Cafe Femenino,1,190,Cafe Femenino,1,100.0,False
+Cafe Fugu Roasters,5,191,Cafe Fugu Roasters,1,100.0,False
+Cafe Kreyol,16,193,Cafe Kreyol,1,100.0,False
+Cafe Pilao,1,196,Cafe Pilao,1,100.0,False
+Cafe Red Bean Shop,4,197,Cafe Red Bean Shop,1,100.0,False
+Cafe Sunrise,2,199,Cafe Sunrise,1,100.0,False
+Cafe Unido,1,200,Cafe Unido,1,100.0,False
+Cafe Virtuoso,20,202,Cafe Virtuoso,1,100.0,False
+Cafe Vivo,3,203,Cafe Vivo,1,100.0,False
+Cafe de Fiore,1,204,Cafe de Fiore,1,100.0,False
+Cafe de Lya,1,206,Cafe de Lya,1,100.0,False
+Cafe330,2,207,Cafe330,1,100.0,False
+CafeTaster,14,208,CafeTaster,1,100.0,False
+Cafecita,1,209,Cafecita,1,100.0,False
+Cafetalera Fernandez,1,210,Cafetalera Fernandez,1,100.0,False
+Cafetera de Chaparral,1,211,Cafetera de Chaparral,1,100.0,False
+Caffe Appassionato,5,212,Caffe Appassionato,1,100.0,False
+Caffe Artigiano,1,213,Caffe Artigiano,1,100.0,False
+Caffe Artigiano-49th Parallel Roasters,1,214,Caffe Artigiano-49th Parallel Roasters,1,100.0,False
+Caffe Bomrad,2,215,Caffe Bomrad,1,100.0,False
+Caffe Botanica,2,216,Caffe Botanica,1,100.0,False
+Caffe D'Arte,1,217,Caffe D'Arte,1,100.0,False
+Caffe Fiore,1,218,Caffe Fiore,1,100.0,False
+Caffe Fresco,2,219,Caffe Fresco,1,100.0,False
+Caffe Ibis,5,220,Caffe Ibis,1,100.0,False
+Caffe Ladro,4,221,Caffe Ladro,1,100.0,False
+Caffe Ladro (Taiwan),1,222,Caffe Ladro (Taiwan),1,100.0,False
+Caffe Lusso Coffee Roasters,1,223,Caffe Lusso Coffee Roasters,1,100.0,False
+Caffe Luxxe,23,224,Caffe Luxxe,1,100.0,False
+Caffe Manaresi,1,225,Caffe Manaresi,1,100.0,False
+Caffe Pronto Coffee Roastery,11,226,Caffe Pronto Coffee Roastery,1,100.0,False
+Caffe Vita Coffee Roasting Co.,5,227,Caffe Vita Coffee Roasting Co.,1,100.0,False
+Caffeic,4,228,Caffeic,1,100.0,False
+Caffeination,1,229,Caffeination,1,100.0,False
+Caffé Artigiano Taiwan,1,230,Caffé Artigiano Taiwan,1,100.0,False
+Caffé Trieste,1,231,Caffé Trieste,1,100.0,False
+Caffé Umbria,2,232,Caffé Umbria,1,100.0,False
+Café Buen Dia,1,233,Café Buen Dia,1,100.0,False
+Café Bustelo,1,234,Café Bustelo,1,100.0,False
+Café Capricho,1,235,Café Capricho,1,100.0,False
+Café Chiayi J11,1,236,Café Chiayi J11,1,100.0,False
+Café Flor de Apia,1,237,Café Flor de Apia,1,100.0,False
+Café Garrido,1,238,Café Garrido,1,100.0,False
+Café Godiva,1,239,Café Godiva,1,100.0,False
+Café Guanes,1,240,Café Guanes,1,100.0,False
+Café Hubert Saint-Jean,1,241,Café Hubert Saint-Jean,1,100.0,False
+Café Juquila,1,242,Café Juquila,1,100.0,False
+Café La Semeuse,1,243,Café La Semeuse,1,100.0,False
+Café Xaragua Single Origin Coffee,1,247,Café Xaragua Single Origin Coffee,1,100.0,False
+Café d'Alma,3,248,Café d'Alma,1,100.0,False
+Caféine Coffee,1,249,Caféine Coffee,1,100.0,False
+California Coffee Roasters,7,251,California Coffee Roasters,1,100.0,False
+Calistoga Roastery,1,252,Calistoga Roastery,1,100.0,False
+Cama Cafe,2,253,Cama Cafe,1,100.0,False
+Camano Island Coffee Roasters,1,254,Camano Island Coffee Roasters,1,100.0,False
+Cambria Coffee,1,255,Cambria Coffee,1,100.0,False
+Cameron’s Coffee,1,256,Cameron’s Coffee,1,100.0,False
+Camino Real Coffee Roasters,2,257,Camino Real Coffee Roasters,1,100.0,False
+Campos Coffee,5,258,Campos Coffee,1,100.0,False
+Canterbury Coffee,9,259,Canterbury Coffee,1,100.0,False
+Caoban Coffee,5,260,Caoban Coffee,1,100.0,False
+Caravali Coffee,2,262,Caravali Coffee,1,100.0,False
+Caravan Coffee,4,263,Caravan Coffee,1,100.0,False
+Caribeans,1,264,Caribeans,1,100.0,False
+Caribou Coffee,46,265,Caribou Coffee,1,100.0,False
+Carmen Cafe,1,266,Carmen Cafe,1,100.0,False
+Carrboro Coffee Roasters,1,267,Carrboro Coffee Roasters,1,100.0,False
+Carte Noire,1,268,Carte Noire,1,100.0,False
+Cartel Coffee Lab,2,269,Cartel Coffee Lab,1,100.0,False
+Carvalho Coffee,2,270,Carvalho Coffee,1,100.0,False
+Casa Ruiz,1,271,Casa Ruiz,1,100.0,False
+Casa Toral,1,272,Casa Toral,1,100.0,False
+Central Coast Coffee Roasting,1,273,Central Coast Coffee Roasting,1,100.0,False
+Central Perk Coffee Co.,1,274,Central Perk Coffee Co.,1,100.0,False
+Ceremony Coffee Roasters,1,275,Ceremony Coffee Roasters,1,100.0,False
+Cerro Grande,1,276,Cerro Grande,1,100.0,False
+ChacolaTAY,11,277,ChacolaTAY,1,100.0,False
+ChadLou's Coffee Roasters,1,278,ChadLou's Coffee Roasters,1,100.0,False
+Chamberlain Coffee,1,279,Chamberlain Coffee,1,100.0,False
+Chaos Coffee Company,2,280,Chaos Coffee Company,1,100.0,False
+Charlotte Coffee Company,3,281,Charlotte Coffee Company,1,100.0,False
+Cheer Beans,3,282,Cheer Beans,1,100.0,False
+Chen Sheng-Le,1,283,Chen Sheng-Le,1,100.0,False
+"Cherry Coffee Estate, Gukeng",1,284,"Cherry Coffee Estate, Gukeng",1,100.0,False
+Chez Cafe,1,286,Chez Cafe,1,100.0,False
+Chia Hua Tsai,1,287,Chia Hua Tsai,1,100.0,False
+Chiming Coffee,2,288,Chiming Coffee,1,100.0,False
+Ching Ye Coffee Estate,1,289,Ching Ye Coffee Estate,1,100.0,False
+Chock Full O'Nuts Coffee,1,290,Chock Full O'Nuts Coffee,1,100.0,False
+Chocolate Fish Coffee Roasters,17,291,Chocolate Fish Coffee Roasters,1,100.0,False
+Choosy Gourmet,3,292,Choosy Gourmet,1,100.0,False
+Chousin Coffee Collection,2,293,Chousin Coffee Collection,1,100.0,False
+Chuck's Roast,7,295,Chuck's Roast,1,100.0,False
+Cimarron Coffee Roasters,8,296,Cimarron Coffee Roasters,1,100.0,False
+City Bean Coffee,6,297,City Bean Coffee,1,100.0,False
+City Boy Coffee,9,298,City Boy Coffee,1,100.0,False
+City Roast,1,299,City Roast,1,100.0,False
+City Steam Coffee,1,300,City Steam Coffee,1,100.0,False
+Classic Coffees Roasting Co.,2,301,Classic Coffees Roasting Co.,1,100.0,False
+Clifton Coffee Roasters,1,302,Clifton Coffee Roasters,1,100.0,False
+Climpson & Sons Coffee Roasters,2,303,Climpson & Sons Coffee Roasters,1,100.0,False
+Clive Coffee,1,304,Clive Coffee,1,100.0,False
+Cloud City Coffee,2,305,Cloud City Coffee,1,100.0,False
+Coastal Peaks Coffee,1,306,Coastal Peaks Coffee,1,100.0,False
+Coava Coffee Roasters,52,307,Coava Coffee Roasters,1,100.0,False
+Coda Coffee,2,308,Coda Coffee,1,100.0,False
+CofFeeling,14,309,CofFeeling,1,100.0,False
+Coffea Guatemala,1,310,Coffea Guatemala,1,100.0,False
+Coffea Roasterie,17,311,Coffea Roasterie,1,100.0,False
+Coffea Roasters,3,312,Coffea Roasters,1,100.0,False
+Coffee Alchemy,1,313,Coffee Alchemy,1,100.0,False
+Coffee Bean Direct,3,314,Coffee Bean Direct,1,100.0,False
+Coffee Bean International,4,315,Coffee Bean International,1,100.0,False
+Coffee Bros.,3,316,Coffee Bros.,1,100.0,False
+Coffee City USA,2,319,Coffee City USA,1,100.0,False
+Coffee Club,3,320,Coffee Club,1,100.0,False
+Coffee Cycle Roasting,9,321,Coffee Cycle Roasting,1,100.0,False
+Coffee Dusk Roasters,3,322,Coffee Dusk Roasters,1,100.0,False
+Coffee Emergency,3,323,Coffee Emergency,1,100.0,False
+Coffee Express,3,324,Coffee Express,1,100.0,False
+Coffee Factorial,3,325,Coffee Factorial,1,100.0,False
+Coffee From Panama,1,326,Coffee From Panama,1,100.0,False
+Coffee Hound,2,327,Coffee Hound,1,100.0,False
+Coffee Legends,1,328,Coffee Legends,1,100.0,False
+Coffee Masters,10,329,Coffee Masters,1,100.0,False
+Coffee People,2,330,Coffee People,1,100.0,False
+Coffee Please,16,331,Coffee Please,1,100.0,False
+Coffee Roasters Avenue,1,332,Coffee Roasters Avenue,1,100.0,False
+Coffee Roasters of Pasadena,3,333,Coffee Roasters of Pasadena,1,100.0,False
+Coffee Tea Etc.,1,334,Coffee Tea Etc.,1,100.0,False
+CoffeeIndy.com,2,336,CoffeeIndy.com,1,100.0,False
+Coffeebar,2,338,Coffeebar,1,100.0,False
+Coffeebox Coffee,19,339,Coffeebox Coffee,1,100.0,False
+Coffeeboy,2,340,Coffeeboy,1,100.0,False
+Coffeeland,9,341,Coffeeland,1,100.0,False
+Coffees of Hawaii,2,342,Coffees of Hawaii,1,100.0,False
+Coffees of the World (Sam's Club),1,343,Coffees of the World (Sam's Club),1,100.0,False
+Colectivo Coffee,1,344,Colectivo Coffee,1,100.0,False
+Collage Coffee,8,346,Collage Coffee,1,100.0,False
+Colombian Coffee Federation,5,347,Colombian Coffee Federation,1,100.0,False
+Colombian Gourmet Products,1,348,Colombian Gourmet Products,1,100.0,False
+Color Coffee,1,349,Color Coffee,1,100.0,False
+Colter Coffee,1,350,Colter Coffee,1,100.0,False
+Columbia Street Roastery,1,351,Columbia Street Roastery,1,100.0,False
+Come True Coffee,1,352,Come True Coffee,1,100.0,False
+Comestible Master Company,5,353,Comestible Master Company,1,100.0,False
+Community Coffee,3,354,Community Coffee,1,100.0,False
+Conduit Coffee,2,356,Conduit Coffee,1,100.0,False
+Conscious Cup Coffee Roasters,23,358,Conscious Cup Coffee Roasters,1,100.0,False
+"Conservatory for Coffee, Tea and Cocoa",2,359,"Conservatory for Coffee, Tea and Cocoa",1,100.0,False
+Copan Trade Coffee Roasters,1,361,Copan Trade Coffee Roasters,1,100.0,False
+Courier Coffee,1,363,Courier Coffee,1,100.0,False
+Cozy House Coffee,19,364,Cozy House Coffee,1,100.0,False
+Cravens Coffee,1,365,Cravens Coffee,1,100.0,False
+Creation Food Co.,14,366,Creation Food Co.,1,100.0,False
+Crescendo Coffee Roasters,3,367,Crescendo Coffee Roasters,1,100.0,False
+Crescent Moon Coffee & Tea,2,368,Crescent Moon Coffee & Tea,1,100.0,False
+Crown & Fancy,1,370,Crown & Fancy,1,100.0,False
+Cuchamatan,1,371,Cuchamatan,1,100.0,False
+Cultiva Fine Coffee,1,372,Cultiva Fine Coffee,1,100.0,False
+Cultivar Coffee Roasting Co.,2,373,Cultivar Coffee Roasting Co.,1,100.0,False
+Cup to Cup Coffee Roasters,4,374,Cup to Cup Coffee Roasters,1,100.0,False
+Cupping Room,1,375,Cupping Room,1,100.0,False
+Cups Espresso Cafe,1,376,Cups Espresso Cafe,1,100.0,False
+Cutbow Coffee,1,377,Cutbow Coffee,1,100.0,False
+Cuvee Coffee,3,378,Cuvee Coffee,1,100.0,False
+DCR Coffee (Dillanos Coffee Roasters),1,380,DCR Coffee (Dillanos Coffee Roasters),1,100.0,False
+DF Spices,1,381,DF Spices,1,100.0,False
+DTS8 Coffee,1,383,DTS8 Coffee,1,100.0,False
+Da-Dai Coffee,1,384,Da-Dai Coffee,1,100.0,False
+Daily Offerings Coffee Roastery,1,385,Daily Offerings Coffee Roastery,1,100.0,False
+Daktari Coffee,5,386,Daktari Coffee,1,100.0,False
+Dallis Bros. Coffee,8,387,Dallis Bros. Coffee,1,100.0,False
+DanCeing Coffee,1,388,DanCeing Coffee,1,100.0,False
+Dante Coffee,3,389,Dante Coffee,1,100.0,False
+Dapper & Wise,1,390,Dapper & Wise,1,100.0,False
+Dauphin Kaffee,1,391,Dauphin Kaffee,1,100.0,False
+David's Nose,19,392,David's Nose,1,100.0,False
+Dawencho G/H/D Bunna Amrach,1,393,Dawencho G/H/D Bunna Amrach,1,100.0,False
+Dawn & Dusk Coffee Roastery,2,394,Dawn & Dusk Coffee Roastery,1,100.0,False
+Dawson Taylor Coffee Roasters,1,396,Dawson Taylor Coffee Roasters,1,100.0,False
+Daybreak Coffee Roasters,1,397,Daybreak Coffee Roasters,1,100.0,False
+Daylight Mind Coffee Company,1,398,Daylight Mind Coffee Company,1,100.0,False
+Dazbog Coffee,1,399,Dazbog Coffee,1,100.0,False
+De Clieu Coffee,6,400,De Clieu Coffee,1,100.0,False
+De La Paz Coffee,2,401,De La Paz Coffee,1,100.0,False
+Dean & Deluca,3,402,Dean & Deluca,1,100.0,False
+Dean's Beans,4,403,Dean's Beans,1,100.0,False
+Dear John Coffee,1,404,Dear John Coffee,1,100.0,False
+Death Wish Coffee,1,405,Death Wish Coffee,1,100.0,False
+Deeper Roots Coffee,1,406,Deeper Roots Coffee,1,100.0,False
+DeerFriend Coffee Company,1,407,DeerFriend Coffee Company,1,100.0,False
+Deludelu Coffee Roasters,3,408,Deludelu Coffee Roasters,1,100.0,False
+Desert Sun Coffee Roasters,3,409,Desert Sun Coffee Roasters,1,100.0,False
+Detour Coffee Roasters,2,411,Detour Coffee Roasters,1,100.0,False
+Difference Coffee,8,413,Difference Coffee,1,100.0,False
+Dilworth Coffee,2,414,Dilworth Coffee,1,100.0,False
+Dinwei Cafe,1,415,Dinwei Cafe,1,100.0,False
+Dios Mio Coffee,1,416,Dios Mio Coffee,1,100.0,False
+Direct Coffee,3,417,Direct Coffee,1,100.0,False
+DoDo Kaffa,2,418,DoDo Kaffa,1,100.0,False
+Doho Coffee Roasters,10,419,Doho Coffee Roasters,1,100.0,False
+Doi Chaang Coffee,18,420,Doi Chaang Coffee,1,100.0,False
+Domain Coffee,2,421,Domain Coffee,1,100.0,False
+Don Bosco Estate,1,422,Don Bosco Estate,1,100.0,False
+Don Francisco's Coffee,9,423,Don Francisco's Coffee,1,100.0,False
+Don Hilario,1,424,Don Hilario,1,100.0,False
+Donkey Cafe,1,425,Donkey Cafe,1,100.0,False
+Door County Coffee and Tea,1,426,Door County Coffee and Tea,1,100.0,False
+Dory Coffee Roasters,5,427,Dory Coffee Roasters,1,100.0,False
+Dos Marias,1,428,Dos Marias,1,100.0,False
+Dose Coffee,3,429,Dose Coffee,1,100.0,False
+Dou Sun Cafe,1,430,Dou Sun Cafe,1,100.0,False
+Dou Zhai Coffee & Roastery,30,431,Dou Zhai Coffee & Roastery,1,100.0,False
+Douwe Egberts,4,433,Douwe Egberts,1,100.0,False
+Downtown Coffee,1,434,Downtown Coffee,1,100.0,False
+Dr. Bean's Coffee Roasters,1,435,Dr. Bean's Coffee Roasters,1,100.0,False
+Dr. Danger Coffee,2,436,Dr. Danger Coffee,1,100.0,False
+Dr. Young Cafe,1,437,Dr. Young Cafe,1,100.0,False
+Dragonfly Coffee Roasters,75,438,Dragonfly Coffee Roasters,1,100.0,False
+Drift Away Coffee,1,439,Drift Away Coffee,1,100.0,False
+Drink Coffee Do Stuff,17,440,Drink Coffee Do Stuff,1,100.0,False
+Dukes Coffee Roasters,1,441,Dukes Coffee Roasters,1,100.0,False
+Dunkin' Donuts,6,443,Dunkin' Donuts,1,100.0,False
+Dávila Kafe,3,446,Dávila Kafe,1,100.0,False
+EBENICA Coffee,3,447,EBENICA Coffee,1,100.0,False
+EK Roast Studio,2,448,EK Roast Studio,1,100.0,False
+Eagle Valley Coffee,1,449,Eagle Valley Coffee,1,100.0,False
+Early Bird Coffee Roasters,1,450,Early Bird Coffee Roasters,1,100.0,False
+Eccentricity Coffee Co.,1,451,Eccentricity Coffee Co.,1,100.0,False
+Ecco Caffe,12,452,Ecco Caffe,1,100.0,False
+Eden Way Coffee,1,453,Eden Way Coffee,1,100.0,False
+El Borbollon,1,455,El Borbollon,1,100.0,False
+Elevator Coffee,1,458,Elevator Coffee,1,100.0,False
+"Elias and Shady Bayter, El Vergel Estate",1,459,"Elias and Shady Bayter, El Vergel Estate",1,100.0,False
+Elk Hill Estates,1,460,Elk Hill Estates,1,100.0,False
+Elm City Roasters,2,461,Elm City Roasters,1,100.0,False
+Ember Coffee Co.,1,462,Ember Coffee Co.,1,100.0,False
+Emiliani Coffee,3,463,Emiliani Coffee,1,100.0,False
+Encounter Coffee Roasters,2,464,Encounter Coffee Roasters,1,100.0,False
+Endless World Coffee,1,465,Endless World Coffee,1,100.0,False
+Entrebox,2,466,Entrebox,1,100.0,False
+Equal Exchange,4,467,Equal Exchange,1,100.0,False
+Equator Coffee Roasters,1,468,Equator Coffee Roasters,1,100.0,False
+Equator Coffees,36,469,Equator Coffees,1,100.0,False
+Equiano Coffee,2,471,Equiano Coffee,1,100.0,False
+Esmar - Don Lipe,1,472,Esmar - Don Lipe,1,100.0,False
+Espresso Express,1,473,Espresso Express,1,100.0,False
+Espresso Havana,1,474,Espresso Havana,1,100.0,False
+Espresso Republic,27,475,Espresso Republic,1,100.0,False
+Ethical Bean Coffee,2,477,Ethical Bean Coffee,1,100.0,False
+Ethiopian Highland Coffee,4,478,Ethiopian Highland Coffee,1,100.0,False
+Evans Brothers Coffee Roasters,6,480,Evans Brothers Coffee Roasters,1,100.0,False
+EverJoy Cafe,2,481,EverJoy Cafe,1,100.0,False
+Excelsa Coffee Company,5,483,Excelsa Coffee Company,1,100.0,False
+Expocafe,1,484,Expocafe,1,100.0,False
+Exportadora de Café Condor,2,485,Exportadora de Café Condor,1,100.0,False
+Fabbrica Coffee,1,486,Fabbrica Coffee,1,100.0,False
+Fair Mountain Coffee Roasters,1,487,Fair Mountain Coffee Roasters,1,100.0,False
+Faustino Coffee,6,488,Faustino Coffee,1,100.0,False
+Fazenda Aguas Claras,1,489,Fazenda Aguas Claras,1,100.0,False
+Fazenda Capim Branco,1,490,Fazenda Capim Branco,1,100.0,False
+Fazenda Turmalina,1,492,Fazenda Turmalina,1,100.0,False
+Felala Coffee Lab,1,493,Felala Coffee Lab,1,100.0,False
+Fellow Coffee,1,494,Fellow Coffee,1,100.0,False
+Ferroni Brothers,2,495,Ferroni Brothers,1,100.0,False
+Fieldheads Coffee Roasting,9,497,Fieldheads Coffee Roasting,1,100.0,False
+Fifth Heaven Coffee,4,498,Fifth Heaven Coffee,1,100.0,False
+Finca El Rey,1,499,Finca El Rey,1,100.0,False
+Finca La Tacita,1,501,Finca La Tacita,1,100.0,False
+Finca Las Nieves,3,502,Finca Las Nieves,1,100.0,False
+Finca Specialty Coffee,1,503,Finca Specialty Coffee,1,100.0,False
+Finca Tasta,3,504,Finca Tasta,1,100.0,False
+Finca Tres Soles,2,505,Finca Tres Soles,1,100.0,False
+Finger Lakes Coffee Roasters,1,506,Finger Lakes Coffee Roasters,1,100.0,False
+Fire Ridge Coffee,1,507,Fire Ridge Coffee,1,100.0,False
+Firelight Coffee,2,508,Firelight Coffee,1,100.0,False
+Fitzgerald Estate,1,510,Fitzgerald Estate,1,100.0,False
+Flamenco Organic Coffee,4,511,Flamenco Organic Coffee,1,100.0,False
+Flattop Coffee Roastery,1,512,Flattop Coffee Roastery,1,100.0,False
+Flight Coffee Co.,43,514,Flight Coffee Co.,1,100.0,False
+Floating Cloud Castle's Madwu Cafe,1,515,Floating Cloud Castle's Madwu Cafe,1,100.0,False
+Flower & Moon Coffee,1,516,Flower & Moon Coffee,1,100.0,False
+Flower Child Coffee,1,517,Flower Child Coffee,1,100.0,False
+Flower Coffee Workshop,2,518,Flower Coffee Workshop,1,100.0,False
+Flying Goat Coffee,29,519,Flying Goat Coffee,1,100.0,False
+Foggy Hills Coffee Company,1,520,Foggy Hills Coffee Company,1,100.0,False
+Folgers,9,521,Folgers,1,100.0,False
+Folgers (Costco),1,522,Folgers (Costco),1,100.0,False
+Folgers Gourmet Selections,2,523,Folgers Gourmet Selections,1,100.0,False
+Folklore Coffee,1,524,Folklore Coffee,1,100.0,False
+Folly Coffee Roasters,2,525,Folly Coffee Roasters,1,100.0,False
+Fong Da Coffee,1,526,Fong Da Coffee,1,100.0,False
+Forest Roasting,2,527,Forest Roasting,1,100.0,False
+Forgotten Forest,1,528,Forgotten Forest,1,100.0,False
+Four Barrel Coffee,6,529,Four Barrel Coffee,1,100.0,False
+Fratelli Lollino,1,530,Fratelli Lollino,1,100.0,False
+Fratello Coffee Roasters,33,531,Fratello Coffee Roasters,1,100.0,False
+Freedom Coffee Roasters,1,532,Freedom Coffee Roasters,1,100.0,False
+French Market,1,533,French Market,1,100.0,False
+Frequent Coffee,3,534,Frequent Coffee,1,100.0,False
+Fresh Cup Roastery Cafe,4,536,Fresh Cup Roastery Cafe,1,100.0,False
+Fresh Roasted Coffee,4,537,Fresh Roasted Coffee,1,100.0,False
+FreshCoffeeNow.com,2,538,FreshCoffeeNow.com,1,100.0,False
+Frontier Coffee,1,539,Frontier Coffee,1,100.0,False
+Fulcrum Coffee Roasters,2,540,Fulcrum Coffee Roasters,1,100.0,False
+Future Factory,1,542,Future Factory,1,100.0,False
+GIGA Coffee,1,543,GIGA Coffee,1,100.0,False
+GK Coffee,84,544,GK Coffee,1,100.0,False
+GT Coffee,1,545,GT Coffee,1,100.0,False
+Gathangu,1,546,Gathangu,1,100.0,False
+Gatomboya,1,547,Gatomboya,1,100.0,False
+Gaturiri,1,548,Gaturiri,1,100.0,False
+Gavagai,5,549,Gavagai,1,100.0,False
+Gavina Gourmet Coffee,2,550,Gavina Gourmet Coffee,1,100.0,False
+Gee Coffee Roasters,3,551,Gee Coffee Roasters,1,100.0,False
+Geisha Coffee Roaster,9,552,Geisha Coffee Roaster,1,100.0,False
+Genesis Coffee Lab,4,553,Genesis Coffee Lab,1,100.0,False
+Gevalia,4,555,Gevalia,1,100.0,False
+Gevalia Kaffe,3,556,Gevalia Kaffe,1,100.0,False
+Gevalia-Tassimo,1,557,Gevalia-Tassimo,1,100.0,False
+Ghost Bird Coffee,2,558,Ghost Bird Coffee,1,100.0,False
+Ghost Town Coffee Roasters,10,559,Ghost Town Coffee Roasters,1,100.0,False
+Gillies Coffee Co.,1,560,Gillies Coffee Co.,1,100.0,False
+Gimme! Coffee,6,561,Gimme! Coffee,1,100.0,False
+GivCOFFEE,1,563,GivCOFFEE,1,100.0,False
+Gloria Jean's Coffees,1,564,Gloria Jean's Coffees,1,100.0,False
+Glory Brew,1,565,Glory Brew,1,100.0,False
+Goca Coffee,1,566,Goca Coffee,1,100.0,False
+Golden Ratio,1,567,Golden Ratio,1,100.0,False
+Golin Coffee Roasters,3,568,Golin Coffee Roasters,1,100.0,False
+Good Coffee Club,1,570,Good Coffee Club,1,100.0,False
+Good Day Coffee,2,571,Good Day Coffee,1,100.0,False
+Good Folks Coffee,2,572,Good Folks Coffee,1,100.0,False
+Good Land Organics,1,573,Good Land Organics,1,100.0,False
+Goodboybob,1,574,Goodboybob,1,100.0,False
+Goodfun Coffee Farm (賴彥合),1,575,Goodfun Coffee Farm (賴彥合),1,100.0,False
+Gorilla Conservation Coffee,1,576,Gorilla Conservation Coffee,1,100.0,False
+Gourmesso,2,577,Gourmesso,1,100.0,False
+Gourmet Coffee Project,4,578,Gourmet Coffee Project,1,100.0,False
+Gourmet Coffee Shop,1,579,Gourmet Coffee Shop,1,100.0,False
+Gourmet's Choice Coffee,1,580,Gourmet's Choice Coffee,1,100.0,False
+Gracenote Coffee Roasters,4,581,Gracenote Coffee Roasters,1,100.0,False
+Graffeo Coffee,2,582,Graffeo Coffee,1,100.0,False
+Granja Paraiso 92,4,583,Granja Paraiso 92,1,100.0,False
+Grass Coffee Roaster,2,584,Grass Coffee Roaster,1,100.0,False
+Great Northern Gourmet Coffees,2,585,Great Northern Gourmet Coffees,1,100.0,False
+Great Plains Coffee Roasting,2,586,Great Plains Coffee Roasting,1,100.0,False
+Greater Goods Coffee Roasters,16,588,Greater Goods Coffee Roasters,1,100.0,False
+Green Dragon Coffee,2,589,Green Dragon Coffee,1,100.0,False
+Green Stone Coffee,18,591,Green Stone Coffee,1,100.0,False
+GreenAlives,12,592,GreenAlives,1,100.0,False
+Greenwell Farms,2,593,Greenwell Farms,1,100.0,False
+Greenwich Mountain Estate,1,594,Greenwich Mountain Estate,1,100.0,False
+Greybox Coffee,1,595,Greybox Coffee,1,100.0,False
+Gridge's Coffee & Roasting,2,597,Gridge's Coffee & Roasting,1,100.0,False
+Grounds for Change,9,598,Grounds for Change,1,100.0,False
+Groundwork Coffee,2,599,Groundwork Coffee,1,100.0,False
+Growers Alliance Coffee,1,600,Growers Alliance Coffee,1,100.0,False
+GuKeng Farmers Association,13,601,GuKeng Farmers Association,1,100.0,False
+Guillermo Botero Mejia,1,602,Guillermo Botero Mejia,1,100.0,False
+Guorizi Zhai Coffee,1,603,Guorizi Zhai Coffee,1,100.0,False
+Guyer Farms,1,604,Guyer Farms,1,100.0,False
+HANX,1,605,HANX,1,100.0,False
+HMM,1,606,HMM,1,100.0,False
+HT Traders,1,607,HT Traders,1,100.0,False
+HWC Coffee,21,608,HWC Coffee,1,100.0,False
+Hair Raiser Coffee,1,609,Hair Raiser Coffee,1,100.0,False
+Haitian Bleu,1,610,Haitian Bleu,1,100.0,False
+Hala Tree Kona Coffee,13,611,Hala Tree Kona Coffee,1,100.0,False
+Hale Coffee Company,1,612,Hale Coffee Company,1,100.0,False
+Hamasaki Estate,1,613,Hamasaki Estate,1,100.0,False
+Hanalei Coffee Roasters,1,614,Hanalei Coffee Roasters,1,100.0,False
+Handlebar Coffee Roasters,4,615,Handlebar Coffee Roasters,1,100.0,False
+Happy Coffee,7,616,Happy Coffee,1,100.0,False
+Has Beans,1,617,Has Beans,1,100.0,False
+Hatch Coffee,2,618,Hatch Coffee,1,100.0,False
+Hauma,2,619,Hauma,1,100.0,False
+Hayman Coffee,1,620,Hayman Coffee,1,100.0,False
+Heady Cup Coffee Roasters,9,621,Heady Cup Coffee Roasters,1,100.0,False
+HealthWise Gourmet Low Acid Coffee,1,622,HealthWise Gourmet Low Acid Coffee,1,100.0,False
+Heart Coffee Roasters,2,623,Heart Coffee Roasters,1,100.0,False
+Heat Coffee,26,624,Heat Coffee,1,100.0,False
+Heavenly Hawaiian,1,625,Heavenly Hawaiian,1,100.0,False
+Heavenly Hawaiian Coffee,1,626,Heavenly Hawaiian Coffee,1,100.0,False
+Heine Brothers Coffee,1,627,Heine Brothers Coffee,1,100.0,False
+Heist,2,628,Heist,1,100.0,False
+Henry's House of Coffee,1,629,Henry's House of Coffee,1,100.0,False
+Hey Brown,1,632,Hey Brown,1,100.0,False
+HiLine Coffee,2,633,HiLine Coffee,1,100.0,False
+Hidden Coffee HK,4,634,Hidden Coffee HK,1,100.0,False
+Higher Grounds Trading Company,2,635,Higher Grounds Trading Company,1,100.0,False
+Highfalutin Coffee Roasters,1,636,Highfalutin Coffee Roasters,1,100.0,False
+Highwire Coffee Roasters,6,637,Highwire Coffee Roasters,1,100.0,False
+Hill's Bros. Coffee,1,638,Hill's Bros. Coffee,1,100.0,False
+Hills Bros.,2,639,Hills Bros.,1,100.0,False
+Ho Soo Tsai,3,640,Ho Soo Tsai,1,100.0,False
+Home Barista Workshop,2,642,Home Barista Workshop,1,100.0,False
+Home in Harmony,3,643,Home in Harmony,1,100.0,False
+Homlamoon Coffee,1,644,Homlamoon Coffee,1,100.0,False
+Hongdou Sweet Hank Coffee,3,645,Hongdou Sweet Hank Coffee,1,100.0,False
+Honolulu Coffee,1,646,Honolulu Coffee,1,100.0,False
+Honomalino Estate,1,647,Honomalino Estate,1,100.0,False
+Honta Coffee,2,648,Honta Coffee,1,100.0,False
+Hood River Coffee,3,649,Hood River Coffee,1,100.0,False
+Horqueta Estate,1,650,Horqueta Estate,1,100.0,False
+Horsham Coffee Roaster,1,651,Horsham Coffee Roaster,1,100.0,False
+Hsus Cafe,1,652,Hsus Cafe,1,100.0,False
+Hua Xi Tian Manor Cafe,1,653,Hua Xi Tian Manor Cafe,1,100.0,False
+Hualalai Roasting and Coffee Company,1,654,Hualalai Roasting and Coffee Company,1,100.0,False
+Huang Ting Coffee Estate (陳榮豐),1,655,Huang Ting Coffee Estate (陳榮豐),1,100.0,False
+Hub Coffee Roasters,4,656,Hub Coffee Roasters,1,100.0,False
+Humboldt Bay Coffee,5,658,Humboldt Bay Coffee,1,100.0,False
+Hunter Bay Coffee Roasters,4,659,Hunter Bay Coffee Roasters,1,100.0,False
+Hutu Cafe Roastery,6,660,Hutu Cafe Roastery,1,100.0,False
+ICC,1,662,ICC,1,100.0,False
+ILSE Coffee Roasters,1,663,ILSE Coffee Roasters,1,100.0,False
+Ichamara,1,664,Ichamara,1,100.0,False
+Iconik Coffee Roasters,1,665,Iconik Coffee Roasters,1,100.0,False
+Illuminista Coffee Roasters,1,666,Illuminista Coffee Roasters,1,100.0,False
+IllyCaffe,4,668,IllyCaffe,1,100.0,False
+Ilustre Specialty Coffees,2,669,Ilustre Specialty Coffees,1,100.0,False
+In Taipei Roaster,1,670,In Taipei Roaster,1,100.0,False
+Indaba Coffee Roasters,17,671,Indaba Coffee Roasters,1,100.0,False
+Index Coffee,3,672,Index Coffee,1,100.0,False
+India Badra Estates,2,673,India Badra Estates,1,100.0,False
+India Balanoor Plantations,1,674,India Balanoor Plantations,1,100.0,False
+India Betta Crown Blue Pearl,1,675,India Betta Crown Blue Pearl,1,100.0,False
+India Emerald Valley Estate,1,677,India Emerald Valley Estate,1,100.0,False
+India Honnamatti Estate,1,678,India Honnamatti Estate,1,100.0,False
+India Pearl Mountain Estate,1,680,India Pearl Mountain Estate,1,100.0,False
+Indigenous Coffees,2,681,Indigenous Coffees,1,100.0,False
+Industrial Joe Coffee,1,682,Industrial Joe Coffee,1,100.0,False
+Inferno Dynamics Coffee Roastery,1,683,Inferno Dynamics Coffee Roastery,1,100.0,False
+Ingenuity Coffee Roastery,2,684,Ingenuity Coffee Roastery,1,100.0,False
+Ink Coffee,2,685,Ink Coffee,1,100.0,False
+Insight Coffee Roasters,1,686,Insight Coffee Roasters,1,100.0,False
+InterAmerican Commodities,4,688,InterAmerican Commodities,1,100.0,False
+Interlude Coffee Roasters,1,689,Interlude Coffee Roasters,1,100.0,False
+Interpretation Coffee,3,690,Interpretation Coffee,1,100.0,False
+Intrinsic Coffee Roasters,1,691,Intrinsic Coffee Roasters,1,100.0,False
+Intuition Coffee,22,692,Intuition Coffee,1,100.0,False
+Ipanema Gourmet,1,693,Ipanema Gourmet,1,100.0,False
+Ipanema Ouro Preto,1,694,Ipanema Ouro Preto,1,100.0,False
+Iron Brew Coffee,2,695,Iron Brew Coffee,1,100.0,False
+Ironclad Coffee Roasters,3,696,Ironclad Coffee Roasters,1,100.0,False
+Irving Farm Coffee Roasters,1,697,Irving Farm Coffee Roasters,1,100.0,False
+Islamorada Coffee Roasters,1,698,Islamorada Coffee Roasters,1,100.0,False
+Ithaca Coffee Company,3,700,Ithaca Coffee Company,1,100.0,False
+J. Tudor Estate,1,701,J. Tudor Estate,1,100.0,False
+J.J. Darboven,2,702,J.J. Darboven,1,100.0,False
+JH Roaster,1,704,JH Roaster,1,100.0,False
+JYL Cafe,1,705,JYL Cafe,1,100.0,False
+Jackrabbit Java,33,706,Jackrabbit Java,1,100.0,False
+Jacobs Coffee,1,708,Jacobs Coffee,1,100.0,False
+Jade Cafe,1,709,Jade Cafe,1,100.0,False
+Jameson Coffee,1,710,Jameson Coffee,1,100.0,False
+Japanese Coffee Co.,1,712,Japanese Coffee Co.,1,100.0,False
+Jason C Yang Beverage Expert Enterprise,1,713,Jason C Yang Beverage Expert Enterprise,1,100.0,False
+Jaunt Coffee Roasters,44,714,Jaunt Coffee Roasters,1,100.0,False
+Java Blend Coffee Roasters,7,715,Java Blend Coffee Roasters,1,100.0,False
+Java City,2,716,Java City,1,100.0,False
+Java Trading Company,2,718,Java Trading Company,1,100.0,False
+Javaloha,1,719,Javaloha,1,100.0,False
+Jebena Coffees,5,720,Jebena Coffees,1,100.0,False
+Jersey Shore Coffee Roasters,1,722,Jersey Shore Coffee Roasters,1,100.0,False
+Jesus Mountain Estate,1,723,Jesus Mountain Estate,1,100.0,False
+Ji Shan Cafe,2,724,Ji Shan Cafe,1,100.0,False
+Jim's Burger Cafe,2,725,Jim's Burger Cafe,1,100.0,False
+Jiva Cubes Instant Coffee Packets,1,726,Jiva Cubes Instant Coffee Packets,1,100.0,False
+Joe Bean Roasters,6,727,Joe Bean Roasters,1,100.0,False
+Joe to Go,1,729,Joe to Go,1,100.0,False
+Joe's Coffee House,1,730,Joe's Coffee House,1,100.0,False
+Jojo's Specialty Coffee & Tea,2,731,Jojo's Specialty Coffee & Tea,1,100.0,False
+Jolly Caffe,1,732,Jolly Caffe,1,100.0,False
+Jones Coffee,1,733,Jones Coffee,1,100.0,False
+Joyful-House,1,735,Joyful-House,1,100.0,False
+Juan Valdez,1,736,Juan Valdez,1,100.0,False
+Julian Coffee Roasters,2,737,Julian Coffee Roasters,1,100.0,False
+Julius Meinl,2,738,Julius Meinl,1,100.0,False
+Just Coffee,3,739,Just Coffee,1,100.0,False
+Just Coffee Cooperative,1,740,Just Coffee Cooperative,1,100.0,False
+Just Love Coffee Roasters,4,741,Just Love Coffee Roasters,1,100.0,False
+K & F Select,1,742,K & F Select,1,100.0,False
+K Brew,2,743,K Brew,1,100.0,False
+KNOT Koffee,1,744,KNOT Koffee,1,100.0,False
+Ka'u Specialty Coffee,2,745,Ka'u Specialty Coffee,1,100.0,False
+Kaanapali Estate Coffee,3,746,Kaanapali Estate Coffee,1,100.0,False
+Kaapi Royale,1,747,Kaapi Royale,1,100.0,False
+Kafe 1804,2,748,Kafe 1804,1,100.0,False
+Kafe Coffee Roastery,24,749,Kafe Coffee Roastery,1,100.0,False
+Kaffe Magnum Opus,9,750,Kaffe Magnum Opus,1,100.0,False
+Kaffetre,1,751,Kaffetre,1,100.0,False
+Kahawa 1893,1,752,Kahawa 1893,1,100.0,False
+Kaladi Brothers Coffee,1,754,Kaladi Brothers Coffee,1,100.0,False
+Kaldi's Best Sustainable Coffees,4,755,Kaldi's Best Sustainable Coffees,1,100.0,False
+Kapi Coffee,1,757,Kapi Coffee,1,100.0,False
+Kapi Dow Coffee Roasters,2,758,Kapi Dow Coffee Roasters,1,100.0,False
+Kasasagi Coffee Roasters,3,759,Kasasagi Coffee Roasters,1,100.0,False
+Kavanaugh Coffee,2,761,Kavanaugh Coffee,1,100.0,False
+Kaya Imports,1,762,Kaya Imports,1,100.0,False
+KenntaRoast,1,764,KenntaRoast,1,100.0,False
+Kili Caffe,1,765,Kili Caffe,1,100.0,False
+King's Gambit Coffee,1,766,King's Gambit Coffee,1,100.0,False
+King's Koffee,1,767,King's Koffee,1,100.0,False
+Kingha Estate,1,768,Kingha Estate,1,100.0,False
+Kirkland Signature (Costco),5,769,Kirkland Signature (Costco),1,100.0,False
+Kiunyu AA,1,770,Kiunyu AA,1,100.0,False
+Klatch Coffee,90,771,Klatch Coffee,1,100.0,False
+Knockbox Coffee,1,772,Knockbox Coffee,1,100.0,False
+Knutsen Coffees,1,773,Knutsen Coffees,1,100.0,False
+Kobricks Coffee,1,774,Kobricks Coffee,1,100.0,False
+Koffie Kàn,1,775,Koffie Kàn,1,100.0,False
+Kokopelli Coffee and Tea,1,776,Kokopelli Coffee and Tea,1,100.0,False
+Kona Blue Sky Coffee,2,777,Kona Blue Sky Coffee,1,100.0,False
+Kona Cafe,2,778,Kona Cafe,1,100.0,False
+Kona Coffee Purveyors,1,779,Kona Coffee Purveyors,1,100.0,False
+Kona Earth Coffee,2,780,Kona Earth Coffee,1,100.0,False
+Kona Farm Direct,9,781,Kona Farm Direct,1,100.0,False
+Kona Hills Coffee,1,782,Kona Hills Coffee,1,100.0,False
+Kona Kimo Coffee,1,783,Kona Kimo Coffee,1,100.0,False
+Kona Love Coffee Co.,4,784,Kona Love Coffee Co.,1,100.0,False
+Kona Luna Coffee,1,785,Kona Luna Coffee,1,100.0,False
+Kona Mountain Coffee,1,786,Kona Mountain Coffee,1,100.0,False
+Kona Premium Coffee,1,787,Kona Premium Coffee,1,100.0,False
+Kona Roasted,3,788,Kona Roasted,1,100.0,False
+Kona View Coffee,1,789,Kona View Coffee,1,100.0,False
+Koolbreeze Distribution,1,790,Koolbreeze Distribution,1,100.0,False
+Kopi Ibrik,1,791,Kopi Ibrik,1,100.0,False
+Kowa,1,792,Kowa,1,100.0,False
+Kraft Foods,3,793,Kraft Foods,1,100.0,False
+Kuma Coffee,10,794,Kuma Coffee,1,100.0,False
+"Kunshan Kokei co., LTD",4,795,"Kunshan Kokei co., LTD",1,100.0,False
+Kura Java Coffee,1,796,Kura Java Coffee,1,100.0,False
+Kustomcoffee,1,797,Kustomcoffee,1,100.0,False
+LB Coffee,1,798,LB Coffee,1,100.0,False
+LECO Coffee,4,799,LECO Coffee,1,100.0,False
+La Bean Coffee,5,800,La Bean Coffee,1,100.0,False
+La Berlina Estate,1,801,La Berlina Estate,1,100.0,False
+La Costa Coffee Roasting,1,803,La Costa Coffee Roasting,1,100.0,False
+La Familia del Cafe,1,804,La Familia del Cafe,1,100.0,False
+La Flor del Cafe,1,805,La Flor del Cafe,1,100.0,False
+La Lucie Estate,1,807,La Lucie Estate,1,100.0,False
+La Torcaza Estate,1,809,La Torcaza Estate,1,100.0,False
+La Vida Java Coffee & Micro-Roastery,1,811,La Vida Java Coffee & Micro-Roastery,1,100.0,False
+Lab 146,1,812,Lab 146,1,100.0,False
+Lamppost Coffee Roasters,1,813,Lamppost Coffee Roasters,1,100.0,False
+Lao Mountain Coffee,1,814,Lao Mountain Coffee,1,100.0,False
+Larin,2,815,Larin,1,100.0,False
+Las Brumas Rainforest Coffee,2,817,Las Brumas Rainforest Coffee,1,100.0,False
+Las Lajas Cooperative,1,819,Las Lajas Cooperative,1,100.0,False
+Lasaters Coffee & Tea,1,820,Lasaters Coffee & Tea,1,100.0,False
+Latitude 23.5,1,821,Latitude 23.5,1,100.0,False
+Lavender Coffee Boutique,1,823,Lavender Coffee Boutique,1,100.0,False
+Le Brewlife,7,824,Le Brewlife,1,100.0,False
+Lean Coffee Roasters,1,825,Lean Coffee Roasters,1,100.0,False
+Lee Dong Coffee,12,826,Lee Dong Coffee,1,100.0,False
+Left Bank Cafe,1,827,Left Bank Cafe,1,100.0,False
+Lenny's Lab Coffee,1,828,Lenny's Lab Coffee,1,100.0,False
+Leopard Forest Coffee,4,829,Leopard Forest Coffee,1,100.0,False
+Lerida Estate,1,830,Lerida Estate,1,100.0,False
+Level Ground Trading,3,831,Level Ground Trading,1,100.0,False
+Lexington Coffee Roasters,75,832,Lexington Coffee Roasters,1,100.0,False
+Libero Coffee,3,833,Libero Coffee,1,100.0,False
+Lighthouse Roasters,1,834,Lighthouse Roasters,1,100.0,False
+Lin Jen Wei’s Black Jar Coffee,18,835,Lin Jen Wei’s Black Jar Coffee,1,100.0,False
+Lin's Home Roasters,1,836,Lin's Home Roasters,1,100.0,False
+Lina Premium Coffee,5,837,Lina Premium Coffee,1,100.0,False
+Linea Caffe S.F.,1,838,Linea Caffe S.F.,1,100.0,False
+Linking Coffee,2,839,Linking Coffee,1,100.0,False
+Lino Cafe,1,840,Lino Cafe,1,100.0,False
+Lino'spresso,1,841,Lino'spresso,1,100.0,False
+Linsun Coffee,1,842,Linsun Coffee,1,100.0,False
+Lion Coffee,2,843,Lion Coffee,1,100.0,False
+Little City Coffee Roaster,1,844,Little City Coffee Roaster,1,100.0,False
+Little Feet Coffee,1,845,Little Feet Coffee,1,100.0,False
+Little Waves Coffee,9,846,Little Waves Coffee,1,100.0,False
+Little While,1,847,Little While,1,100.0,False
+Little Wolf Coffee,1,848,Little Wolf Coffee,1,100.0,False
+Lofty Coffee Co.,1,849,Lofty Coffee Co.,1,100.0,False
+Lone Coffee,4,850,Lone Coffee,1,100.0,False
+Lone Oak Coffee Company,4,851,Lone Oak Coffee Company,1,100.0,False
+Lone Pine Coffee Roasters,2,852,Lone Pine Coffee Roasters,1,100.0,False
+Longbottom Coffee and Tea,1,853,Longbottom Coffee and Tea,1,100.0,False
+Looking Homeward Coffee,1,854,Looking Homeward Coffee,1,100.0,False
+Los Alpes Estate,1,855,Los Alpes Estate,1,100.0,False
+Los Ausoles Cooperative,1,856,Los Ausoles Cooperative,1,100.0,False
+Los Gatos Coffee Roasting Company,1,857,Los Gatos Coffee Roasting Company,1,100.0,False
+Lost Dutchman Coffee Roasters,1,858,Lost Dutchman Coffee Roasters,1,100.0,False
+Lu's Coffee,1,859,Lu's Coffee,1,100.0,False
+Lucaff?,1,860,Lucaff?,1,100.0,False
+Luck Bros' Coffee,1,861,Luck Bros' Coffee,1,100.0,False
+Lucky Cafe,2,862,Lucky Cafe,1,100.0,False
+Lucky Stores,1,863,Lucky Stores,1,100.0,False
+Luv Moshi,4,864,Luv Moshi,1,100.0,False
+Luwak Coffee,2,865,Luwak Coffee,1,100.0,False
+MJ Bear Coffee,1,866,MJ Bear Coffee,1,100.0,False
+MJB,3,867,MJB,1,100.0,False
+MK Coffee Roasters,6,868,MK Coffee Roasters,1,100.0,False
+MT49 Cafe,2,869,MT49 Cafe,1,100.0,False
+Madcap Coffee,1,870,Madcap Coffee,1,100.0,False
+Madera Coffee,1,871,Madera Coffee,1,100.0,False
+Madness Roastworks,3,872,Madness Roastworks,1,100.0,False
+Magic Hat Cafe,1,873,Magic Hat Cafe,1,100.0,False
+Magnolia Coffee,46,874,Magnolia Coffee,1,100.0,False
+Magpie Coffee Roasters,2,875,Magpie Coffee Roasters,1,100.0,False
+Majik Coffee,1,876,Majik Coffee,1,100.0,False
+Mama Cata Estate,1,877,Mama Cata Estate,1,100.0,False
+Mamechamame Coffee,1,878,Mamechamame Coffee,1,100.0,False
+ManLao River Coffee Company,2,879,ManLao River Coffee Company,1,100.0,False
+Manchill Roasteria,4,880,Manchill Roasteria,1,100.0,False
+Mango Cafe,1,881,Mango Cafe,1,100.0,False
+Manzanita Roasting Company,7,882,Manzanita Roasting Company,1,100.0,False
+Market Lane Coffee,1,884,Market Lane Coffee,1,100.0,False
+Marley Coffee,2,885,Marley Coffee,1,100.0,False
+Marques de Paiva (Sam's Club),2,886,Marques de Paiva (Sam's Club),1,100.0,False
+Martinson Coffee,2,888,Martinson Coffee,1,100.0,False
+Marua,1,889,Marua,1,100.0,False
+Maskal Fine Coffee,1,890,Maskal Fine Coffee,1,100.0,False
+Matt's Wood-Roasted Organic Coffee,4,891,Matt's Wood-Roasted Organic Coffee,1,100.0,False
+Maui 'Oma,1,892,Maui 'Oma,1,100.0,False
+Maunier Estate,1,893,Maunier Estate,1,100.0,False
+Mavis Bank,1,894,Mavis Bank,1,100.0,False
+Maxim Coffee,1,895,Maxim Coffee,1,100.0,False
+Mayorga Coffee Roasters,1,897,Mayorga Coffee Roasters,1,100.0,False
+McCafe,1,898,McCafe,1,100.0,False
+McClure Farms,1,899,McClure Farms,1,100.0,False
+McNulty's Tea & Coffee,1,900,McNulty's Tea & Coffee,1,100.0,False
+Mecca Coffee,1,901,Mecca Coffee,1,100.0,False
+Medalgia d’Oro,1,902,Medalgia d’Oro,1,100.0,False
+Melitta,5,903,Melitta,1,100.0,False
+Mellelo Coffee Roasters,1,904,Mellelo Coffee Roasters,1,100.0,False
+Mellower Coffee,2,906,Mellower Coffee,1,100.0,False
+Member's Mark (Sam's Club),1,907,Member's Mark (Sam's Club),1,100.0,False
+Mercurys Coffee Co.,1,908,Mercurys Coffee Co.,1,100.0,False
+Merge Coffee Company,17,909,Merge Coffee Company,1,100.0,False
+Metropolis Coffee,10,910,Metropolis Coffee,1,100.0,False
+Metropolitan Fine Coffees,1,911,Metropolitan Fine Coffees,1,100.0,False
+Mi's Cafe,4,912,Mi's Cafe,1,100.0,False
+Michael Caffé,1,913,Michael Caffé,1,100.0,False
+Mighty Beast Coffee Roasters,2,914,Mighty Beast Coffee Roasters,1,100.0,False
+Mikava Coffee,2,915,Mikava Coffee,1,100.0,False
+Milagro Coffee y Espresso,2,916,Milagro Coffee y Espresso,1,100.0,False
+Milone Bros. Coffee,1,918,Milone Bros. Coffee,1,100.0,False
+Min Enjoy Cafe,2,919,Min Enjoy Cafe,1,100.0,False
+Ming's Coffee Playroom,1,920,Ming's Coffee Playroom,1,100.0,False
+Miranda's Farms,1,921,Miranda's Farms,1,100.0,False
+Mocha Joe's Specialty Coffee Roasters,1,922,Mocha Joe's Specialty Coffee Roasters,1,100.0,False
+Mojo Coffee Roasters,4,924,Mojo Coffee Roasters,1,100.0,False
+Moka Joe Coffee,1,925,Moka Joe Coffee,1,100.0,False
+Moksha Coffee Roasting,2,926,Moksha Coffee Roasting,1,100.0,False
+Moledina Commodities,2,927,Moledina Commodities,1,100.0,False
+Monarch Coffee,4,928,Monarch Coffee,1,100.0,False
+Montana Coffee Traders,8,929,Montana Coffee Traders,1,100.0,False
+Montana Cowboy Coffee,1,930,Montana Cowboy Coffee,1,100.0,False
+Montanas Cresta,1,931,Montanas Cresta,1,100.0,False
+Mooju Coffee,1,933,Mooju Coffee,1,100.0,False
+MoonMoon Coffee,3,934,MoonMoon Coffee,1,100.0,False
+Moonstruck Farm,1,935,Moonstruck Farm,1,100.0,False
+Moore Coffee,11,936,Moore Coffee,1,100.0,False
+Moplaco Trading,1,937,Moplaco Trading,1,100.0,False
+Morghan Rake Coffee,1,938,Morghan Rake Coffee,1,100.0,False
+Moriah Coffee,2,939,Moriah Coffee,1,100.0,False
+Morning Star Coffee,2,940,Morning Star Coffee,1,100.0,False
+Mortem Labs,5,941,Mortem Labs,1,100.0,False
+Mostra Coffee,27,942,Mostra Coffee,1,100.0,False
+Mother Earth Coffee,2,943,Mother Earth Coffee,1,100.0,False
+Mother Pigeons,2,944,Mother Pigeons,1,100.0,False
+Motif Roasters,1,945,Motif Roasters,1,100.0,False
+Mountain Air Roasting,1,946,Mountain Air Roasting,1,100.0,False
+Mountanos Brothers Coffee Company,1,947,Mountanos Brothers Coffee Company,1,100.0,False
+Moye Forest Coffee,1,948,Moye Forest Coffee,1,100.0,False
+Mozart's Coffee Roasters,3,949,Mozart's Coffee Roasters,1,100.0,False
+Mr. Chao Coffee,5,950,Mr. Chao Coffee,1,100.0,False
+Mr. Espresso,14,951,Mr. Espresso,1,100.0,False
+Mt. Whitney Coffee Roasters,2,952,Mt. Whitney Coffee Roasters,1,100.0,False
+Mtn. Air Roasting,1,953,Mtn. Air Roasting,1,100.0,False
+Mud Bay Coffee,2,954,Mud Bay Coffee,1,100.0,False
+Muddy Dog Roasting,4,955,Muddy Dog Roasting,1,100.0,False
+Muddy Waters Coffee,3,956,Muddy Waters Coffee,1,100.0,False
+Mudhouse Coffee Roasters,6,957,Mudhouse Coffee Roasters,1,100.0,False
+Muggswigz Coffee and Tea,1,958,Muggswigz Coffee and Tea,1,100.0,False
+Muka Coffee,2,959,Muka Coffee,1,100.0,False
+Multatuli Coffee Merchants,1,960,Multatuli Coffee Merchants,1,100.0,False
+Mustard Seed Cafe,1,961,Mustard Seed Cafe,1,100.0,False
+Mute Roaster,3,962,Mute Roaster,1,100.0,False
+Muthewathi,1,963,Muthewathi,1,100.0,False
+My's Coffee,1,964,My's Coffee,1,100.0,False
+Mystic Monk Coffee,75,965,Mystic Monk Coffee,1,100.0,False
+NINETYs Roastery,2,966,NINETYs Roastery,1,100.0,False
+Naked Coffee,1,967,Naked Coffee,1,100.0,False
+Namusairo Coffee,10,968,Namusairo Coffee,1,100.0,False
+Nandipura Coffee,2,969,Nandipura Coffee,1,100.0,False
+Nani Kona Coffee,1,970,Nani Kona Coffee,1,100.0,False
+Nantou Specialty,1,971,Nantou Specialty,1,100.0,False
+Natchitoches Coffee Company,1,972,Natchitoches Coffee Company,1,100.0,False
+Neighbors Coffee,8,973,Neighbors Coffee,1,100.0,False
+Nella's SOGOOD Coffee,1,974,Nella's SOGOOD Coffee,1,100.0,False
+Nemesis Coffee,1,975,Nemesis Coffee,1,100.0,False
+Neosoul,1,976,Neosoul,1,100.0,False
+Nespresso,9,978,Nespresso,1,100.0,False
+Nestle Beverage Company,2,979,Nestle Beverage Company,1,100.0,False
+New Harvest Coffee Roasters,6,980,New Harvest Coffee Roasters,1,100.0,False
+New Mexico Pinon Coffee,1,981,New Mexico Pinon Coffee,1,100.0,False
+Ngandu,1,982,Ngandu,1,100.0,False
+Nguyen Coffee Supply,2,983,Nguyen Coffee Supply,1,100.0,False
+Night & Bean Coffee,3,984,Night & Bean Coffee,1,100.0,False
+Nine Point Coffee,5,985,Nine Point Coffee,1,100.0,False
+Nirvana Soul Coffee Purveyors,1,986,Nirvana Soul Coffee Purveyors,1,100.0,False
+Nobletree Coffee,1,988,Nobletree Coffee,1,100.0,False
+Nodi Coffee,2,989,Nodi Coffee,1,100.0,False
+Noelia Coffee,3,990,Noelia Coffee,1,100.0,False
+Nomadic Bean,1,991,Nomadic Bean,1,100.0,False
+"Nongfu Spring Co., Ltd.",3,992,"Nongfu Spring Co., Ltd.",1,100.0,False
+Nook Bakery & Coffee Bar,1,993,Nook Bakery & Coffee Bar,1,100.0,False
+Normandy Coffee Thai Cuisine,1,994,Normandy Coffee Thai Cuisine,1,100.0,False
+North Coast Coffee Roasting,1,995,North Coast Coffee Roasting,1,100.0,False
+North Koffee Artisan Roasters,1,996,North Koffee Artisan Roasters,1,100.0,False
+North Star Micro Roasters,1,998,North Star Micro Roasters,1,100.0,False
+Northbound Coffee Roasters,9,999,Northbound Coffee Roasters,1,100.0,False
+Nossa Familia Coffee,5,1000,Nossa Familia Coffee,1,100.0,False
+Nostalgia Coffee Roasters,25,1001,Nostalgia Coffee Roasters,1,100.0,False
+Notch Coffee,4,1002,Notch Coffee,1,100.0,False
+Novel Coffee Roasters,2,1003,Novel Coffee Roasters,1,100.0,False
+Nuvia Coffee,2,1005,Nuvia Coffee,1,100.0,False
+Nyaithee,1,1006,Nyaithee,1,100.0,False
+O'Henry's Coffees,1,1007,O'Henry's Coffees,1,100.0,False
+OLI Cafe Roaster,3,1008,OLI Cafe Roaster,1,100.0,False
+OQ Coffee Co.,11,1009,OQ Coffee Co.,1,100.0,False
+Oak & Bond Coffee Co.,13,1010,Oak & Bond Coffee Co.,1,100.0,False
+Oak Cliff Coffee Roasters,2,1011,Oak Cliff Coffee Roasters,1,100.0,False
+Oceana Coffee,13,1012,Oceana Coffee,1,100.0,False
+Old Bisbee Roasters,1,1013,Old Bisbee Roasters,1,100.0,False
+Old City Coffee,2,1014,Old City Coffee,1,100.0,False
+Old Soul Co.,46,1015,Old Soul Co.,1,100.0,False
+Old Tavern Estate,7,1016,Old Tavern Estate,1,100.0,False
+Old Town Roasting,1,1017,Old Town Roasting,1,100.0,False
+Old World Coffee Roasters,20,1018,Old World Coffee Roasters,1,100.0,False
+Oliera Cafe,1,1019,Oliera Cafe,1,100.0,False
+Omine Coffee,1,1022,Omine Coffee,1,100.0,False
+Once N Cafe Etude,2,1023,Once N Cafe Etude,1,100.0,False
+One Fresh Cup,2,1024,One Fresh Cup,1,100.0,False
+One Village Coffee,1,1025,One Village Coffee,1,100.0,False
+Open Seas Coffee,1,1026,Open Seas Coffee,1,100.0,False
+Orange Roasters,1,1027,Orange Roasters,1,100.0,False
+Orazure Hand Roasted Coffee,1,1028,Orazure Hand Roasted Coffee,1,100.0,False
+Oregon Coffee Roaster,1,1029,Oregon Coffee Roaster,1,100.0,False
+Oren's Daily Roast,5,1030,Oren's Daily Roast,1,100.0,False
+Organic Planet Coffee & Tea,1,1032,Organic Planet Coffee & Tea,1,100.0,False
+Origin Coffee Roasters,8,1033,Origin Coffee Roasters,1,100.0,False
+Origins Coffee Roasterie,2,1034,Origins Coffee Roasterie,1,100.0,False
+Orleans Coffee Exchange,14,1035,Orleans Coffee Exchange,1,100.0,False
+Oughtred Roasting Works,1,1037,Oughtred Roasting Works,1,100.0,False
+Our Coffee Barn,4,1038,Our Coffee Barn,1,100.0,False
+P.T. Mega Agmist Indonesia,1,1040,P.T. Mega Agmist Indonesia,1,100.0,False
+PERC Coffee Roasters,4,1041,PERC Coffee Roasters,1,100.0,False
+PJ's Coffee & Tea,4,1042,PJ's Coffee & Tea,1,100.0,False
+Pa Mano Cafe,2,1044,Pa Mano Cafe,1,100.0,False
+Pacas Martinez Tonita,1,1045,Pacas Martinez Tonita,1,100.0,False
+Pachamama Coffee Cooperative,5,1046,Pachamama Coffee Cooperative,1,100.0,False
+Pacific Bay Coffee Company,2,1047,Pacific Bay Coffee Company,1,100.0,False
+Pacific Coffee Research,1,1048,Pacific Coffee Research,1,100.0,False
+Palm Coffee Roasters,2,1049,Palm Coffee Roasters,1,100.0,False
+Pamma Coffee,1,1050,Pamma Coffee,1,100.0,False
+Panache Coffee,1,1051,Panache Coffee,1,100.0,False
+Pannikin Coffee & Tea,2,1052,Pannikin Coffee & Tea,1,100.0,False
+Panorama Coffee,1,1053,Panorama Coffee,1,100.0,False
+Panther Coffee,2,1054,Panther Coffee,1,100.0,False
+Papa Lin's Coffee Roasting,20,1055,Papa Lin's Coffee Roasting,1,100.0,False
+Papa Nicholas Coffee,2,1056,Papa Nicholas Coffee,1,100.0,False
+Parisi Artisan Coffee,12,1058,Parisi Artisan Coffee,1,100.0,False
+Park Avenue Coffee,1,1059,Park Avenue Coffee,1,100.0,False
+Passion Cafe,2,1060,Passion Cafe,1,100.0,False
+Path Coffee Roasters,2,1061,Path Coffee Roasters,1,100.0,False
+Pathmark's Mountain Harvest,1,1062,Pathmark's Mountain Harvest,1,100.0,False
+Peaberry's Coffee & Tea,1,1063,Peaberry's Coffee & Tea,1,100.0,False
+Peace Coffee Roasters,2,1064,Peace Coffee Roasters,1,100.0,False
+Peach Coffee Roasters,19,1065,Peach Coffee Roasters,1,100.0,False
+Peacock Coffee Roaster,2,1066,Peacock Coffee Roaster,1,100.0,False
+Pebble Coffee,2,1067,Pebble Coffee,1,100.0,False
+Pedestrian Coffee,1,1068,Pedestrian Coffee,1,100.0,False
+Peet's Coffee,5,1070,Peet's Coffee,1,100.0,False
+Pegasus Coffee,2,1072,Pegasus Coffee,1,100.0,False
+Pele Plantations,2,1073,Pele Plantations,1,100.0,False
+Peri Coffee,1,1075,Peri Coffee,1,100.0,False
+Persnickety Tim's Coffee,1,1076,Persnickety Tim's Coffee,1,100.0,False
+Phil & Sebastian Coffee Roasters,2,1077,Phil & Sebastian Coffee Roasters,1,100.0,False
+Philipsburg Coffee Roasters,2,1078,Philipsburg Coffee Roasters,1,100.0,False
+Philz Coffee,1,1079,Philz Coffee,1,100.0,False
+Pier 40 Roastery,1,1080,Pier 40 Roastery,1,100.0,False
+Pier Coffee,1,1081,Pier Coffee,1,100.0,False
+Pigeonhole Coffee,1,1082,Pigeonhole Coffee,1,100.0,False
+Pine Coffee Supply,1,1083,Pine Coffee Supply,1,100.0,False
+Pink Elephant Coffee,1,1084,Pink Elephant Coffee,1,100.0,False
+Pinup Coffee Co.,7,1085,Pinup Coffee Co.,1,100.0,False
+Pioneer Coffee Roasting,1,1086,Pioneer Coffee Roasting,1,100.0,False
+Placer Roasting,2,1087,Placer Roasting,1,100.0,False
+Plantation A. Bababudangiri,1,1088,Plantation A. Bababudangiri,1,100.0,False
+Plantation Coffee Roasters,1,1089,Plantation Coffee Roasters,1,100.0,False
+Plat Coffee Roastery,14,1090,Plat Coffee Roastery,1,100.0,False
+Plowshares Coffee Roasters,1,1091,Plowshares Coffee Roasters,1,100.0,False
+Podhead,5,1092,Podhead,1,100.0,False
+Polly's Gourmet Coffee,3,1093,Polly's Gourmet Coffee,1,100.0,False
+Pop Coffee Works,2,1094,Pop Coffee Works,1,100.0,False
+Poppets Coffee,1,1095,Poppets Coffee,1,100.0,False
+Port of Mokha,2,1096,Port of Mokha,1,100.0,False
+Portland Roasting,7,1097,Portland Roasting,1,100.0,False
+Porto Rico Importing Co.,1,1098,Porto Rico Importing Co.,1,100.0,False
+Portola Handcrafted Coffee Roasters,2,1099,Portola Handcrafted Coffee Roasters,1,100.0,False
+Portrait Coffee,1,1100,Portrait Coffee,1,100.0,False
+Prairie Lily Coffee,2,1101,Prairie Lily Coffee,1,100.0,False
+Premier Roasters,1,1102,Premier Roasters,1,100.0,False
+Press Coffee,12,1103,Press Coffee,1,100.0,False
+Press House Coffee,2,1104,Press House Coffee,1,100.0,False
+Presta Coffee Roasters,2,1105,Presta Coffee Roasters,1,100.0,False
+Primavera Coffee Roasters,1,1106,Primavera Coffee Roasters,1,100.0,False
+Prism Coffee Works,2,1107,Prism Coffee Works,1,100.0,False
+Pro Aroma Enterprise Coffee,6,1108,Pro Aroma Enterprise Coffee,1,100.0,False
+Procter & Gamble,4,1109,Procter & Gamble,1,100.0,False
+Prodigal Coffee,1,1110,Prodigal Coffee,1,100.0,False
+Propeller Coffee,16,1111,Propeller Coffee,1,100.0,False
+Proud Mary Coffee Roasters,1,1112,Proud Mary Coffee Roasters,1,100.0,False
+Puroast,4,1113,Puroast,1,100.0,False
+Q Burger,1,1114,Q Burger,1,100.0,False
+Qima Coffee,1,1115,Qima Coffee,1,100.0,False
+Qin Mi Coffee,1,1116,Qin Mi Coffee,1,100.0,False
+Quartet Kaffe,12,1118,Quartet Kaffe,1,100.0,False
+Queen Coffee,1,1119,Queen Coffee,1,100.0,False
+Question Coffee,1,1120,Question Coffee,1,100.0,False
+Quivr,1,1121,Quivr,1,100.0,False
+R & R Beans,1,1122,R & R Beans,1,100.0,False
+R Miguel,2,1123,R Miguel,1,100.0,False
+RD Cafe,2,1124,RD Cafe,1,100.0,False
+Raccoon Coffee Roaster,1,1126,Raccoon Coffee Roaster,1,100.0,False
+Ragamuffin Coffee Roasters,6,1127,Ragamuffin Coffee Roasters,1,100.0,False
+Raggiana Coffee,1,1128,Raggiana Coffee,1,100.0,False
+Ralph's Coffee,1,1129,Ralph's Coffee,1,100.0,False
+RanGuo Coffee,1,1131,RanGuo Coffee,1,100.0,False
+Rao's Coffee Roasting,3,1132,Rao's Coffee Roasting,1,100.0,False
+Raven's Brew Coffee,1,1133,Raven's Brew Coffee,1,100.0,False
+RayJen Coffee,1,1134,RayJen Coffee,1,100.0,False
+Reading Coffee Roasters,3,1135,Reading Coffee Roasters,1,100.0,False
+Reanimator Coffee Roasters,1,1136,Reanimator Coffee Roasters,1,100.0,False
+Red Bay Coffee,2,1137,Red Bay Coffee,1,100.0,False
+Red E Café,1,1138,Red E Café,1,100.0,False
+Red Fruit Hand-Roasted Coffee,2,1139,Red Fruit Hand-Roasted Coffee,1,100.0,False
+Red Giant Coffee Roasters,1,1140,Red Giant Coffee Roasters,1,100.0,False
+Redeye Roasters,1,1142,Redeye Roasters,1,100.0,False
+Regent Coffee,19,1143,Regent Coffee,1,100.0,False
+Regular Coffee,3,1144,Regular Coffee,1,100.0,False
+Regulator Roasting,1,1145,Regulator Roasting,1,100.0,False
+Remy Sol Coffee,1,1146,Remy Sol Coffee,1,100.0,False
+Reprise Coffee Roasters,3,1147,Reprise Coffee Roasters,1,100.0,False
+Rest Coffee Roasters,1,1148,Rest Coffee Roasters,1,100.0,False
+Return Coffee Roastery,1,1149,Return Coffee Roastery,1,100.0,False
+Revel Coffee,53,1151,Revel Coffee,1,100.0,False
+Revv Coffee,2,1152,Revv Coffee,1,100.0,False
+Rex Roasting,5,1153,Rex Roasting,1,100.0,False
+Rey Mezzanotte,1,1154,Rey Mezzanotte,1,100.0,False
+Rhetoric Coffee,4,1155,Rhetoric Coffee,1,100.0,False
+Riika Cafe,2,1156,Riika Cafe,1,100.0,False
+Ritual Coffee Roasters,6,1157,Ritual Coffee Roasters,1,100.0,False
+Ritual Coffee Tasmania,1,1158,Ritual Coffee Tasmania,1,100.0,False
+Roast BKK,1,1160,Roast BKK,1,100.0,False
+Roast Co. Artisan Coffees,2,1161,Roast Co. Artisan Coffees,1,100.0,False
+Roasters Coffee House,1,1163,Roasters Coffee House,1,100.0,False
+Roasters Note,1,1164,Roasters Note,1,100.0,False
+Roasting Room,1,1165,Roasting Room,1,100.0,False
+Rocamojo,1,1166,Rocamojo,1,100.0,False
+Rocket Coffee Roasters,1,1167,Rocket Coffee Roasters,1,100.0,False
+Rocky Mountain Roastery,1,1168,Rocky Mountain Roastery,1,100.0,False
+Rooster Roastery,1,1169,Rooster Roastery,1,100.0,False
+Rosalie's Roast,1,1170,Rosalie's Roast,1,100.0,False
+Roses Coffee Corner,1,1171,Roses Coffee Corner,1,100.0,False
+Rotate Fun Club,1,1172,Rotate Fun Club,1,100.0,False
+Royal Chiaohsi Hotel,1,1173,Royal Chiaohsi Hotel,1,100.0,False
+Royal Coffee,5,1174,Royal Coffee,1,100.0,False
+Royal Flamingo Coffee,3,1175,Royal Flamingo Coffee,1,100.0,False
+Rubasse Coffee Roaster,1,1177,Rubasse Coffee Roaster,1,100.0,False
+Ruby Colorful Coffees,1,1178,Ruby Colorful Coffees,1,100.0,False
+Rudy,1,1179,Rudy,1,100.0,False
+Rufous Coffee,2,1180,Rufous Coffee,1,100.0,False
+Rusty Car Coffee,1,1181,Rusty Car Coffee,1,100.0,False
+Rusty Dog Coffee,20,1182,Rusty Dog Coffee,1,100.0,False
+S&D Coffee for Bahama Breeze Restaurants,1,1184,S&D Coffee for Bahama Breeze Restaurants,1,100.0,False
+SINOAGRI E-LNK,1,1185,SINOAGRI E-LNK,1,100.0,False
+SO Roasters,1,1186,SO Roasters,1,100.0,False
+SONGYUE Coffee Estate (郭亮志),1,1187,SONGYUE Coffee Estate (郭亮志),1,100.0,False
+Saccuzzo Boutique Coffee,1,1189,Saccuzzo Boutique Coffee,1,100.0,False
+Safari Cup,5,1191,Safari Cup,1,100.0,False
+Safeway Kitchens,1,1192,Safeway Kitchens,1,100.0,False
+Safeway Select,2,1193,Safeway Select,1,100.0,False
+"Safeway, Inc.",1,1194,"Safeway, Inc.",1,100.0,False
+Salt Lake Roasting,1,1195,Salt Lake Roasting,1,100.0,False
+Sam's Choice (Walmart),1,1197,Sam's Choice (Walmart),1,100.0,False
+Samlin Coffee,2,1198,Samlin Coffee,1,100.0,False
+San Agustin,1,1199,San Agustin,1,100.0,False
+San Alto/Oasis Coffee,3,1200,San Alto/Oasis Coffee,1,100.0,False
+San Benito Estate,1,1201,San Benito Estate,1,100.0,False
+San Francisco Coffee,1,1203,San Francisco Coffee,1,100.0,False
+San Giorgio Coffee Company,1,1204,San Giorgio Coffee Company,1,100.0,False
+San Isidro Cooperative,1,1205,San Isidro Cooperative,1,100.0,False
+San Joaquin Coffee Company,2,1206,San Joaquin Coffee Company,1,100.0,False
+San Rafael,1,1207,San Rafael,1,100.0,False
+San Rafael Coffee,1,1208,San Rafael Coffee,1,100.0,False
+SanFull Coffee Roasters,1,1209,SanFull Coffee Roasters,1,100.0,False
+Sancoffee,1,1210,Sancoffee,1,100.0,False
+Santa Adelaide Cooperative,1,1211,Santa Adelaide Cooperative,1,100.0,False
+Santa Barbara,1,1212,Santa Barbara,1,100.0,False
+Santana Coffee,1,1214,Santana Coffee,1,100.0,False
+Scent Pursuit Roasters,5,1217,Scent Pursuit Roasters,1,100.0,False
+Sea Island Coffee,9,1218,Sea Island Coffee,1,100.0,False
+Seasons Coffee Roasters,2,1219,Seasons Coffee Roasters,1,100.0,False
+Seattle Coffee Works,11,1220,Seattle Coffee Works,1,100.0,False
+Seattle's Best Coffee,7,1221,Seattle's Best Coffee,1,100.0,False
+Second Spin Roasting,1,1222,Second Spin Roasting,1,100.0,False
+Secret Squirrel,1,1223,Secret Squirrel,1,100.0,False
+"Seeker Co, Ltd.",4,1224,"Seeker Co, Ltd.",1,100.0,False
+Segafredo Zanetti,3,1225,Segafredo Zanetti,1,100.0,False
+Senseo-Douwe Egberts,1,1226,Senseo-Douwe Egberts,1,100.0,False
+Sensory House Coffee,2,1227,Sensory House Coffee,1,100.0,False
+Sensory Lab,1,1228,Sensory Lab,1,100.0,False
+Serda's Coffee,1,1229,Serda's Coffee,1,100.0,False
+Serious Coffee,2,1230,Serious Coffee,1,100.0,False
+Shan Jin Coffee Manor,1,1231,Shan Jin Coffee Manor,1,100.0,False
+Shan-Hai-Guan Hand-Made Coffee,1,1232,Shan-Hai-Guan Hand-Made Coffee,1,100.0,False
+"Shanghai Creation Trading Co, Ltd.",6,1234,"Shanghai Creation Trading Co, Ltd.",1,100.0,False
+Shearwater Organic Coffee Roasters,3,1235,Shearwater Organic Coffee Roasters,1,100.0,False
+Shibi Pure,1,1236,Shibi Pure,1,100.0,False
+Shuang Yi Coffee,4,1237,Shuang Yi Coffee,1,100.0,False
+Sightglass Coffee,2,1239,Sightglass Coffee,1,100.0,False
+Sightseer Coffee,1,1240,Sightseer Coffee,1,100.0,False
+Signature Reserve,1,1241,Signature Reserve,1,100.0,False
+Silver Canyon Coffee,2,1242,Silver Canyon Coffee,1,100.0,False
+Silverfern Coffee Roasters,1,1243,Silverfern Coffee Roasters,1,100.0,False
+Simpatico Nice Coffee,1,1245,Simpatico Nice Coffee,1,100.0,False
+Single Speed Coffee Lab & Roastery,1,1246,Single Speed Coffee Lab & Roastery,1,100.0,False
+Singsun Coffee,2,1247,Singsun Coffee,1,100.0,False
+Sip of Hope Community Coffee Roasters,1,1248,Sip of Hope Community Coffee Roasters,1,100.0,False
+SkyTop Coffee,29,1249,SkyTop Coffee,1,100.0,False
+Slake Coffee,2,1250,Slake Coffee,1,100.0,False
+Slingshot Coffee,1,1251,Slingshot Coffee,1,100.0,False
+Slow Burn Coffee Roasters,3,1252,Slow Burn Coffee Roasters,1,100.0,False
+Slowfy,2,1253,Slowfy,1,100.0,False
+Small Batch Coffee,1,1254,Small Batch Coffee,1,100.0,False
+Smit & Dorlas,4,1256,Smit & Dorlas,1,100.0,False
+Snowy Mountain Coffee,1,1257,Snowy Mountain Coffee,1,100.0,False
+Social Coffee & Tea Company,10,1258,Social Coffee & Tea Company,1,100.0,False
+Song Zhi Yuan Coffee Manor,1,1259,Song Zhi Yuan Coffee Manor,1,100.0,False
+Songyue Coffee Manor,1,1260,Songyue Coffee Manor,1,100.0,False
+Soul Work Coffee,4,1261,Soul Work Coffee,1,100.0,False
+South Slope Coffee Roasters,1,1262,South Slope Coffee Roasters,1,100.0,False
+Southeastern Roastery,1,1263,Southeastern Roastery,1,100.0,False
+Souvenir Coffee,7,1264,Souvenir Coffee,1,100.0,False
+Soyuz Coffee Roasting,7,1265,Soyuz Coffee Roasting,1,100.0,False
+SpecialtyJava.com,5,1266,SpecialtyJava.com,1,100.0,False
+Speckled Ax,8,1267,Speckled Ax,1,100.0,False
+Speedwell Coffee,14,1268,Speedwell Coffee,1,100.0,False
+Spirit Animal Coffee,1,1269,Spirit Animal Coffee,1,100.0,False
+Spix's Cafe,1,1270,Spix's Cafe,1,100.0,False
+St. Ives Coffee Roasters,3,1272,St. Ives Coffee Roasters,1,100.0,False
+St1 Cafe/Work Room,2,1273,St1 Cafe/Work Room,1,100.0,False
+Starbucks Coffee (Costco),1,1275,Starbucks Coffee (Costco),1,100.0,False
+Starbucks Reserve Roastery,8,1276,Starbucks Reserve Roastery,1,100.0,False
+Starbucks for the Verismo espresso system,2,1277,Starbucks for the Verismo espresso system,1,100.0,False
+Stauf's Coffee Roasters,2,1279,Stauf's Coffee Roasters,1,100.0,False
+Steadfast Coffee,1,1280,Steadfast Coffee,1,100.0,False
+Steaming Bean Coffee,1,1282,Steaming Bean Coffee,1,100.0,False
+Steel Oak Coffee,6,1283,Steel Oak Coffee,1,100.0,False
+Steep & Brew,3,1284,Steep & Brew,1,100.0,False
+Stereo Coffee Roasters,2,1285,Stereo Coffee Roasters,1,100.0,False
+Stockton Graham & Co,4,1286,Stockton Graham & Co,1,100.0,False
+Stone Creek Coffee,1,1287,Stone Creek Coffee,1,100.0,False
+Stone Cup Roasting,9,1288,Stone Cup Roasting,1,100.0,False
+Stoneleigh Coffee,1,1289,Stoneleigh Coffee,1,100.0,False
+Storehouse Coffee,2,1290,Storehouse Coffee,1,100.0,False
+Storyville Coffee,1,1291,Storyville Coffee,1,100.0,False
+Street Bean,1,1292,Street Bean,1,100.0,False
+Strongtree Heirloom Organic Coffees,1,1293,Strongtree Heirloom Organic Coffees,1,100.0,False
+Studio Confluence,1,1294,Studio Confluence,1,100.0,False
+Stumptown Coffee Roasters,23,1295,Stumptown Coffee Roasters,1,100.0,False
+Succulent Coffee Roasters,5,1296,Succulent Coffee Roasters,1,100.0,False
+Sucré Beans,2,1297,Sucré Beans,1,100.0,False
+Sudden Coffee,1,1298,Sudden Coffee,1,100.0,False
+Sun Bear Specialty Coffee Roasters,1,1299,Sun Bear Specialty Coffee Roasters,1,100.0,False
+Sundays on Toro,1,1300,Sundays on Toro,1,100.0,False
+Sunergos Coffee,1,1301,Sunergos Coffee,1,100.0,False
+Sunny's Coffee,6,1302,Sunny's Coffee,1,100.0,False
+Sunrise Coffee,2,1303,Sunrise Coffee,1,100.0,False
+Sunshine Organic Coffee Roasters,1,1304,Sunshine Organic Coffee Roasters,1,100.0,False
+Superba Coffee,2,1305,Superba Coffee,1,100.0,False
+Superior Coffee,2,1306,Superior Coffee,1,100.0,False
+Surf City Coffee,5,1308,Surf City Coffee,1,100.0,False
+Susan's Coffee and Tea,1,1309,Susan's Coffee and Tea,1,100.0,False
+Sweet Bloom Coffee Roasters,2,1310,Sweet Bloom Coffee Roasters,1,100.0,False
+Sweet Cafe,1,1311,Sweet Cafe,1,100.0,False
+Sweet Home Coffee,1,1312,Sweet Home Coffee,1,100.0,False
+Sweet Maria's Coffee,2,1313,Sweet Maria's Coffee,1,100.0,False
+Sweetwater Organic Coffee Roasters,1,1314,Sweetwater Organic Coffee Roasters,1,100.0,False
+Swelter Coffee,1,1315,Swelter Coffee,1,100.0,False
+Swiss Water Decaffeinated Coffee Company,2,1316,Swiss Water Decaffeinated Coffee Company,1,100.0,False
+T.M. Ward Coffee,1,1317,T.M. Ward Coffee,1,100.0,False
+T.S.E. Custom Roastery,1,1318,T.S.E. Custom Roastery,1,100.0,False
+Talitha Coffee Roasters,3,1319,Talitha Coffee Roasters,1,100.0,False
+Tambaya,1,1320,Tambaya,1,100.0,False
+Tamer International,2,1321,Tamer International,1,100.0,False
+Tandem Coffee,2,1322,Tandem Coffee,1,100.0,False
+Tas Kafe,1,1324,Tas Kafe,1,100.0,False
+Tassimo/Mastro Lorenzo,1,1325,Tassimo/Mastro Lorenzo,1,100.0,False
+Tastes of the World,1,1327,Tastes of the World,1,100.0,False
+Tata Coffee,1,1328,Tata Coffee,1,100.0,False
+Taylor Maid Farms,4,1329,Taylor Maid Farms,1,100.0,False
+Te Aro Roasted,5,1330,Te Aro Roasted,1,100.0,False
+Teapot Coffee & Tea,1,1331,Teapot Coffee & Tea,1,100.0,False
+Tehmag Foods Corporation,1,1332,Tehmag Foods Corporation,1,100.0,False
+Telluride Coffee Roasters,5,1333,Telluride Coffee Roasters,1,100.0,False
+Terranova Estate,1,1335,Terranova Estate,1,100.0,False
+Testa Rossa,1,1337,Testa Rossa,1,100.0,False
+Texas Coffee Traders,1,1338,Texas Coffee Traders,1,100.0,False
+Texas Roast Premium Gourmet Coffee,2,1339,Texas Roast Premium Gourmet Coffee,1,100.0,False
+The Angry Roaster,1,1341,The Angry Roaster,1,100.0,False
+The Bantuan Coffee Foundation,1,1342,The Bantuan Coffee Foundation,1,100.0,False
+The Beanery Coffee Roasters,3,1343,The Beanery Coffee Roasters,1,100.0,False
+The Beanstock Coffee Roasters,1,1344,The Beanstock Coffee Roasters,1,100.0,False
+The Coffee Academics,7,1345,The Coffee Academics,1,100.0,False
+The Coffee Bean & Tea Leaf,3,1346,The Coffee Bean & Tea Leaf,1,100.0,False
+The Coffee Beanery,3,1347,The Coffee Beanery,1,100.0,False
+The Coffee Roaster,1,1348,The Coffee Roaster,1,100.0,False
+The Coffee Tree Roasters,1,1349,The Coffee Tree Roasters,1,100.0,False
+The Embellished Bean,2,1351,The Embellished Bean,1,100.0,False
+The Fire Roasted Coffee,1,1352,The Fire Roasted Coffee,1,100.0,False
+The Formosa Coffee,1,1353,The Formosa Coffee,1,100.0,False
+The Fresh Market,1,1354,The Fresh Market,1,100.0,False
+The Gourmet Coffee Bean,1,1355,The Gourmet Coffee Bean,1,100.0,False
+The Groovy Mind,1,1356,The Groovy Mind,1,100.0,False
+The Organic Coffee Company,1,1357,The Organic Coffee Company,1,100.0,False
+The Reverse Orangutan,1,1358,The Reverse Orangutan,1,100.0,False
+The Roasterie,58,1359,The Roasterie,1,100.0,False
+The Sensuous Bean,1,1360,The Sensuous Bean,1,100.0,False
+The Westside Coffee Company,6,1362,The Westside Coffee Company,1,100.0,False
+Theory Coffee Roasters,8,1363,Theory Coffee Roasters,1,100.0,False
+Thirty-Thirty Coffee Co.,18,1364,Thirty-Thirty Coffee Co.,1,100.0,False
+Three Chairs Specialty Turkish Coffee,1,1365,Three Chairs Specialty Turkish Coffee,1,100.0,False
+Three Keys Coffee,5,1366,Three Keys Coffee,1,100.0,False
+Tico Coffee Roasters,2,1367,Tico Coffee Roasters,1,100.0,False
+Timothy's World Coffee,13,1368,Timothy's World Coffee,1,100.0,False
+Tinker Coffee Co.,1,1369,Tinker Coffee Co.,1,100.0,False
+Tipico Coffee,9,1370,Tipico Coffee,1,100.0,False
+Tipsy Coffee Roasters,1,1371,Tipsy Coffee Roasters,1,100.0,False
+To the moooon Black Cat Loft,1,1372,To the moooon Black Cat Loft,1,100.0,False
+Toca Coffee,1,1373,Toca Coffee,1,100.0,False
+Toms Roasting Co.,1,1374,Toms Roasting Co.,1,100.0,False
+Topeka Coffee of El Salvador,1,1377,Topeka Coffee of El Salvador,1,100.0,False
+Torque Coffee,7,1378,Torque Coffee,1,100.0,False
+Torrefazione Italia,4,1379,Torrefazione Italia,1,100.0,False
+Torrefazione Tafuri,1,1380,Torrefazione Tafuri,1,100.0,False
+Trader Joe's,13,1382,Trader Joe's,1,100.0,False
+Trailhead Coffee Roasters,2,1383,Trailhead Coffee Roasters,1,100.0,False
+Treeman Coffee,2,1384,Treeman Coffee,1,100.0,False
+Tribo Coffee,1,1385,Tribo Coffee,1,100.0,False
+Trident Coffee,2,1386,Trident Coffee,1,100.0,False
+Trifinio Coffee Company,1,1387,Trifinio Coffee Company,1,100.0,False
+Triple Coffee Co.,1,1388,Triple Coffee Co.,1,100.0,False
+TruCup Coffee,2,1389,TruCup Coffee,1,100.0,False
+True Beans Coffee Roasters,7,1390,True Beans Coffee Roasters,1,100.0,False
+True Coffee Roasters,9,1391,True Coffee Roasters,1,100.0,False
+True Coffee Roasting Studio,1,1392,True Coffee Roasting Studio,1,100.0,False
+True Stone Coffee,1,1393,True Stone Coffee,1,100.0,False
+Tug Hill Artisan Roasters,1,1394,Tug Hill Artisan Roasters,1,100.0,False
+Tully's Coffee,29,1395,Tully's Coffee,1,100.0,False
+Tumaz Coffee,1,1396,Tumaz Coffee,1,100.0,False
+Turning Point Coffee,7,1397,Turning Point Coffee,1,100.0,False
+Turnstile Coffee Roasters,5,1398,Turnstile Coffee Roasters,1,100.0,False
+Twiga Coffee,2,1399,Twiga Coffee,1,100.0,False
+Two Guys Roasting,1,1400,Two Guys Roasting,1,100.0,False
+U&Me Buna,2,1401,U&Me Buna,1,100.0,False
+UCC Ueshima Coffee,1,1402,UCC Ueshima Coffee,1,100.0,False
+Uislandscafe,3,1403,Uislandscafe,1,100.0,False
+Uncle Beanz,5,1404,Uncle Beanz,1,100.0,False
+Uncommon Grounds,6,1405,Uncommon Grounds,1,100.0,False
+Uncommon Grounds Coffee and Tea,1,1406,Uncommon Grounds Coffee and Tea,1,100.0,False
+Utopian Coffee,84,1407,Utopian Coffee,1,100.0,False
+V. Coffee,1,1408,V. Coffee,1,100.0,False
+VERYTIME,13,1409,VERYTIME,1,100.0,False
+VN Beans,1,1410,VN Beans,1,100.0,False
+Vascobelo,1,1412,Vascobelo,1,100.0,False
+Velton's Coffee,9,1413,Velton's Coffee,1,100.0,False
+Vennel Coffee,4,1414,Vennel Coffee,1,100.0,False
+Vermont Artisan Coffee & Tea,3,1415,Vermont Artisan Coffee & Tea,1,100.0,False
+Vertigo Coffee,4,1416,Vertigo Coffee,1,100.0,False
+Very Famous International,2,1417,Very Famous International,1,100.0,False
+Victorian House Concentrated Coffee,1,1418,Victorian House Concentrated Coffee,1,100.0,False
+Victrola Coffee Roasters,36,1419,Victrola Coffee Roasters,1,100.0,False
+Vienna Coffee Company,2,1420,Vienna Coffee Company,1,100.0,False
+Vigilante Coffee,2,1421,Vigilante Coffee,1,100.0,False
+Vista Clara Coffee,2,1422,Vista Clara Coffee,1,100.0,False
+Vivid Coffee,1,1423,Vivid Coffee,1,100.0,False
+Voila Coffee,4,1424,Voila Coffee,1,100.0,False
+Volcafe Specialty Coffee,1,1425,Volcafe Specialty Coffee,1,100.0,False
+Volcancito 2 Estate,1,1426,Volcancito 2 Estate,1,100.0,False
+Volcanica Coffee,3,1427,Volcanica Coffee,1,100.0,False
+Voyage Coffee,2,1428,Voyage Coffee,1,100.0,False
+Voyager Specialty Coffee,1,1429,Voyager Specialty Coffee,1,100.0,False
+Wailapa Farms,1,1430,Wailapa Farms,1,100.0,False
+Waimea Coffee,1,1431,Waimea Coffee,1,100.0,False
+Waka Coffee,1,1432,Waka Coffee,1,100.0,False
+Wal-Mart Stores,1,1433,Wal-Mart Stores,1,100.0,False
+Walla Walla Roastery,1,1434,Walla Walla Roastery,1,100.0,False
+Wandering Bear,1,1436,Wandering Bear,1,100.0,False
+Warm Air Kafe,4,1437,Warm Air Kafe,1,100.0,False
+Water Street Coffee,1,1439,Water Street Coffee,1,100.0,False
+Wei Chuan Foods Corporation,14,1440,Wei Chuan Foods Corporation,1,100.0,False
+West Oak Coffee,1,1441,West Oak Coffee,1,100.0,False
+Whatever Coffee,4,1442,Whatever Coffee,1,100.0,False
+Whidbey Coffee,2,1444,Whidbey Coffee,1,100.0,False
+Whipsaw Coffee Roasters,1,1445,Whipsaw Coffee Roasters,1,100.0,False
+White Cloud Mountain Coffee,1,1446,White Cloud Mountain Coffee,1,100.0,False
+White Coffee,1,1447,White Coffee,1,100.0,False
+White Horse Coffee & Tea,3,1448,White Horse Coffee & Tea,1,100.0,False
+White Rhino Coffee,5,1449,White Rhino Coffee,1,100.0,False
+White Rock Coffee,1,1450,White Rock Coffee,1,100.0,False
+Whole Foods Market,4,1451,Whole Foods Market,1,100.0,False
+Wicked Joe,4,1452,Wicked Joe,1,100.0,False
+Wild Goose Coffee Roasters,6,1453,Wild Goose Coffee Roasters,1,100.0,False
+Wild Hawk Coffee,1,1454,Wild Hawk Coffee,1,100.0,False
+Wildfire Coffee Roasters,1,1455,Wildfire Coffee Roasters,1,100.0,False
+Wildgoose Coffee Roasters,1,1456,Wildgoose Coffee Roasters,1,100.0,False
+Wildland Coffee,1,1457,Wildland Coffee,1,100.0,False
+Wishingvine,3,1459,Wishingvine,1,100.0,False
+Wolong Coffee Studio,1,1461,Wolong Coffee Studio,1,100.0,False
+Wonderstate Coffee,59,1462,Wonderstate Coffee,1,100.0,False
+Wood Burl Coffee Roasters,1,1463,Wood Burl Coffee Roasters,1,100.0,False
+Wood-Fire Roasted Coffee,3,1464,Wood-Fire Roasted Coffee,1,100.0,False
+World Cup Roasters,2,1465,World Cup Roasters,1,100.0,False
+Wuguo Cafe,1,1466,Wuguo Cafe,1,100.0,False
+XF Coffee,1,1467,XF Coffee,1,100.0,False
+XianJing Coffee Estate,1,1468,XianJing Coffee Estate,1,100.0,False
+Xinmao Coffee Manor,1,1469,Xinmao Coffee Manor,1,100.0,False
+Yauco Selecto,2,1470,Yauco Selecto,1,100.0,False
+Yellow Brick Coffee,3,1471,Yellow Brick Coffee,1,100.0,False
+Yemen Coffee Processing,1,1472,Yemen Coffee Processing,1,100.0,False
+Yemen Mocha Coffee Trade,2,1473,Yemen Mocha Coffee Trade,1,100.0,False
+Yes Bean Fresh Roast Café,1,1474,Yes Bean Fresh Roast Café,1,100.0,False
+Yi-Chi Coffee,2,1475,Yi-Chi Coffee,1,100.0,False
+Yipao Coffee Roasters,1,1476,Yipao Coffee Roasters,1,100.0,False
+Yong Shun Coffee Manor,1,1478,Yong Shun Coffee Manor,1,100.0,False
+Yosemite Coffee Roasting,2,1479,Yosemite Coffee Roasting,1,100.0,False
+Yum China,3,1481,Yum China,1,100.0,False
+Z Street Coffee,1,1482,Z Street Coffee,1,100.0,False
+Z&Z Fine Coffees,1,1483,Z&Z Fine Coffees,1,100.0,False
+Zacaleu,1,1484,Zacaleu,1,100.0,False
+Zeitgeist Coffee,2,1485,Zeitgeist Coffee,1,100.0,False
+Zingerman's Coffee,5,1486,Zingerman's Coffee,1,100.0,False
+Zocalo Coffee House,1,1487,Zocalo Coffee House,1,100.0,False
+Zoka Coffee Roasters,7,1488,Zoka Coffee Roasters,1,100.0,False
+Zouzhouyuan Coffee Estate,3,1489,Zouzhouyuan Coffee Estate,1,100.0,False
+Zuco Coffee Roasters,2,1490,Zuco Coffee Roasters,1,100.0,False
+caffè HABITU,1,1491,caffè HABITU,1,100.0,False
+inLove Cafe,1,1492,inLove Cafe,1,100.0,False
+Škoda,1,1494,Škoda,1,100.0,False
