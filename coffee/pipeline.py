@@ -1,16 +1,16 @@
 """End-to-end scrape: discover review URLs, fetch what changed, store the lot.
 
-Runs INCREMENTALLY by default. Discovery returns every review URL with its
-sitemap ``<lastmod>`` for about 17 requests, so the run can compare that against
-what the store already holds and fetch only what is new or newer. On the current
-corpus that is roughly 300 pages instead of 9,300 — about a minute rather than
-half an hour — and a monthly cadence brings it down to ~50.
+Runs incrementally by default. Discovery returns every review URL with its
+sitemap ``<lastmod>`` in about 17 requests, so a run can compare that against
+what the store holds and fetch only what is new or newer. On the current corpus
+that is roughly 300 pages rather than 9,300, and a monthly cadence brings it to
+about 50.
 
-Pass ``full=True`` to ignore what is held and re-fetch everything. That is the
-escape hatch for a parser change: incremental re-parses only the pages it
-re-fetches, so a fix to :mod:`coffee.parser` reaches old rows only on a full
-run. ``scraped_at`` records when each row was last fetched, which is what makes
-that mixture visible rather than silent.
+``full=True`` ignores what is held and re-fetches everything. This is what a
+parser change requires: an incremental run re-parses only the pages it
+re-fetches, so a fix in :mod:`coffee.parser` reaches older rows only on a full
+run. ``scraped_at`` records when each row was last fetched, which makes such a
+mixture visible.
 """
 
 import asyncio
@@ -49,13 +49,13 @@ def plan_fetch(
     """Split discovered URLs into (to fetch, retired).
 
     A URL is fetched when it is new, when its sitemap date has moved on, or
-    when either date is unknown — an unprovable "unchanged" is treated as
-    changed, because the cost of re-fetching a page is one request and the cost
-    of wrongly skipping it is a row that is quietly wrong forever.
+    when either date is unknown. An unprovable "unchanged" is treated as
+    changed: re-fetching costs one request, while wrongly skipping leaves a row
+    permanently stale.
 
-    "Retired" URLs are held but no longer listed upstream. They are reported,
-    never deleted: a review that disappears from the site cannot be re-fetched,
-    so dropping it would destroy the only copy.
+    Retired URLs are held but no longer listed upstream. They are reported and
+    never deleted, since a review that has disappeared from the site cannot be
+    re-fetched and the held copy is the only one.
     """
 
     def is_stale(url: str, listed: date | None) -> bool:
@@ -80,8 +80,8 @@ async def scrape_all_reviews(
     async with aiohttp.ClientSession(headers=HEADERS) as session:
         start = time.perf_counter()
         # Maps each review URL to its sitemap <lastmod>. Raises rather than
-        # returning a short list, so a partial discovery can't quietly produce a
-        # dataset that merely looks complete.
+        # returning a short list, so a partial discovery cannot produce a
+        # dataset that only appears complete.
         discovered = await get_review_urls(session=session, semaphore=semaphore)
         logger.info(
             "Found %d review links in %.2f seconds",
@@ -115,17 +115,16 @@ async def scrape_all_reviews(
             return
 
         scraped_at = datetime.now().isoformat(timespec="seconds")
-        # The semaphore bounds concurrent requests while still improving on
-        # pure-synchronous scraping.
+        # The semaphore bounds concurrent requests.
         tasks = [scrape_review(url, session, semaphore) for url in to_fetch]
         for future in tqdm(asyncio.as_completed(tasks), total=len(tasks)):
-            # Failed scrapes return None; skip them so they don't become
-            # all-NaN rows in the output.
+            # Failed scrapes return None; skipping them keeps all-NaN rows
+            # out of the output.
             if (review := await future) is not None:
-                # Carried through so a later run can re-scrape only what changed.
+                # Carried through so a later run can compare freshness.
                 review["sitemap_lastmod"] = discovered.get(review["url"])
-                # Per ROW, not per run: a carried-forward row keeps the stamp
-                # from when it was actually fetched, so row age stays readable.
+                # Stamped per row rather than per run, so a carried-forward
+                # row keeps the time it was actually fetched.
                 review["scraped_at"] = scraped_at
                 results.append(review)
 

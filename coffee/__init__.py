@@ -17,11 +17,11 @@ The pipeline runs in four steps, each exposed as a console command (see
   cleaned layer: parsed types, USD prices adjusted for inflation, resolved
   origins and roaster locations.
 
-The two data layers this produces are ``data/raw/reviews.csv`` (what the site
-said) and ``data/clean/reviews.csv`` (what analysis can use). :mod:`storage`
-holds the seam between the pipeline and where reviews live, so the CSV corpus
-can later become a database without touching the scrape.
+This produces two data layers: ``data/raw/reviews.csv`` as scraped, and
+``data/clean/reviews.csv`` ready for analysis. :mod:`storage` sits between the
+pipeline and where reviews are kept, so the CSV corpus can be replaced by a
+database without changing the scrape.
 
 :mod:`config` holds paths and credentials; :mod:`cli` holds argument parsing.
-The notebooks consume the cleaned layer; they no longer produce it.
+The notebooks consume the cleaned layer rather than producing it.
 """

@@ -2,9 +2,9 @@
 
 :func:`fetch` gives URL discovery and review scraping one common request path:
 a per-request timeout, retries limited to transient failures (429/5xx) with
-exponential backoff and jitter honoring ``Retry-After``, and backoff performed
-outside the caller's semaphore so a slow-failing URL never holds a concurrency
-slot idle. Permanent errors (e.g. 404) return ``None`` immediately.
+exponential backoff and jitter honouring ``Retry-After``, and backoff performed
+outside the caller's semaphore so that a slow-failing URL does not hold a
+concurrency slot idle. Permanent errors such as 404 return ``None`` at once.
 """
 
 import asyncio
@@ -13,10 +13,10 @@ import random
 
 import aiohttp
 
-# Only retry transient failures; other 4xx (e.g. 404 for a removed review) are
-# permanent and should fail fast instead of burning retries.
 __all__ = ["fetch"]  # the module-level constants are tuning knobs, not API
 
+# Only transient failures are retried. Other 4xx responses, such as a 404 for a
+# removed review, are permanent and fail fast rather than consuming retries.
 RETRY_STATUSES: frozenset[int] = frozenset({429, 500, 502, 503, 504})
 REQUEST_TIMEOUT = aiohttp.ClientTimeout(total=20)
 BASE_DELAY = 1.0  # seconds; exponential backoff base
@@ -25,7 +25,7 @@ JITTER = 1.0
 
 
 def _retry_delay(attempt: int, retry_after: str | None) -> float:
-    """Exponential backoff with jitter, honoring a numeric Retry-After header."""
+    """Exponential backoff with jitter, honouring a numeric Retry-After header."""
     if retry_after and retry_after.isdigit():
         return float(retry_after)
     return min(BASE_DELAY * 2**attempt, MAX_DELAY) + random.uniform(0, JITTER)

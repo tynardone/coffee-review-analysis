@@ -4,24 +4,22 @@ Scraped data spells one roaster several ways -- "Onyx Coffee Lab", "Onyx Coffee
 Lab LLC", "onyx coffee lab". This module groups those spellings, picks a
 canonical one, and persists the mapping.
 
-Resolution is a cascade, cheapest and most certain first:
+Resolution runs as a cascade, cheapest and most certain stage first:
 
-    normalize -> exact key -> location veto -> fuzzy -> human/LLM review
+    normalize -> exact key -> location veto -> fuzzy -> human review
 
-It optimises for PRECISION over recall, because a false merge is silent while a
-false split is loud. That one asymmetry explains most of what looks conservative
-here: location conflict vetoes a merge but a location match never causes one,
-the uncertain band goes to a review queue instead of being decided, and the two
-ways clustering is known to go wrong are reported rather than prevented.
+Precision is favoured over recall throughout, since a false merge is silent
+while a false split is visible. This accounts for the conservative behaviour:
+a location conflict vetoes a merge but a location match never causes one, the
+uncertain band is queued for review rather than decided, and the two known
+clustering failure modes are reported rather than prevented.
 
-Adjudicated pairs live in ``roaster_decisions.csv`` and are the only state here
-that cannot be regenerated; the crosswalk and the review queue are derived on
-every run.
+Adjudicated pairs live in ``roaster_decisions.csv``, the only state here that
+cannot be regenerated. The crosswalk and the review queue are derived on every
+run.
 
-The reasoning in full -- the error asymmetry, the location signal, why there are
-two thresholds and how to tune them -- is in ``docs/roaster-resolution.md``. The
-workflow for actually running this is in the README under "Resolving roaster
-names".
+``docs/roaster-resolution.md`` covers the design in full. The README section
+"Resolving roaster names" covers the workflow.
 """
 
 from __future__ import annotations
@@ -68,19 +66,16 @@ __all__ = [
 # 1. NORMALIZATION
 # ==========================================================================
 
-# Words that carry near-zero information about *which* roaster this is, because
-# nearly every roaster has some subset of them. Removing them before measuring
-# distance means the distance is measured over signal only -- and it collapses
-# "Stumptown" and "Stumptown Coffee Roasters" to the SAME string, so they match
-# on an exact lookup with no threshold involved. (See the design doc; this is
-# why normalization matters more here than the choice of algorithm.)
+# Words shared by most roaster names, which therefore say little about which
+# roaster a name refers to. Removing them before measuring distance collapses
+# "Stumptown" and "Stumptown Coffee Roasters" to the same key, so they match on
+# an exact lookup rather than on a threshold.
 #
-# TUNING: this list is the first thing to edit for new data. Misspellings of
-# the stopwords themselves belong here too ("coffe", "cofee") -- they would
+# Misspellings of the stopwords belong here too ("coffe", "cofee"); they would
 # otherwise survive into the key as noise tokens.
 # fmt: off
-# Grouped by kind deliberately -- the grouping documents what each line is for.
-# Keep the formatter from flattening it to one word per line.
+# Grouped by kind; the grouping is what each line documents. Keep the formatter
+# from flattening it to one word per line.
 STOPWORDS = {
     "coffee", "coffees", "coffe", "cofee",
     "roaster", "roasters", "roasting", "roastery", "roasterie",
@@ -105,9 +100,9 @@ ABBREV = {
 def strip_accents(s: str) -> str:
     """Café -> Cafe.
 
-    NFKD splits an accented char into base + combining mark; we drop the marks.
-    Necessary because a scraper will happily give you both spellings of the same
-    roaster depending on which page it hit.
+    NFKD splits an accented character into a base plus combining marks, which
+    are then dropped. Scraped pages carry both spellings of the same roaster
+    depending on which page a name came from.
     """
     return "".join(
         c for c in unicodedata.normalize("NFKD", s) if not unicodedata.combining(c)
@@ -117,17 +112,16 @@ def strip_accents(s: str) -> str:
 def tokens(name: str) -> list[str]:
     """Raw name -> clean token list.
 
-    Most of the debugging in this problem is at the CHARACTER level, not the
-    algorithm level. Each line below closes a specific noise channel, and the
-    order matters. Two are landmines worth stating outright:
+    Each step closes one source of spelling noise, and the order matters. Two
+    are easy to undo by accident:
 
-    1. APOSTROPHES ARE DELETED, not turned into spaces. "Peet's" has to reach
-       the same token as "Peets"; splitting on the apostrophe would instead
+    1. Apostrophes are deleted rather than turned into spaces, so "Peet's"
+       reaches the same token as "Peets". Splitting on the apostrophe would
        yield ["peet", "s"] and a stray single letter.
-    2. SINGLE-LETTER RUNS ARE COLLAPSED.
-       "J.B.C. Coffee Roasters" punctuation-strips to ["j","b","c",...], which
-       shares nothing with "JBC Coffee" -> ["jbc",...]. Gluing runs of single
-       letters back together makes initialisms agree with their solid form.
+    2. Runs of single letters are collapsed. "J.B.C. Coffee Roasters"
+       punctuation-strips to ["j", "b", "c", ...], which shares nothing with
+       "JBC Coffee" -> ["jbc", ...]. Gluing the run back together makes an
+       initialism agree with its solid form.
     """
     s = strip_accents(str(name)).lower()
     s = s.replace("&", " and ")
@@ -169,11 +163,9 @@ def core_key(name: str) -> str:
         "Stumptown Roasters"        -> "stumptown"
         "Stumptown Coffee Roasters" -> "stumptown"
 
-    FAILURE MODE: a roaster genuinely named "The Coffee Company" stopwords down
-    to nothing. We fall back to the full fingerprint so it at least keeps an
-    identity. This is a patch, not a solution — such a name will also match
-    poorly against its own variants. Rare enough in practice to accept, but know
-    it's here.
+    A name composed entirely of stopwords, such as "The Coffee Company",
+    reduces to nothing; it falls back to the full fingerprint so that it keeps
+    an identity. Such a name still matches poorly against its own variants.
     """
     toks = sorted({t for t in tokens(name) if t not in STOPWORDS})
     if not toks:
@@ -186,55 +178,55 @@ def core_key(name: str) -> str:
 # ==========================================================================
 
 # A one-token core key is trusted as a subset match only when that token is
-# rare across the corpus. See THE SUBSET GUARD in score().
+# rare across the corpus. See the subset guard in score().
 MAX_SUBSET_TOKEN_DF = 2
 
 
 def token_document_frequency(keys: Iterable[str]) -> Counter[str]:
-    """How many DISTINCT core keys each token appears in.
+    """How many distinct core keys each token appears in.
 
-    Separates "kona" (15 keys, generic here) from "stumptown" (1, identifying).
-    Measured from the data, so it adapts to whatever stopwording leaves behind.
+    Separates a generic token such as "kona" (15 keys) from an identifying one
+    such as "stumptown" (1). Measured from the corpus, so it adapts to whatever
+    stopwording leaves behind.
     """
     return Counter(tok for key in keys for tok in set(key.split()))
 
 
 def score(a: str, b: str, token_df: Mapping[str, int] | None = None, **kwargs) -> float:
-    """Similarity of two CORE KEYS (not raw names) in [0, 100].
+    """Similarity of two core keys (not raw names) in [0, 100].
 
-    Two kinds of variation survive normalization, and no single metric handles
-    both — hence the max of two:
+    Two kinds of variation survive normalization, and no single metric covers
+    both, so the result is the maximum of two:
 
-      token_set_ratio   SUBSET relationships. "Onyx Coffee" -> "onyx" and
+      token_set_ratio   Subset relationships. "Onyx Coffee" -> "onyx" and
                         "Onyx Coffee Lab" -> "lab onyx"; one key is a strict
                         subset of the other, which token_set scores 100.
 
-      token_sort_ratio  TYPOS and reordering. Sorts tokens, then edit distance.
+      token_sort_ratio  Typos and reordering. Sorts tokens, then edit distance.
 
-    The max is deliberately permissive — "if either view thinks these are the
-    same, treat them as candidates" — which is only affordable because the
-    thresholds in resolve() are strict, and because of the guard below.
+    Taking the maximum is permissive: a pair becomes a candidate if either
+    metric rates it a match. That is affordable because resolve() applies
+    strict thresholds and because of the subset guard below.
 
-    THE SUBSET GUARD
-        token_set scores ANY strict subset 100, however little it says, and
-        stopwording MANUFACTURES bare generic keys that then match everything:
-        "Kona Cafe" -> "kona", "Coffee Bros." -> "brothers". Unguarded on the
-        real data, each such key auto-merged with every key containing it and
-        union-find chained the neighborhood into one cluster — 219 of 1,591
-        spellings ended up in chained clusters.
+    Subset guard
+        token_set scores any strict subset 100 regardless of how little the
+        shorter key says, and stopwording produces bare generic keys that then
+        match everything: "Kona Cafe" -> "kona", "Coffee Bros." -> "brothers".
+        Unguarded, each such key merges with every key containing it and
+        union-find chains the neighbourhood into a single cluster; on the
+        current corpus that placed 219 of 1,591 spellings in chained clusters.
 
-        So trust a subset reading only when the shorter key is DISTINCTIVE:
-        >= 2 tokens, or a single token rare in the corpus (document frequency
-        <= MAX_SUBSET_TOKEN_DF). Genericness, not length, is the property that
-        matters — "international" is long and useless, "coffeeam" is short and
-        identifying.
+        A subset reading is therefore trusted only when the shorter key is
+        distinctive: at least 2 tokens, or a single token that is rare in the
+        corpus (document frequency <= MAX_SUBSET_TOKEN_DF). The property that
+        matters is genericness rather than length -- "international" is long
+        and uninformative, "coffeeam" is short and identifying.
 
-    `token_df` comes from token_document_frequency(). When it is None (direct
-    calls, tests) one-token keys are not trusted for subset matching, which is
-    the conservative reading per the asymmetry at the top of this file.
+    `token_df` comes from token_document_frequency(). When it is None, as in
+    direct calls and tests, one-token keys are not trusted for subset matching.
 
     **kwargs absorbs the `score_cutoff` that rapidfuzz.process.cdist injects
-    into scorer callables. Without it, cdist raises TypeError.
+    into scorer callables; without it, cdist raises TypeError.
     """
     shorter = a if len(a) <= len(b) else b
     shorter_tokens = shorter.split()
@@ -254,31 +246,30 @@ def score(a: str, b: str, token_df: Mapping[str, int] | None = None, **kwargs) -
 
 
 # ==========================================================================
-# 3. LOCATION — THE SECOND SIGNAL
+# 3. LOCATION: THE SECOND SIGNAL
 # ==========================================================================
 
-# Names alone leave a wide band of honest uncertainty. Roaster location closes
-# most of it: it is populated on essentially every review, and it is nearly
-# orthogonal to spelling, so it carries information the string score cannot.
+# Names alone leave a wide band of uncertainty. Roaster location narrows it:
+# the field is populated on nearly every review and is close to orthogonal to
+# spelling, so it carries information the string score does not. On the current
+# review queue it settled 41 of 50 pairs -- "Heart Coffee Roasters" (Portland,
+# Oregon) against "Heat Coffee" (Taipei, Taiwan) scores 88.9 on name alone.
 #
-# On the real review queue it resolved 41 of 50 pairs outright — "Heart Coffee
-# Roasters" (Portland, Oregon) against "Heat Coffee" (Taipei, Taiwan) scores
-# 88.9 on name alone and is obviously not the same company.
-#
-# It is EVIDENCE, NOT PROOF, and the two directions are not symmetric:
-#   different region  -> near-decisive that these are different companies
-#   identical place   -> strongly confirmatory, but "Bear Coffee" and "Bear
-#                        Coffee Roasters" in one city could still be two shops
-# So a region conflict BLOCKS a merge, while an exact match only LOWERS THE BAR
-# rather than forcing one.
+# Location is evidence rather than proof, and the two directions differ in
+# strength:
+#   different region  near-decisive that these are different companies
+#   identical place   confirmatory, but "Bear Coffee" and "Bear Coffee
+#                     Roasters" in one city could still be two businesses
+# A region conflict therefore blocks a merge, while an exact match only
+# surfaces the pair for review.
 
 
 class LocationEvidence(StrEnum):
     """What the two names' locations say about whether they are one company."""
 
-    SAME = "same"  # identical place -> lower the bar
-    CONFLICT = "conflict"  # no region in common -> refuse to merge
-    NEUTRAL = "neutral"  # same region, different city -> no opinion
+    SAME = "same"  # identical place: surface for review
+    CONFLICT = "conflict"  # no region in common: refuse to merge
+    NEUTRAL = "neutral"  # same region, different city: no opinion
     UNKNOWN = "unknown"  # at least one side has no location
 
 
@@ -286,8 +277,9 @@ def normalize_location(value: str) -> tuple[str | None, str | None]:
     """``"London, Ontario, Canada"`` -> ``("london", "canada")``.
 
     Returns (city, region). CoffeeReview writes locations most-specific-first,
-    so the LAST comma-separated part is the region or country and the first is
-    the city. A single-part value ("El Salvador") is a region with no city.
+    so the last comma-separated part is the region or country and the first is
+    the city. A single-part value such as "El Salvador" is a region with no
+    city.
     """
     parts = [strip_accents(part).strip().lower() for part in str(value).split(",")]
     parts = [part for part in parts if part]
@@ -303,10 +295,10 @@ def compare_locations(
 ) -> LocationEvidence:
     """Weigh two names' location sets against each other.
 
-    Each name gets a SET of locations, not one, because a roaster legitimately
-    appears at several over the years — 155 of 1,591 in the current data do.
-    Comparing sets rather than single values keeps a relocation from reading as
-    a conflict: any overlap is enough to withhold the veto.
+    Each name carries a set of locations rather than one, because a roaster can
+    appear at several over the years; 155 of 1,591 in the current data do.
+    Comparing sets keeps a relocation from reading as a conflict, since any
+    overlap withholds the veto.
     """
     norm_a = {normalize_location(p) for p in places_a or () if p}
     norm_b = {normalize_location(p) for p in places_b or () if p}
@@ -326,13 +318,12 @@ def compare_locations(
 
 
 # ==========================================================================
-# 4. DECISIONS — DURABLE HUMAN JUDGEMENT
+# 4. DECISIONS
 # ==========================================================================
 
-# The crosswalk is DERIVED and regenerable; these are the inputs that are not.
-# Keeping them in a separate file is what lets manual effort accumulate instead
-# of resetting: every rerun re-derives the clusters, but never re-asks a
-# question already answered.
+# The crosswalk is derived and regenerable; adjudicated pairs are not. Keeping
+# them in a separate file is what lets manual effort accumulate: every run
+# re-derives the clusters but never re-asks an answered question.
 
 
 class Verdict(StrEnum):
@@ -340,12 +331,10 @@ class Verdict(StrEnum):
     SPLIT = "split"
 
 
-# What counts as an answer in the queue's `verdict` column.
-#
-# Being strict here is a bad trade. The column is filled in by hand, often in a
-# spreadsheet, and "y"/"n" is the obvious thing to type when the question is
-# "are these the same company?". Accepting only the two canonical spellings
-# meant a whole afternoon of answers was silently skipped.
+# What counts as an answer in the queue's `verdict` column. The column is
+# filled in by hand, often in a spreadsheet, where "y" and "n" are the natural
+# responses to "are these the same company?". Accepting only the two canonical
+# spellings would discard those rows.
 VERDICT_SYNONYMS: dict[str, Verdict] = {
     "merge": Verdict.MERGE,
     "m": Verdict.MERGE,
@@ -389,10 +378,11 @@ def unpromoted_verdicts(review_path: Path) -> int:
 
 @dataclass(frozen=True)
 class Decision:
-    """One adjudicated pair. `decided_by` records who or what decided.
+    """One adjudicated pair.
 
-    Attribution matters because the review band is where an LLM is worth using,
-    and LLM calls should be revisitable as a group without disturbing your own.
+    `decided_by` records the source of the verdict, so that decisions from one
+    source -- a particular person, or a model run -- can be revisited as a
+    group without disturbing the rest.
     """
 
     name_a: str
@@ -410,8 +400,9 @@ class Decision:
 
 DECISION_COLUMNS = ["name_a", "name_b", "verdict", "decided_by", "decided_on", "note"]
 
-# Columns of the review queue. `verdict` is the one you fill in; the location
-# columns are there so the evidence is visible without a second lookup.
+# Columns of the review queue. `verdict` is the one to fill in; the location
+# columns carry the evidence so that adjudicating a pair needs no second
+# lookup.
 REVIEW_COLUMNS = [
     "name_a",
     "name_b",
@@ -451,15 +442,13 @@ def promote_reviewed(
 ) -> int:
     """Move answered rows out of the review queue and into the decisions file.
 
-    This is the step that closes the loop. Without it the queue is a form nobody
-    collects: you can fill in `verdict`, but the next run re-derives the queue
-    from scratch and asks again. Promoting the answers is what makes the effort
-    cumulative — every question is asked at most once, ever.
+    Answers only persist once promoted: the next run re-derives the queue from
+    scratch, so a verdict left in the queue is asked again. Promoting is what
+    limits each question to being asked once.
 
-    Blank rows are left alone, so a partially filled queue is fine. A value
-    that cannot be read is reported rather than skipped in silence — silently
-    dropping answers is indistinguishable from the tool not working, and costs
-    whoever filled the queue in their whole session.
+    Blank rows are left alone, so a partially filled queue is valid. A value
+    that cannot be parsed raises rather than being skipped, since dropping
+    answers silently is indistinguishable from the tool not working.
 
     Returns the number of new decisions recorded.
     """
@@ -489,8 +478,8 @@ def promote_reviewed(
             decided_on=today,
             note=str(row.get("note", "")),
         )
-        # An existing verdict is never silently overwritten; edit the decisions
-        # file directly to change your mind, so the change is visible in git.
+        # An existing verdict is never overwritten here. Changing one means
+        # editing the decisions file directly, where it shows up in git.
         if decision.key not in existing:
             existing[decision.key] = decision
             added += 1
@@ -524,15 +513,14 @@ def save_decisions(decisions: Iterable[Decision], path: Path) -> None:
 
 
 class DSU:
-    """Turns PAIRS into GROUPS: link every pair above threshold, then read off
+    """Turns pairs into groups: link every pair above threshold, then read off
     the connected components.
 
     This is single-linkage clustering, so merges are transitive: A~B and B~C
-    puts A and C together even if they would score 40 against each other. Kept
-    deliberately, because the chaining is DETECTABLE -- resolve() flags each
-    cluster's worst internal score as `chain_risk`. See the "Known limits"
-    section of docs/roaster-resolution.md for when to trade it for complete
-    linkage instead.
+    puts A and C together even if they would score 40 against each other. The
+    chaining is detectable -- resolve() reports each cluster's worst internal
+    score as `chain_risk`. See "Known limits" in docs/roaster-resolution.md for
+    when complete linkage is the better trade.
     """
 
     def __init__(self, n: int):
@@ -565,26 +553,25 @@ def resolve(
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Cluster raw names; return (crosswalk, review_queue).
 
-    Two thresholds, not one, because there is a real middle band where the
-    STRINGS DO NOT CONTAIN THE ANSWER -- "Black Oak Coffee Roasters" vs
-    "Black & White Coffee Roasters" scores 71, and only world knowledge says
-    they are different companies:
+    Two thresholds rather than one, because there is a middle band in which the
+    strings do not contain the answer: "Black Oak Coffee Roasters" against
+    "Black & White Coffee Roasters" scores 71, and only knowledge outside the
+    strings settles that they are different companies.
 
         score >= auto_threshold      merge automatically
         review..auto                 honest uncertainty -> review queue
         score <  review_threshold    leave alone
 
-    The defaults (92/82) are tuned on a toy set. See docs/roaster-resolution.md
-    for how to derive real ones, and for why the review band is the only place
-    an LLM is worth applying to this problem.
+    The defaults of 92 and 82 are tuned on a small sample; see
+    docs/roaster-resolution.md for deriving them from a real corpus.
 
     Args:
-        raw_names: every roaster spelling in the corpus, repeats included --
-            frequency is what picks the canonical name.
+        raw_names: every roaster spelling in the corpus, repeats included.
+            Frequency is what selects the canonical name.
         locations: raw name -> that roaster's location strings. A location
-            CONFLICT vetoes a merge; a location match never causes one.
-        decisions: adjudicated pairs. Applied in both directions and never
-            re-queued, which is what makes manual effort accumulate.
+            conflict vetoes a merge; a location match never causes one.
+        decisions: adjudicated pairs, applied in both directions and never
+            re-queued.
         auto_threshold: merge at or above this score.
         review_threshold: queue for review at or above this score.
         location_review_threshold: also queue pairs scoring below
@@ -592,17 +579,17 @@ def resolve(
 
     Returns:
         (crosswalk, review_queue). The crosswalk carries `chain_risk` and
-        `violates_decision` columns flagging the two known failure modes;
-        both are alarms, not guarantees, and are meant to be triaged.
+        `violates_decision` columns marking the two known failure modes. Both
+        flag clusters for inspection rather than correcting them.
     """
     counts = Counter(raw_names)  # frequency drives canonical selection
     uniques = sorted(counts)  # index space for the DSU
     keys = [core_key(n) for n in uniques]
 
     # -- Stage A: exact core-key collision -----------------------------------
-    # Free and ~100% precise. No threshold, no judgment. This catches the bulk
-    # of real-world variation (suffix drift, casing, punctuation, word order)
-    # because normalization already erased exactly those differences.
+    # No threshold and no judgment involved. This catches the bulk of the
+    # variation -- suffix drift, casing, punctuation, word order -- because
+    # normalization has already erased those differences.
     places = locations or {}
 
     def evidence(i: int, j: int) -> LocationEvidence:
@@ -619,10 +606,10 @@ def resolve(
     for i, k in enumerate(keys):
         by_key[k].append(i)
 
-    # Even an identical core key can be two companies: "Direct Coffee" and
-    # "Coffee Bean Direct" both stopword down to "direct". Nothing in the
-    # strings can separate them, which is why the location veto applies here
-    # too and not only to the fuzzy stage.
+    # An identical core key can still be two companies: "Direct Coffee" and
+    # "Coffee Bean Direct" both reduce to "direct". Nothing in the strings
+    # separates them, so the location veto applies at this stage as well as to
+    # the fuzzy one.
     for group in by_key.values():
         for a_idx, i in enumerate(group):
             for j in group[a_idx + 1 :]:
@@ -633,23 +620,22 @@ def resolve(
                 dsu.union(i, j)
 
     # -- Stage B: fuzzy scoring ----------------------------------------------
-    # Only mops up what Stage A missed: typos and word-order drift that survived
-    # normalization. Note we score the DISTINCT CORE KEYS, not the raw names —
-    # so the O(n^2) is over a much smaller n, and the comparison is over signal
-    # rather than boilerplate.
+    # Handles what Stage A missed: typos and word-order drift that survived
+    # normalization. Scoring runs over the distinct core keys rather than the
+    # raw names, so the O(n^2) is over a smaller n and compares signal rather
+    # than boilerplate.
     distinct_keys = sorted(by_key)
 
-    # The subset guard in score() needs to know which tokens are generic IN THIS
-    # CORPUS, so bind the statistic to the scorer before any comparison happens.
-    # Every scoring path below must use `scorer`, never bare `score` — an
-    # unbound call silently reverts to the conservative no-corpus behavior.
+    # The subset guard in score() needs to know which tokens are generic in
+    # this corpus, so the statistic is bound to the scorer before any
+    # comparison happens. Every scoring path below uses `scorer`; a bare
+    # `score` call would revert to the conservative no-corpus behaviour.
     token_df = token_document_frequency(distinct_keys)
     scorer = partial(score, token_df=token_df)
 
-    # NOTE: `workers` is deliberately not set. rapidfuzz can only parallelize its
-    # own native scorers; with a Python callable it is a no-op, so asking for it
-    # only implies a speed that isn't there. This is O(n^2) Python calls — ~3s at
-    # 1.6k keys, and it grows quadratically.
+    # `workers` is not set: rapidfuzz parallelizes only its own native
+    # scorers, so with a Python callable the argument is a no-op. This is
+    # O(n^2) Python calls, about 3s at 1.6k keys, growing quadratically.
     matrix = process.cdist(
         distinct_keys,
         distinct_keys,
@@ -662,11 +648,10 @@ def resolve(
         for j in range(i + 1, len(distinct_keys)):  # upper triangle only
             s = matrix[i][j]
 
-            # GOTCHA: cdist's score_cutoff is honored by BUILT-IN scorers but is
-            # merely passed through to custom ones (it lands in our **kwargs and
-            # we ignore it). So the cutoff must be enforced here by hand — omit
-            # this and every pair in the matrix, down to score 8, floods
-            # review.csv.
+            # cdist honours score_cutoff for built-in scorers but merely
+            # passes it through to custom ones, where it lands in **kwargs and
+            # is ignored. The cutoff is therefore enforced here; without it
+            # every pair in the matrix, down to score 8, reaches the queue.
             if s < review_threshold and not (
                 location_review_threshold is not None
                 and s >= location_review_threshold
@@ -678,8 +663,7 @@ def resolve(
             ki, kj = distinct_keys[i], distinct_keys[j]
             a, b = by_key[ki][0], by_key[kj][0]
 
-            # An adjudicated pair is never re-decided and never re-asked. This
-            # is what makes manual effort accumulate rather than reset.
+            # An adjudicated pair is never re-decided and never re-asked.
             decided = verdict_for(a, b)
             if decided is Verdict.MERGE:
                 dsu.union(a, b)
@@ -687,13 +671,11 @@ def resolve(
             if decided is Verdict.SPLIT:
                 continue
 
-            # A region conflict vetoes the merge outright. The reverse is
-            # deliberately NOT symmetric: a matching location SURFACES a pair
-            # for review, it never merges one.
-            #
-            # Merging on a lowered bar was tried and is unsafe: the score does
-            # not separate a true match at 82.1 from unrelated companies
-            # sharing a city at 82.9. See docs/roaster-resolution.md.
+            # A region conflict vetoes the merge. The reverse is not
+            # symmetric: a matching location surfaces a pair for review and
+            # never merges one, because the score does not separate a true
+            # match at 82.1 from unrelated companies sharing a city at 82.9.
+            # See docs/roaster-resolution.md.
             place = evidence(a, b)
             if place is LocationEvidence.CONFLICT:
                 continue
@@ -705,13 +687,15 @@ def resolve(
                     {
                         "name_a": uniques[a],
                         "name_b": uniques[b],
-                        "core_a": ki,  # keys are shown so you can see WHY
-                        "core_b": kj,  # a pair scored the way it did
+                        # The keys are reported so that a pair's score can be
+                        # traced back to what was actually compared.
+                        "core_a": ki,
+                        "core_b": kj,
                         "score": round(float(s), 1),
                         "location_a": "; ".join(sorted(places.get(uniques[a]) or [])),
                         "location_b": "; ".join(sorted(places.get(uniques[b]) or [])),
                         "location_evidence": str(place),
-                        "verdict": "",  # <- you (or an LLM) fill in merge/split
+                        "verdict": "",  # filled in during review
                     }
                 )
 
@@ -724,20 +708,18 @@ def resolve(
     for cid, (_root, members) in enumerate(sorted(clusters.items())):
         names = [uniques[m] for m in members]
 
-        # CANONICAL SELECTION: most frequent spelling in the source data wins;
-        # ties broken by length (longer = more complete form).
-        #
-        # ASSUMPTION: the most common spelling is the correct one. Usually true
-        # in scraped data, not always. When it picks something ugly, don't fight
-        # the heuristic — add a canonical_overrides.csv and apply it afterward.
+        # The most frequent spelling in the source data becomes canonical,
+        # with ties broken by length on the assumption that the longer form is
+        # the more complete one. This treats the most common spelling as the
+        # correct one, which holds for most scraped data but not all; an
+        # override table applied afterwards is the escape hatch.
         canonical = max(names, key=lambda n: (counts[n], len(n)))
 
-        # CHAIN DETECTION (see DSU docstring). Single-linkage can fuse A and C
-        # via B. Recompute the WORST pairwise score inside each cluster: if even
-        # the weakest internal pair clears auto_threshold, no chaining occurred.
-        # If it doesn't, this cluster was assembled transitively — look at it.
-        # Only meaningful for size > 2; a 2-cluster's only pair is the one that
-        # already passed.
+        # Chain detection (see the DSU docstring). Single-linkage can fuse A
+        # and C through B, so each cluster's worst internal pairwise score is
+        # recomputed: if the weakest pair still clears auto_threshold, no
+        # chaining occurred. Only meaningful above size 2, since a pair's only
+        # internal score is the one that already passed.
         if len(names) > 2:
             ks = [core_key(n) for n in names]
             worst = min(
@@ -757,21 +739,20 @@ def resolve(
                     "canonical_name": canonical,
                     "cluster_size": len(names),
                     "min_internal_score": round(float(worst), 1),
-                    "chain_risk": worst < auto_threshold,  # <- triage on this first
+                    "chain_risk": worst < auto_threshold,
                 }
             )
 
-    # -- Stage D: did any split decision get defeated transitively? ----------
+    # -- Stage D: split decisions defeated transitively ----------------------
     # Blocking a union is not the same as keeping two names apart. Single
-    # linkage can rejoin them through a third name -- "RND" and "Red Rooster
+    # linkage can rejoin them through a third name: "RND" and "Red Rooster
     # Coffee Roaster" are bridged by the collaboration "RND & Red Rooster
-    # Coffee Roaster", whose key is a superset of both. The split is then
-    # honoured pairwise and violated in the result.
+    # Coffee Roaster", whose key is a superset of both, so the split holds
+    # pairwise but not in the result.
     #
-    # This cannot be prevented without changing the clustering, but it CAN be
-    # reported, which is the same bargain the chain_risk alarm makes: a cheap
-    # algorithm plus a loud alarm beats an expensive one with none. A violation
-    # is fixed by splitting the bridging name as well.
+    # Preventing this would mean changing the clustering; reporting it is the
+    # same trade the chain_risk flag makes. Recording a split against the
+    # bridging name resolves it.
     cluster_of = {
         uniques[m]: cid
         for cid, (_root, members) in enumerate(sorted(clusters.items()))
@@ -788,8 +769,8 @@ def resolve(
     for row in rows:
         row["violates_decision"] = row["cluster_id"] in violated_clusters
 
-    # Sorted biggest-cluster-first: the largest clusters carry the most risk and
-    # are what you want to eyeball before trusting the run.
+    # Sorted largest-cluster-first, since the largest clusters carry the most
+    # risk and are the ones to inspect before trusting a run.
     crosswalk = pd.DataFrame(rows).sort_values(
         ["cluster_size", "cluster_id", "n_records"],
         ascending=[False, True, False],
