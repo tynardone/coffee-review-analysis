@@ -17,12 +17,14 @@ from coffee.roaster_resolution import (
     fingerprint,
     load_decisions,
     normalize_location,
+    parse_verdict,
     promote_reviewed,
     resolve,
     save_decisions,
     score,
     token_document_frequency,
     tokens,
+    unpromoted_verdicts,
 )
 
 # --------------------------------------------------------------------------
@@ -338,7 +340,6 @@ def test_promote_reviewed_closes_the_loop(tmp_path):
             {"name_a": "A", "name_b": "B", "verdict": "merge"},
             {"name_a": "C", "name_b": "D", "verdict": "split"},
             {"name_a": "E", "name_b": "F", "verdict": ""},  # unanswered
-            {"name_a": "G", "name_b": "H", "verdict": "maybe"},  # unrecognized
         ]
     ).to_csv(review, index=False)
 
@@ -361,3 +362,86 @@ def test_promote_reviewed_does_not_overwrite_an_existing_verdict(tmp_path):
 
     assert promote_reviewed(review, decisions) == 0
     assert load_decisions(decisions)[0].verdict is Verdict.SPLIT
+
+
+# --------------------------------------------------------------------------
+# Reading the queue back — where a session of work gets lost
+# --------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "cell, expected",
+    [
+        ("merge", Verdict.MERGE),
+        ("MERGE", Verdict.MERGE),
+        ("  merge  ", Verdict.MERGE),
+        ("y", Verdict.MERGE),
+        ("yes", Verdict.MERGE),
+        ("m", Verdict.MERGE),
+        ("same", Verdict.MERGE),
+        ("1", Verdict.MERGE),
+        ("split", Verdict.SPLIT),
+        ("n", Verdict.SPLIT),
+        ("no", Verdict.SPLIT),
+        ("different", Verdict.SPLIT),
+        ("0", Verdict.SPLIT),
+        ("", None),
+        ("   ", None),
+        ("nan", None),
+    ],
+)
+def test_parse_verdict_accepts_what_a_person_would_type(cell, expected):
+    """THE REGRESSION.
+
+    Only the exact strings "merge"/"split" used to be accepted, and anything
+    else was skipped in silence — so a queue filled in with y/n recorded
+    nothing and gave no indication why.
+    """
+    assert parse_verdict(cell) is expected
+
+
+def test_an_unreadable_verdict_is_reported_not_swallowed(tmp_path):
+    review, decisions = tmp_path / "q.csv", tmp_path / "d.csv"
+    pd.DataFrame(
+        [
+            {"name_a": "A", "name_b": "B", "verdict": "merge"},
+            {"name_a": "C", "name_b": "D", "verdict": "probably?"},
+        ]
+    ).to_csv(review, index=False)
+
+    with pytest.raises(ValueError, match="cannot be read"):
+        promote_reviewed(review, decisions)
+
+    # Nothing is half-recorded: fix the file and re-run, don't guess which
+    # rows made it through.
+    assert not decisions.exists()
+
+
+def test_unpromoted_verdicts_counts_unsaved_work(tmp_path):
+    review = tmp_path / "q.csv"
+    assert unpromoted_verdicts(review) == 0  # missing file
+
+    pd.DataFrame(
+        [
+            {"name_a": "A", "name_b": "B", "verdict": "merge"},
+            {"name_a": "C", "name_b": "D", "verdict": ""},
+            {"name_a": "E", "name_b": "F", "verdict": "n"},
+        ]
+    ).to_csv(review, index=False)
+    assert unpromoted_verdicts(review) == 2
+
+
+def test_synonyms_round_trip_into_canonical_decisions(tmp_path):
+    """Whatever you type, the decisions file stores one canonical spelling."""
+    review, decisions = tmp_path / "q.csv", tmp_path / "d.csv"
+    pd.DataFrame(
+        [
+            {"name_a": "A", "name_b": "B", "verdict": "y"},
+            {"name_a": "C", "name_b": "D", "verdict": "no"},
+        ]
+    ).to_csv(review, index=False)
+
+    assert promote_reviewed(review, decisions) == 2
+    stored = {d.key: d.verdict for d in load_decisions(decisions)}
+    assert stored[("A", "B")] is Verdict.MERGE
+    assert stored[("C", "D")] is Verdict.SPLIT

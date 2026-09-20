@@ -22,7 +22,12 @@ from coffee.exchange_rates import (
     save_rates,
 )
 from coffee.pipeline import DEFAULT_OUTPUT_DIR, scrape_all_reviews
-from coffee.roaster_resolution import load_decisions, promote_reviewed, resolve
+from coffee.roaster_resolution import (
+    load_decisions,
+    promote_reviewed,
+    resolve,
+    unpromoted_verdicts,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -176,11 +181,28 @@ def resolve_roasters(argv: list[str] | None = None) -> None:
         )
 
     decisions_path = args.decisions or args.outdir / "roaster_decisions.csv"
+    review_path = args.outdir / "roaster_review_queue.csv"
+
     if args.accept_reviewed:
-        added = promote_reviewed(
-            args.outdir / "roaster_review_queue.csv", decisions_path, args.decided_by
-        )
+        try:
+            added = promote_reviewed(review_path, decisions_path, args.decided_by)
+        except ValueError as exc:  # unreadable verdicts: a user error, not a bug
+            raise SystemExit(str(exc)) from exc
         print(f"recorded {added} new decision(s) in {decisions_path}")
+    else:
+        # This run is about to regenerate the queue. If the existing one still
+        # holds answers that were never recorded, regenerating destroys them --
+        # which is exactly how a full session of adjudication gets lost. Stop
+        # instead, and say which flag saves it.
+        pending = unpromoted_verdicts(review_path)
+        if pending:
+            raise SystemExit(
+                f"{review_path} has {pending} verdict(s) that are not in "
+                f"{decisions_path} yet, and this run would overwrite them.\n"
+                "Re-run with --accept-reviewed to record them first, or delete "
+                "the queue if you meant to discard them."
+            )
+
     decisions = load_decisions(decisions_path)
 
     crosswalk, review = resolve(
@@ -194,7 +216,6 @@ def resolve_roasters(argv: list[str] | None = None) -> None:
 
     args.outdir.mkdir(parents=True, exist_ok=True)
     crosswalk_path = args.outdir / "roaster_crosswalk.csv"
-    review_path = args.outdir / "roaster_review_queue.csv"
     crosswalk.to_csv(crosswalk_path, index=False)
     review.to_csv(review_path, index=False)
 
