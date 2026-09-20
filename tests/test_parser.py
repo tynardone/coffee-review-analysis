@@ -15,7 +15,7 @@ import pytest
 from bs4 import BeautifulSoup
 from conftest import review_pages
 
-from coffee.parser import _parse_tables, parse_html
+from coffee.parser import _parse_tables, normalise_field_name, parse_html
 
 
 @pytest.mark.parametrize("path", review_pages(), ids=lambda p: p.stem)
@@ -34,7 +34,7 @@ def test_core_fields_are_always_present(path):
     current output, so it stays meaningful when the golden file is regenerated.
     """
     data = parse_html(path.read_text(encoding="utf-8"))
-    for field in ("rating", "roaster", "title", "blind_assessment", "review date"):
+    for field in ("rating", "roaster", "title", "blind_assessment", "review_date"):
         assert data.get(field), f"{field} missing from {path.name}"
 
 
@@ -49,13 +49,33 @@ def test_parse_html_on_unrecognized_markup_returns_nulls_not_errors():
     assert data["title"] is None
 
 
-def test_table_keys_are_lowercased_and_colon_free():
+@pytest.mark.parametrize(
+    ("label", "expected"),
+    [
+        ("Est. Price:", "est_price"),
+        (" Roaster Location ", "roaster_location"),
+        ("AGTRON", "agtron"),
+        ("With Milk:", "with_milk"),
+        # Kept as-is: the cleaning layer coalesces this field BY THIS NAME, so
+        # prettifying the slash here would only move the translation elsewhere.
+        ("Acidity/Structure:", "acidity/structure"),
+        # Already normalised: the rule has to be idempotent, because
+        # check_raw_schema uses it to decide whether a file needs migrating.
+        ("est_price", "est_price"),
+    ],
+)
+def test_normalise_field_name(label, expected):
+    assert normalise_field_name(label) == expected
+    assert normalise_field_name(expected) == expected
+
+
+def test_table_keys_are_normalised_to_field_names():
     html = """
     <table><tr><td>Roast Level:</td><td>Medium-Light</td></tr>
            <tr><td>Agtron:</td><td>57/80</td></tr></table>
     """
     assert _parse_tables(BeautifulSoup(html, "lxml")) == {
-        "roast level": "Medium-Light",
+        "roast_level": "Medium-Light",
         "agtron": "57/80",
     }
 
@@ -107,7 +127,7 @@ def test_extracted_fields_are_stripped_but_prose_is_left_alone():
     assert "\n" in data["blind_assessment"]
 
     # Table keys are stripped too, or the whitespace ends up in a column name.
-    assert data["roast level"] == "Medium-Light"
+    assert data["roast_level"] == "Medium-Light"
 
 
 @pytest.mark.parametrize("path", review_pages(), ids=lambda p: p.stem)

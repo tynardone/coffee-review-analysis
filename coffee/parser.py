@@ -5,6 +5,11 @@ notes, and bottom line, then merges in the review's spec table (coffee origin,
 price, agtron, etc.). Parsing is pure CPU work with no I/O, so the functions
 are synchronous; run them in a thread (e.g. ``asyncio.to_thread``) to avoid
 blocking the event loop during a scrape.
+
+Field names are normalised HERE, by :func:`normalise_field_name`, so the raw
+layer lands as ``est_price`` rather than ``"Est. Price:"``. The scraped label is
+presentation; the field name is schema, and settling it at the boundary means
+no downstream consumer has to re-derive it.
 """
 
 import logging
@@ -14,8 +19,27 @@ from bs4 import BeautifulSoup
 from bs4.element import Tag
 
 __all__ = [
+    "normalise_field_name",
     "parse_html",
 ]
+
+
+def normalise_field_name(label: str) -> str:
+    """The site's table label -> the field name we store it under.
+
+    ``"Est. Price:"`` -> ``"est_price"``. Applied HERE rather than downstream so
+    the raw layer lands with the names everything else already uses: a scraped
+    label is presentation, and letting it reach storage means every consumer
+    has to re-derive the same mapping (and disagree about it -- this is why
+    ``load_review_dates`` was reading ``"review date"`` while the cleaning code
+    read ``"review_date"``).
+
+    Deliberately NOT a general slugifier. ``acidity/structure`` keeps its slash
+    because that is the name the site used for the field and the cleaning layer
+    coalesces it by that name; inventing a prettier one would just move the
+    translation problem somewhere else.
+    """
+    return label.strip().lower().replace(":", "").replace(" ", "_").replace(".", "")
 
 
 def _parse_element(
@@ -66,14 +90,14 @@ def _parse_notes_section(soup: BeautifulSoup) -> str | None:
 
 
 def _parse_tables(soup: BeautifulSoup) -> dict[str, str]:
-    """Extract two-column tables into a dict, with lowercased, colon-free keys."""
+    """Extract two-column tables into a dict, keyed by normalised field name."""
     data: dict[str, str] = {}
     for table in soup.find_all("table"):
         for row in table.find_all("tr"):
             cells = row.find_all("td")
             if len(cells) == 2:
                 data[cells[0].get_text().strip()] = cells[1].get_text().strip()
-    return {key.lower().replace(":", ""): value for key, value in data.items()}
+    return {normalise_field_name(key): value for key, value in data.items()}
 
 
 def parse_html(text: str) -> dict[str, str | None]:

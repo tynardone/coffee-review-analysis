@@ -13,7 +13,7 @@ import pytest
 from coffee.clean import (
     CURRENCY_MAP,
     apply_roaster_crosswalk,
-    clean_columns,
+    check_raw_schema,
     clean_currency,
     clean_origin,
     clean_reviews,
@@ -44,13 +44,16 @@ def cpi_table(rows):
 # --------------------------------------------------------------------------
 
 
-def test_clean_columns_normalises_headers():
-    df = pd.DataFrame(columns=[" Roaster Location ", "Est. Price", "AGTRON"])
-    assert list(clean_columns(df).columns) == [
-        "roaster_location",
-        "est_price",
-        "agtron",
-    ]
+def test_check_raw_schema_passes_normalised_columns_through():
+    df = pd.DataFrame(columns=["roaster_location", "est_price", "acidity/structure"])
+    assert check_raw_schema(df) is df
+
+
+def test_check_raw_schema_rejects_unnormalised_columns():
+    """Data that predates parse-time naming must fail here, not deep in a merge."""
+    df = pd.DataFrame(columns=["roaster_location", "Est. Price", "review_date"])
+    with pytest.raises(ValueError, match="not normalised"):
+        check_raw_schema(df)
 
 
 def base_frame(**overrides):
@@ -347,19 +350,19 @@ def test_clean_reviews_runs_the_whole_chain():
             {
                 "rating": "93",
                 "roaster": "Boyd Coffee",
-                "roaster location": "Portland, Oregon",
+                "roaster_location": "Portland, Oregon",
                 "title": "Ethiopia Natural",
-                "coffee origin": "Yirgacheffe, Ethiopia",
+                "coffee_origin": "Yirgacheffe, Ethiopia",
                 "agtron": "57/80",
-                "est. price": "$20.00/16 ounces",
-                "review date": "January 2000",
+                "est_price": "$20.00/16 ounces",
+                "review_date": "January 2000",
                 "acidity": "8",
                 "acidity/structure": np.nan,
                 "aroma": "9",
                 "body": "9",
                 "flavor": "9",
                 "aftertaste": "8",
-                "with milk": np.nan,
+                "with_milk": np.nan,
             }
         ]
     )

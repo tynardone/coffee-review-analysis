@@ -26,6 +26,8 @@ import pandas as pd
 import pycountry
 from unidecode import unidecode
 
+from coffee.parser import normalise_field_name
+
 __all__ = [
     "CURRENCY_MAP",
     "DEFAULT_BASELINE_DATE",
@@ -33,7 +35,7 @@ __all__ = [
     "NON_WHOLE_BEAN_TERMS",
     "US_PRICE_UNITS",
     "apply_roaster_crosswalk",
-    "clean_columns",
+    "check_raw_schema",
     "clean_currency",
     "clean_origin",
     "clean_reviews",
@@ -216,12 +218,23 @@ def _us_states() -> frozenset[str]:
 # ==========================================================================
 
 
-def clean_columns(df: pd.DataFrame) -> pd.DataFrame:
-    """Normalise column names: strip, lowercase, snake_case, drop dots."""
-    df = df.copy()
-    df.columns = (
-        df.columns.str.strip().str.lower().str.replace(" ", "_").str.replace(".", "")
-    )
+def check_raw_schema(df: pd.DataFrame) -> pd.DataFrame:
+    """Reject raw data whose column names were never normalised.
+
+    Field names are settled at the scrape boundary by
+    :func:`coffee.parser.normalise_field_name`, so the cleaning layer works on
+    data, not on labels. A file that predates that -- with ``"est. price"``
+    where ``est_price`` belongs -- would otherwise fail deep in the pipeline
+    with a bare ``KeyError`` naming a column the caller never typed.
+    """
+    stale = [c for c in df.columns if c != normalise_field_name(str(c))]
+    if stale:
+        raise ValueError(
+            f"{len(stale)} column(s) are not normalised: {sorted(stale)[:5]}. "
+            "This file predates field-name normalisation at parse time; "
+            "re-scrape it, or rename the columns with "
+            "coffee.parser.normalise_field_name first."
+        )
     return df
 
 
@@ -520,7 +533,7 @@ def clean_reviews(
 ) -> pd.DataFrame:
     """Raw scraped reviews in, cleaned layer out."""
     cleaned = (
-        raw.pipe(clean_columns)
+        raw.pipe(check_raw_schema)
         .pipe(normalise_types, max_agtron=max_agtron)
         .pipe(split_price_and_quantity)
         .pipe(convert_to_lbs)
