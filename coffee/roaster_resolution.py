@@ -1,81 +1,27 @@
-"""
-Entity resolution for messy coffee roaster names.
+"""Entity resolution for messy coffee roaster names.
 
-THE PROBLEM
-    Scraped review data spells the same roaster several ways:
-        "Onyx Coffee Lab" / "Onyx Coffee Lab LLC" / "onyx coffee lab" / "Onyx Coffee"
-    Group them, pick one canonical spelling, and persist the mapping.
+Scraped data spells one roaster several ways -- "Onyx Coffee Lab", "Onyx Coffee
+Lab LLC", "onyx coffee lab". This module groups those spellings, picks a
+canonical one, and persists the mapping.
 
-THE GOVERNING ASYMMETRY
-    The two error types are NOT equally costly, and every decision below is
-    bought with that fact:
+Resolution is a cascade, cheapest and most certain first:
 
-      False MERGE  (Black Oak + Black & White -> one roaster)  is SILENT.
-          Downstream analysis runs fine. Scores for "Black Oak" are now a
-          blend of two companies and you will never notice.
+    normalize -> exact key -> location veto -> fuzzy -> human/LLM review
 
-      False SPLIT  ("Stumptown" and "Stumptown Coffee" stay separate)  is LOUD.
-          Stumptown shows up twice in your top-20 table. You catch it instantly.
+It optimises for PRECISION over recall, because a false merge is silent while a
+false split is loud. That one asymmetry explains most of what looks conservative
+here: location conflict vetoes a merge but a location match never causes one,
+the uncertain band goes to a review queue instead of being decided, and the two
+ways clustering is known to go wrong are reported rather than prevented.
 
-    So: optimize for PRECISION, not recall. Leave merges on the table rather
-    than make a wrong one. Recall failures announce themselves; precision
-    failures don't. (This is also why OpenRefine's UI is risky — approving a
-    cluster is one click, and all the friction sits on the *reject* side,
-    exactly backwards from where the risk lives.)
+Adjudicated pairs live in ``roaster_decisions.csv`` and are the only state here
+that cannot be regenerated; the crosswalk and the review queue are derived on
+every run.
 
-THE CASCADE
-    Cheapest + most certain first; expensive + most doubtful last. Each stage
-    shrinks the input to the next, so by the time we reach the part that can be
-    wrong, there is very little left for it to be wrong about.
-
-        normalize -> exact key -> location veto -> fuzzy -> human/LLM review
-          free        ~100%        near-decisive    O(n^2)      expensive
-
-THE SECOND SIGNAL
-    Names alone leave a wide uncertainty band. Roaster location is populated on
-    essentially every review and is nearly orthogonal to spelling, so it closes
-    most of that band for free: on the real data it resolved 41 of 50 queued
-    pairs and cut the queue from 50 to 13.
-
-    Its two directions are NOT symmetric, and that asymmetry is load-bearing:
-
-      different region -> VETO the merge. Near-decisive, and it fires in the
-          safe direction — refusing a merge can only cause a loud false split.
-
-      identical place  -> SURFACE the pair for review; never merge it. Merging
-          on a lowered bar was tried and is unsafe, because the score does not
-          separate the cases: "Great Value (Walmart)"/"Great Value (Wal-Mart)"
-          scores 82.1 and is right, "Tehmag Foods"/"Wei Chuan Foods" scores
-          82.9 and is wrong. Asking costs one answer; answers are permanent.
-
-STATE — WHAT IS DERIVED AND WHAT IS NOT
-    roaster_decisions.csv    SOURCE OF TRUTH. Adjudicated pairs, with who
-                             decided and when. Hand-edited, committed to git.
-                             The only file here that cannot be regenerated.
-
-    roaster_crosswalk.csv    DERIVED. raw_name -> canonical_name. Regenerated
-                             every run; never hand-edit it, your edit would be
-                             overwritten. Commit it so downstream joins are
-                             reproducible.
-
-    roaster_review_queue.csv DERIVED. Only pairs with no decision yet, with a
-                             blank `verdict` column for you (or an LLM) to
-                             fill in, and each side's location so the evidence
-                             is visible without a second lookup.
-
-    Separating the first from the other two is what makes manual effort
-    ACCUMULATE. Re-running re-derives the clusters but never re-asks a question
-    already answered, so the queue shrinks toward zero instead of resetting to
-    full every time (which is what the OpenRefine workflow does).
-
-USAGE
-    # resolve, writing a crosswalk and a queue of what it could not decide
-    resolve-roasters reviews.csv --outdir data/processed
-
-    # ...fill in the `verdict` column (merge / split) in the queue...
-
-    # fold those answers into the decisions file and re-resolve with them
-    resolve-roasters reviews.csv --outdir data/processed --accept-reviewed
+The reasoning in full -- the error asymmetry, the location signal, why there are
+two thresholds and how to tune them -- is in ``docs/roaster-resolution.md``. The
+workflow for actually running this is in the README under "Resolving roaster
+names".
 """
 
 from __future__ import annotations
@@ -93,28 +39,6 @@ from pathlib import Path
 import pandas as pd
 from rapidfuzz import fuzz, process
 
-# ==========================================================================
-# 1. NORMALIZATION
-# ==========================================================================
-
-# Words that carry near-zero information about *which* roaster this is, because
-# nearly every roaster has some subset of them. Deleting them before measuring
-# distance means the distance we measure is over signal only.
-#
-# Why this matters more than any algorithm choice:
-#   Under plain edit distance, "Stumptown" vs "Stumptown Coffee Roasters" is 15
-#   edits on a 24-char string — you'd need a threshold so loose it would merge
-#   half the dataset. Strip these words and BOTH become the string "stumptown".
-#   Not "similar". IDENTICAL. They now collide on an exact hash lookup, which
-#   has ~100% precision by construction: no threshold to tune, no judgment to
-#   get wrong. A large fraction of the problem is solved for free, right here.
-#
-# TUNING: this list is the first thing to edit for your data. Misspellings of
-# the stopwords themselves belong here too ("coffe", "cofee") — they'd
-# otherwise survive into the key as noise tokens.
-# fmt: off
-# Grouped by kind deliberately — the grouping is the documentation for what
-# each line is doing. Keep the formatter from flattening it to one per line.
 __all__ = [
     "ABBREV",
     "DECISION_COLUMNS",
@@ -140,6 +64,23 @@ __all__ = [
     "unpromoted_verdicts",
 ]
 
+# ==========================================================================
+# 1. NORMALIZATION
+# ==========================================================================
+
+# Words that carry near-zero information about *which* roaster this is, because
+# nearly every roaster has some subset of them. Removing them before measuring
+# distance means the distance is measured over signal only -- and it collapses
+# "Stumptown" and "Stumptown Coffee Roasters" to the SAME string, so they match
+# on an exact lookup with no threshold involved. (See the design doc; this is
+# why normalization matters more here than the choice of algorithm.)
+#
+# TUNING: this list is the first thing to edit for new data. Misspellings of
+# the stopwords themselves belong here too ("coffe", "cofee") -- they would
+# otherwise survive into the key as noise tokens.
+# fmt: off
+# Grouped by kind deliberately -- the grouping documents what each line is for.
+# Keep the formatter from flattening it to one word per line.
 STOPWORDS = {
     "coffee", "coffees", "coffe", "cofee",
     "roaster", "roasters", "roasting", "roastery", "roasterie",
@@ -180,7 +121,9 @@ def tokens(name: str) -> list[str]:
     algorithm level. Each line below closes a specific noise channel, and the
     order matters. Two are landmines worth stating outright:
 
-    1. APOSTROPHES ARE DELETED.
+    1. APOSTROPHES ARE DELETED, not turned into spaces. "Peet's" has to reach
+       the same token as "Peets"; splitting on the apostrophe would instead
+       yield ["peet", "s"] and a stray single letter.
     2. SINGLE-LETTER RUNS ARE COLLAPSED.
        "J.B.C. Coffee Roasters" punctuation-strips to ["j","b","c",...], which
        shares nothing with "JBC Coffee" -> ["jbc",...]. Gluing runs of single
@@ -584,20 +527,12 @@ class DSU:
     """Turns PAIRS into GROUPS: link every pair above threshold, then read off
     the connected components.
 
-    THE COST — CHAINING. This is single-linkage clustering, so merges are
-    transitive by construction: if A~B at 93 and B~C at 93, then A and C land in
-    the same cluster even if they'd score 40 against each other. Classic failure
-    mode, and exactly what OpenRefine's nearest-neighbor clustering does too.
-
-    WHY KEEP IT ANYWAY. Complete-linkage hierarchical clustering is stricter but
-    not *correct* — it just trades one error set for another. Meanwhile chaining
-    is DETECTABLE: resolve() computes each cluster's worst internal pairwise
-    score and flags it (`chain_risk`). Cheap algorithm + an alarm bell beats an
-    expensive algorithm and no alarm bell. Detection beats prevention when
-    prevention costs you something.
-
-    If chain_risk lights up frequently on your real data, THEN swap in complete
-    linkage (scipy.cluster.hierarchy with method='complete'). Not before.
+    This is single-linkage clustering, so merges are transitive: A~B and B~C
+    puts A and C together even if they would score 40 against each other. Kept
+    deliberately, because the chaining is DETECTABLE -- resolve() flags each
+    cluster's worst internal score as `chain_risk`. See the "Known limits"
+    section of docs/roaster-resolution.md for when to trade it for complete
+    linkage instead.
     """
 
     def __init__(self, n: int):
@@ -630,35 +565,35 @@ def resolve(
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Cluster raw names; return (crosswalk, review_queue).
 
-    WHY TWO THRESHOLDS, NOT ONE
-        A single threshold forces a lie — it asserts every pair is either a
-        match or not, with the boundary at a number you made up. But there is a
-        real middle region where the STRINGS SIMPLY DO NOT CONTAIN THE ANSWER:
+    Two thresholds, not one, because there is a real middle band where the
+    STRINGS DO NOT CONTAIN THE ANSWER -- "Black Oak Coffee Roasters" vs
+    "Black & White Coffee Roasters" scores 71, and only world knowledge says
+    they are different companies:
 
-            "Black Oak Coffee Roasters" vs "Black & White Coffee Roasters" -> 71
-            "Red Bay Coffee"            vs "Red Rooster Coffee Roaster"    -> 60
+        score >= auto_threshold      merge automatically
+        review..auto                 honest uncertainty -> review queue
+        score <  review_threshold    leave alone
 
-        These are not matches, but nothing in the strings says so. The only
-        thing that resolves them is knowing these are four different companies.
-        That's world knowledge, not string knowledge. So:
+    The defaults (92/82) are tuned on a toy set. See docs/roaster-resolution.md
+    for how to derive real ones, and for why the review band is the only place
+    an LLM is worth applying to this problem.
 
-            score >= auto_threshold      merge automatically
-            review..auto                 honest uncertainty -> review.csv
-            score <  review_threshold    leave alone
+    Args:
+        raw_names: every roaster spelling in the corpus, repeats included --
+            frequency is what picks the canonical name.
+        locations: raw name -> that roaster's location strings. A location
+            CONFLICT vetoes a merge; a location match never causes one.
+        decisions: adjudicated pairs. Applied in both directions and never
+            re-queued, which is what makes manual effort accumulate.
+        auto_threshold: merge at or above this score.
+        review_threshold: queue for review at or above this score.
+        location_review_threshold: also queue pairs scoring below
+            `review_threshold` when their locations match exactly.
 
-        The review band is EXACTLY where an LLM earns its keep — and nowhere
-        else. Handing a model 500 raw names and asking it to canonicalize is
-        asking it to hallucinate at scale with no way to audit the result.
-        Handing it 30 pre-scored ambiguous pairs and asking "same company, y/n,
-        why?" is a bounded, verifiable task on precisely the cases where world
-        knowledge beats the string metric — and its errors land somewhere you're
-        already looking.
-
-    THRESHOLD TUNING (the softest part of this whole design)
-        92/82 are tuned on a toy set. Get real numbers for your data: run it,
-        sort review.csv by score descending, and find where TRUE matches stop
-        appearing. That score is your real `auto`. Then find where plausible
-        matches stop appearing entirely — that's your real `review` floor.
+    Returns:
+        (crosswalk, review_queue). The crosswalk carries `chain_risk` and
+        `violates_decision` columns flagging the two known failure modes;
+        both are alarms, not guarantees, and are meant to be triaged.
     """
     counts = Counter(raw_names)  # frequency drives canonical selection
     uniques = sorted(counts)  # index space for the DSU
@@ -756,14 +691,9 @@ def resolve(
             # deliberately NOT symmetric: a matching location SURFACES a pair
             # for review, it never merges one.
             #
-            # Merging on a lowered bar was tried and is unsafe, because the
-            # string score does not separate the good cases from the bad:
-            # "Great Value (Walmart)"/"Great Value (Wal-Mart)" scores 82.1 and
-            # is right, while "Tehmag Foods"/"Wei Chuan Foods" -- two unrelated
-            # Taiwanese companies sharing a city -- scores 82.9 and is wrong.
-            # No threshold separates them, so auto-merging there would buy
-            # recall with exactly the silent false merges this file exists to
-            # prevent. Surfacing costs one answer instead, and answers persist.
+            # Merging on a lowered bar was tried and is unsafe: the score does
+            # not separate a true match at 82.1 from unrelated companies
+            # sharing a city at 82.9. See docs/roaster-resolution.md.
             place = evidence(a, b)
             if place is LocationEvidence.CONFLICT:
                 continue
