@@ -32,6 +32,7 @@ from coffee.roaster_resolution import (
     resolve,
     unpromoted_verdicts,
 )
+from coffee.storage import CsvReviewStore
 
 __all__ = [
     "fetch_exchange_rates",
@@ -58,14 +59,14 @@ def _positive_int(value: str) -> int:
 
 
 def scrape_reviews(argv: list[str] | None = None) -> None:
-    """Scrape every review to a dated CSV + JSON."""
+    """Update the review corpus, fetching only what changed since last run."""
     parser = argparse.ArgumentParser(description=scrape_reviews.__doc__)
     parser.add_argument(
         "-o",
         "--output-dir",
         type=Path,
         default=DEFAULT_OUTPUT_DIR,
-        help="Directory for the dated reviews CSV and JSON.",
+        help="Directory holding reviews.csv and reviews.json.",
     )
     parser.add_argument(
         "-c",
@@ -74,10 +75,18 @@ def scrape_reviews(argv: list[str] | None = None) -> None:
         default=DEFAULT_CONCURRENCY,
         help="Maximum number of concurrent review requests.",
     )
+    parser.add_argument(
+        "--full",
+        action="store_true",
+        help="re-fetch every review instead of only what changed. Needed after "
+        "a parser change, since an incremental run re-parses only the pages it "
+        "re-fetches.",
+    )
     args = parser.parse_args(argv)
 
     _configure_logging()
-    asyncio.run(scrape_all_reviews(args.output_dir, args.concurrency))
+    store = CsvReviewStore(args.output_dir)
+    asyncio.run(scrape_all_reviews(store, args.concurrency, full=args.full))
 
 
 def fetch_exchange_rates(argv: list[str] | None = None) -> None:
