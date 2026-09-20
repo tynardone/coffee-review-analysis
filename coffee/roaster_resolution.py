@@ -28,22 +28,54 @@ THE CASCADE
     shrinks the input to the next, so by the time we reach the part that can be
     wrong, there is very little left for it to be wrong about.
 
-        normalize  ->  exact key collision  ->  fuzzy score  ->  human/LLM review
-          free           free, ~100% precise      O(n^2), fallible     expensive
+        normalize -> exact key -> location veto -> fuzzy -> human/LLM review
+          free        ~100%        near-decisive    O(n^2)      expensive
 
-OUTPUTS
-    crosswalk.csv   raw_name -> canonical_name.  THE DELIVERABLE. Commit to git.
-                    Next scrape, left-join against this: already-resolved names
-                    cost nothing and only NEW spellings reach the review queue.
-                    Manual effort per run decays toward zero instead of
-                    resetting to full every time (which is what OpenRefine does).
+THE SECOND SIGNAL
+    Names alone leave a wide uncertainty band. Roaster location is populated on
+    essentially every review and is nearly orthogonal to spelling, so it closes
+    most of that band for free: on the real data it resolved 41 of 50 queued
+    pairs and cut the queue from 50 to 13.
 
-    review.csv      Pairs in the honest-uncertainty band, with a blank `merge`
-                    column for you (or an LLM) to fill in.
+    Its two directions are NOT symmetric, and that asymmetry is load-bearing:
 
+      different region -> VETO the merge. Near-decisive, and it fires in the
+          safe direction — refusing a merge can only cause a loud false split.
+
+      identical place  -> SURFACE the pair for review; never merge it. Merging
+          on a lowered bar was tried and is unsafe, because the score does not
+          separate the cases: "Great Value (Walmart)"/"Great Value (Wal-Mart)"
+          scores 82.1 and is right, "Tehmag Foods"/"Wei Chuan Foods" scores
+          82.9 and is wrong. Asking costs one answer; answers are permanent.
+
+STATE — WHAT IS DERIVED AND WHAT IS NOT
+    roaster_decisions.csv    SOURCE OF TRUTH. Adjudicated pairs, with who
+                             decided and when. Hand-edited, committed to git.
+                             The only file here that cannot be regenerated.
+
+    roaster_crosswalk.csv    DERIVED. raw_name -> canonical_name. Regenerated
+                             every run; never hand-edit it, your edit would be
+                             overwritten. Commit it so downstream joins are
+                             reproducible.
+
+    roaster_review_queue.csv DERIVED. Only pairs with no decision yet, with a
+                             blank `verdict` column for you (or an LLM) to
+                             fill in, and each side's location so the evidence
+                             is visible without a second lookup.
+
+    Separating the first from the other two is what makes manual effort
+    ACCUMULATE. Re-running re-derives the clusters but never re-asks a question
+    already answered, so the queue shrinks toward zero instead of resetting to
+    full every time (which is what the OpenRefine workflow does).
 
 USAGE
-    resolve-roasters names.csv --column roaster --outdir ./out
+    # resolve, writing a crosswalk and a queue of what it could not decide
+    resolve-roasters reviews.csv --outdir data/processed
+
+    # ...fill in the `verdict` column (merge / split) in the queue...
+
+    # fold those answers into the decisions file and re-resolve with them
+    resolve-roasters reviews.csv --outdir data/processed --accept-reviewed
 """
 
 from __future__ import annotations
@@ -52,7 +84,11 @@ import re
 import unicodedata
 from collections import Counter, defaultdict
 from collections.abc import Iterable, Mapping
+from dataclasses import dataclass
+from datetime import datetime
+from enum import StrEnum
 from functools import partial
+from pathlib import Path
 
 import pandas as pd
 from rapidfuzz import fuzz, process
@@ -250,7 +286,207 @@ def score(a: str, b: str, token_df: Mapping[str, int] | None = None, **kwargs) -
 
 
 # ==========================================================================
-# 3. UNION-FIND (DISJOINT SET)
+# 3. LOCATION — THE SECOND SIGNAL
+# ==========================================================================
+
+# Names alone leave a wide band of honest uncertainty. Roaster location closes
+# most of it: it is populated on essentially every review, and it is nearly
+# orthogonal to spelling, so it carries information the string score cannot.
+#
+# On the real review queue it resolved 41 of 50 pairs outright — "Heart Coffee
+# Roasters" (Portland, Oregon) against "Heat Coffee" (Taipei, Taiwan) scores
+# 88.9 on name alone and is obviously not the same company.
+#
+# It is EVIDENCE, NOT PROOF, and the two directions are not symmetric:
+#   different region  -> near-decisive that these are different companies
+#   identical place   -> strongly confirmatory, but "Bear Coffee" and "Bear
+#                        Coffee Roasters" in one city could still be two shops
+# So a region conflict BLOCKS a merge, while an exact match only LOWERS THE BAR
+# rather than forcing one.
+
+
+class LocationEvidence(StrEnum):
+    """What the two names' locations say about whether they are one company."""
+
+    SAME = "same"  # identical place -> lower the bar
+    CONFLICT = "conflict"  # no region in common -> refuse to merge
+    NEUTRAL = "neutral"  # same region, different city -> no opinion
+    UNKNOWN = "unknown"  # at least one side has no location
+
+
+def normalize_location(value: str) -> tuple[str | None, str | None]:
+    """``"London, Ontario, Canada"`` -> ``("london", "canada")``.
+
+    Returns (city, region). CoffeeReview writes locations most-specific-first,
+    so the LAST comma-separated part is the region or country and the first is
+    the city. A single-part value ("El Salvador") is a region with no city.
+    """
+    parts = [strip_accents(part).strip().lower() for part in str(value).split(",")]
+    parts = [part for part in parts if part]
+    if not parts:
+        return None, None
+    if len(parts) == 1:
+        return None, parts[0]
+    return parts[0], parts[-1]
+
+
+def compare_locations(
+    places_a: Iterable[str] | None, places_b: Iterable[str] | None
+) -> LocationEvidence:
+    """Weigh two names' location sets against each other.
+
+    Each name gets a SET of locations, not one, because a roaster legitimately
+    appears at several over the years — 155 of 1,591 in the current data do.
+    Comparing sets rather than single values keeps a relocation from reading as
+    a conflict: any overlap is enough to withhold the veto.
+    """
+    norm_a = {normalize_location(p) for p in places_a or () if p}
+    norm_b = {normalize_location(p) for p in places_b or () if p}
+    norm_a.discard((None, None))
+    norm_b.discard((None, None))
+    if not norm_a or not norm_b:
+        return LocationEvidence.UNKNOWN
+
+    if norm_a & norm_b:
+        return LocationEvidence.SAME
+
+    regions_a = {region for _, region in norm_a if region}
+    regions_b = {region for _, region in norm_b if region}
+    if regions_a and regions_b and not (regions_a & regions_b):
+        return LocationEvidence.CONFLICT
+    return LocationEvidence.NEUTRAL
+
+
+# ==========================================================================
+# 4. DECISIONS — DURABLE HUMAN JUDGEMENT
+# ==========================================================================
+
+# The crosswalk is DERIVED and regenerable; these are the inputs that are not.
+# Keeping them in a separate file is what lets manual effort accumulate instead
+# of resetting: every rerun re-derives the clusters, but never re-asks a
+# question already answered.
+
+
+class Verdict(StrEnum):
+    MERGE = "merge"
+    SPLIT = "split"
+
+
+@dataclass(frozen=True)
+class Decision:
+    """One adjudicated pair. `decided_by` records who or what decided.
+
+    Attribution matters because the review band is where an LLM is worth using,
+    and LLM calls should be revisitable as a group without disturbing your own.
+    """
+
+    name_a: str
+    name_b: str
+    verdict: Verdict
+    decided_by: str = ""
+    decided_on: str = ""
+    note: str = ""
+
+    @property
+    def key(self) -> tuple[str, str]:
+        """Order-independent identity, so (a, b) and (b, a) are one decision."""
+        return tuple(sorted((self.name_a, self.name_b)))  # type: ignore[return-value]
+
+
+DECISION_COLUMNS = ["name_a", "name_b", "verdict", "decided_by", "decided_on", "note"]
+
+# Columns of the review queue. `verdict` is the one you fill in; the location
+# columns are there so the evidence is visible without a second lookup.
+REVIEW_COLUMNS = [
+    "name_a",
+    "name_b",
+    "core_a",
+    "core_b",
+    "score",
+    "location_a",
+    "location_b",
+    "location_evidence",
+    "verdict",
+]
+
+
+def load_decisions(path: Path) -> list[Decision]:
+    """Read adjudicated pairs; a missing file simply means none yet."""
+    if not path.exists():
+        return []
+    frame = pd.read_csv(path).fillna("")
+    missing = set(DECISION_COLUMNS[:3]) - set(frame.columns)
+    if missing:
+        raise ValueError(f"{path} is missing column(s): {sorted(missing)}")
+    return [
+        Decision(
+            name_a=row["name_a"],
+            name_b=row["name_b"],
+            verdict=Verdict(row["verdict"]),
+            decided_by=row.get("decided_by", ""),
+            decided_on=row.get("decided_on", ""),
+            note=row.get("note", ""),
+        )
+        for _, row in frame.iterrows()
+    ]
+
+
+def promote_reviewed(
+    review_path: Path, decisions_path: Path, decided_by: str = "manual"
+) -> int:
+    """Move answered rows out of the review queue and into the decisions file.
+
+    This is the step that closes the loop. Without it the queue is a form nobody
+    collects: you can fill in `verdict`, but the next run re-derives the queue
+    from scratch and asks again. Promoting the answers is what makes the effort
+    cumulative — every question is asked at most once, ever.
+
+    Rows with a blank or unrecognized verdict are left alone, so a partially
+    filled queue is fine. Returns the number of new decisions recorded.
+    """
+    if not review_path.exists():
+        return 0
+    queue = pd.read_csv(review_path).fillna("")
+    if "verdict" not in queue.columns:
+        raise ValueError(f"{review_path} has no 'verdict' column to read.")
+
+    existing = {d.key: d for d in load_decisions(decisions_path)}
+    today = datetime.now().strftime("%Y-%m-%d")
+    added = 0
+    for _, row in queue.iterrows():
+        raw = str(row["verdict"]).strip().lower()
+        if raw not in {v.value for v in Verdict}:
+            continue
+        decision = Decision(
+            name_a=row["name_a"],
+            name_b=row["name_b"],
+            verdict=Verdict(raw),
+            decided_by=decided_by,
+            decided_on=today,
+            note=str(row.get("note", "")),
+        )
+        # An existing verdict is never silently overwritten; edit the decisions
+        # file directly to change your mind, so the change is visible in git.
+        if decision.key not in existing:
+            existing[decision.key] = decision
+            added += 1
+
+    save_decisions(existing.values(), decisions_path)
+    return added
+
+
+def save_decisions(decisions: Iterable[Decision], path: Path) -> None:
+    """Write decisions back out, sorted so the file diffs cleanly in git."""
+    rows = sorted(
+        ({c: getattr(d, c) for c in DECISION_COLUMNS} for d in decisions),
+        key=lambda r: (r["name_a"], r["name_b"]),
+    )
+    path.parent.mkdir(parents=True, exist_ok=True)
+    pd.DataFrame(rows, columns=DECISION_COLUMNS).to_csv(path, index=False)
+
+
+# ==========================================================================
+# 5. UNION-FIND (DISJOINT SET)
 # ==========================================================================
 
 
@@ -290,14 +526,17 @@ class DSU:
 
 
 # ==========================================================================
-# 4. RESOLUTION
+# 6. RESOLUTION
 # ==========================================================================
 
 
 def resolve(
     raw_names: list[str],
+    locations: Mapping[str, Iterable[str]] | None = None,
+    decisions: Iterable[Decision] | None = None,
     auto_threshold: int = 92,
     review_threshold: int = 82,
+    location_review_threshold: int | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Cluster raw names; return (crosswalk, review_queue).
 
@@ -339,13 +578,34 @@ def resolve(
     # Free and ~100% precise. No threshold, no judgment. This catches the bulk
     # of real-world variation (suffix drift, casing, punctuation, word order)
     # because normalization already erased exactly those differences.
+    places = locations or {}
+
+    def evidence(i: int, j: int) -> LocationEvidence:
+        return compare_locations(places.get(uniques[i]), places.get(uniques[j]))
+
+    verdicts = {d.key: d.verdict for d in (decisions or ())}
+
+    def verdict_for(i: int, j: int) -> Verdict | None:
+        first, second = sorted((uniques[i], uniques[j]))
+        return verdicts.get((first, second))
+
     dsu = DSU(len(uniques))
     by_key: dict[str, list[int]] = defaultdict(list)
     for i, k in enumerate(keys):
         by_key[k].append(i)
+
+    # Even an identical core key can be two companies: "Direct Coffee" and
+    # "Coffee Bean Direct" both stopword down to "direct". Nothing in the
+    # strings can separate them, which is why the location veto applies here
+    # too and not only to the fuzzy stage.
     for group in by_key.values():
-        for j in group[1:]:
-            dsu.union(group[0], j)
+        for a_idx, i in enumerate(group):
+            for j in group[a_idx + 1 :]:
+                if verdict_for(i, j) is Verdict.SPLIT:
+                    continue
+                if evidence(i, j) is LocationEvidence.CONFLICT:
+                    continue
+                dsu.union(i, j)
 
     # -- Stage B: fuzzy scoring ----------------------------------------------
     # Only mops up what Stage A missed: typos and word-order drift that survived
@@ -382,21 +642,56 @@ def resolve(
             # we ignore it). So the cutoff must be enforced here by hand — omit
             # this and every pair in the matrix, down to score 8, floods
             # review.csv.
-            if s < review_threshold:
+            if s < review_threshold and not (
+                location_review_threshold is not None
+                and s >= location_review_threshold
+                and evidence(by_key[distinct_keys[i]][0], by_key[distinct_keys[j]][0])
+                is LocationEvidence.SAME
+            ):
                 continue
 
             ki, kj = distinct_keys[i], distinct_keys[j]
+            a, b = by_key[ki][0], by_key[kj][0]
+
+            # An adjudicated pair is never re-decided and never re-asked. This
+            # is what makes manual effort accumulate rather than reset.
+            decided = verdict_for(a, b)
+            if decided is Verdict.MERGE:
+                dsu.union(a, b)
+                continue
+            if decided is Verdict.SPLIT:
+                continue
+
+            # A region conflict vetoes the merge outright. The reverse is
+            # deliberately NOT symmetric: a matching location SURFACES a pair
+            # for review, it never merges one.
+            #
+            # Merging on a lowered bar was tried and is unsafe, because the
+            # string score does not separate the good cases from the bad:
+            # "Great Value (Walmart)"/"Great Value (Wal-Mart)" scores 82.1 and
+            # is right, while "Tehmag Foods"/"Wei Chuan Foods" -- two unrelated
+            # Taiwanese companies sharing a city -- scores 82.9 and is wrong.
+            # No threshold separates them, so auto-merging there would buy
+            # recall with exactly the silent false merges this file exists to
+            # prevent. Surfacing costs one answer instead, and answers persist.
+            place = evidence(a, b)
+            if place is LocationEvidence.CONFLICT:
+                continue
+
             if s >= auto_threshold:
-                dsu.union(by_key[ki][0], by_key[kj][0])
+                dsu.union(a, b)
             else:
                 review_rows.append(
                     {
-                        "name_a": uniques[by_key[ki][0]],
-                        "name_b": uniques[by_key[kj][0]],
+                        "name_a": uniques[a],
+                        "name_b": uniques[b],
                         "core_a": ki,  # keys are shown so you can see WHY
                         "core_b": kj,  # a pair scored the way it did
                         "score": round(float(s), 1),
-                        "merge": "",  # <- you (or an LLM) fill in y/n
+                        "location_a": "; ".join(sorted(places.get(uniques[a]) or [])),
+                        "location_b": "; ".join(sorted(places.get(uniques[b]) or [])),
+                        "location_evidence": str(place),
+                        "verdict": "",  # <- you (or an LLM) fill in merge/split
                     }
                 )
 
@@ -455,8 +750,6 @@ def resolve(
     review = (
         pd.DataFrame(review_rows).sort_values("score", ascending=False)
         if review_rows
-        else pd.DataFrame(
-            columns=["name_a", "name_b", "core_a", "core_b", "score", "merge"]
-        )
+        else pd.DataFrame(columns=REVIEW_COLUMNS)
     )
     return crosswalk, review

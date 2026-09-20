@@ -14,6 +14,7 @@ This project is a complete data pipeline for scraping coffee reviews from [Coffe
 - [Data Sources](#data-sources)
 - [Code Layout](#code-layout)
 - [Usage](#usage)
+- [Resolving roaster names](#resolving-roaster-names)
 - [Tests](#tests)
 - [References](#references)
 
@@ -121,10 +122,10 @@ installed as console commands that wrap it.
 - `config.py` — configuration, paths, and API keys (loaded from the environment
   / `.env`).
 - `exchange_rates.py` — fetches historical rates for the scraped review dates.
-- `roaster_resolution.py` — entity resolution for messy roaster names. Clusters
-  spelling variants of the same roaster into a crosswalk (raw name → canonical
-  name) plus a queue of genuinely ambiguous pairs for human review. The
-  committed outputs live in `data/processed/`.
+- `roaster_resolution.py` — entity resolution for messy roaster names. Uses
+  the roaster's name *and* location, and applies previously adjudicated pairs
+  so manual effort accumulates rather than resetting. Outputs live in
+  `data/processed/` (see [Resolving roaster names](#resolving-roaster-names)).
 - `cli.py` — argument parsing for the console commands below.
 
 **`tests/`**
@@ -148,14 +149,53 @@ uv run scrape-reviews
 uv run fetch-exchange-rates -i data/raw/<date>_reviews.csv
 
 # Resolve roaster-name variants into a canonical crosswalk
-uv run resolve-roasters data/raw/<date>_reviews.csv \
-    --column roaster --outdir data/processed
+uv run resolve-roasters data/raw/<date>_reviews.csv --outdir data/processed
 
 # Launch Jupyter for the analysis notebooks
 uv run jupyter lab
 ```
 
 `--help` on any of them lists the available options.
+
+## Resolving roaster names
+
+The same roaster is spelled many ways (`Onyx Coffee Lab` / `Onyx Coffee Lab LLC`
+/ `onyx coffee lab`). `resolve-roasters` groups the spellings, using two
+signals: the name, and the **roaster location** — which is populated on
+essentially every review and is nearly orthogonal to spelling. A region
+conflict vetoes a merge outright (`Heart Coffee Roasters` in Portland vs `Heat
+Coffee` in Taipei score 88.9 on name alone); a matching location only *surfaces*
+a pair for review, never merges it.
+
+Three files, and the distinction between them matters:
+
+| file | role |
+|---|---|
+| `roaster_decisions.csv` | **Source of truth.** Pairs you (or an LLM) adjudicated, with who decided and when. Hand-edited, committed. The only one that can't be regenerated. |
+| `roaster_crosswalk.csv` | **Derived.** `raw_name → canonical_name`. Regenerated every run — never hand-edit it. |
+| `roaster_review_queue.csv` | **Derived.** Only pairs with no decision yet, with a blank `verdict` column and each side's location. |
+
+The loop, which is what makes manual effort shrink instead of resetting:
+
+```bash
+# 1. resolve; anything it can't decide lands in the review queue
+uv run resolve-roasters data/raw/<date>_reviews.csv --outdir data/processed
+
+# 2. open roaster_review_queue.csv and put `merge` or `split` in `verdict`
+
+# 3. fold those answers into the decisions file and re-resolve
+uv run resolve-roasters data/raw/<date>_reviews.csv --outdir data/processed \
+    --accept-reviewed --decided-by "$USER"
+```
+
+Re-running re-derives the clusters but never re-asks an answered question, so
+the queue trends toward zero. To hunt for matches the name score alone misses,
+add `--location-review 70`: pairs scoring below the normal floor but sharing an
+address get surfaced (never merged).
+
+Two numbers to read after each run: **chain-risk rows** (clusters that could
+only have been assembled transitively — inspect these first) and the **queue
+size**.
 
 ## Tests
 
