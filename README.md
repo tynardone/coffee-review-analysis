@@ -159,43 +159,123 @@ uv run jupyter lab
 
 ## Resolving roaster names
 
-The same roaster is spelled many ways (`Onyx Coffee Lab` / `Onyx Coffee Lab LLC`
-/ `onyx coffee lab`). `resolve-roasters` groups the spellings, using two
-signals: the name, and the **roaster location** — which is populated on
-essentially every review and is nearly orthogonal to spelling. A region
-conflict vetoes a merge outright (`Heart Coffee Roasters` in Portland vs `Heat
-Coffee` in Taipei score 88.9 on name alone); a matching location only *surfaces*
-a pair for review, never merges it.
+The same roaster is spelled many ways — `Onyx Coffee Lab` / `Onyx Coffee Lab
+LLC` / `onyx coffee lab`. `resolve-roasters` groups the spellings and records
+which ones you have already judged, so the manual work shrinks each run instead of
+starting over.
 
-Three files, and the distinction between them matters:
+### The three files
 
-| file | role |
-|---|---|
-| `roaster_decisions.csv` | **Source of truth.** Pairs you (or an LLM) adjudicated, with who decided and when. Hand-edited, committed. The only one that can't be regenerated. |
-| `roaster_crosswalk.csv` | **Derived.** `raw_name → canonical_name`. Regenerated every run — never hand-edit it. |
-| `roaster_review_queue.csv` | **Derived.** Only pairs with no decision yet, with a blank `verdict` column and each side's location. |
+Know which of these you edit and which you never touch:
 
-The loop, which is what makes manual effort shrink instead of resetting:
+| file | you edit it? | role |
+|---|---|---|
+| `roaster_decisions.csv` | **yes** | Source of truth: pairs that have been adjudicated. The only file here that cannot be regenerated. Commit it. |
+| `roaster_review_queue.csv` | **yes** — the `verdict` column only | Pairs the tool could not decide. Regenerated every run. |
+| `roaster_crosswalk.csv` | **no** | The output: `raw_name → canonical_name`. Regenerated every run; hand edits are overwritten. Commit it so downstream joins are reproducible. |
+
+### The loop
+
+**1. Resolve.**
 
 ```bash
-# 1. resolve; anything it can't decide lands in the review queue
-uv run resolve-roasters data/raw/<date>_reviews.csv --outdir data/processed
-
-# 2. open roaster_review_queue.csv and put `merge` or `split` in `verdict`
-
-# 3. fold those answers into the decisions file and re-resolve
-uv run resolve-roasters data/raw/<date>_reviews.csv --outdir data/processed \
-    --accept-reviewed --decided-by "$USER"
+uv run resolve-roasters data/raw/2026-09-19_reviews.csv --outdir data/processed
 ```
 
-Re-running re-derives the clusters but never re-asks an answered question, so
-the queue trends toward zero. To hunt for matches the name score alone misses,
-add `--location-review 70`: pairs scoring below the normal floor but sharing an
-address get surfaced (never merged).
+It prints four lines. Read them in this order:
 
-Two numbers to read after each run: **chain-risk rows** (clusters that could
-only have been assembled transitively — inspect these first) and the **queue
-size**.
+```
+1687 distinct spellings -> 1498 roasters (189 merged)     did it do anything?
+no decisions yet (…/roaster_decisions.csv not found)       are your past calls applied?
+17 pairs queued for review -> …/roaster_review_queue.csv   how much is left to judge?
+12 rows in chain-risk clusters  <-- INSPECT THESE          did clustering misbehave?
+```
+
+**2. Judge the queue.**
+
+Open `data/processed/roaster_review_queue.csv` and put `merge` or `split` in the
+`verdict` column. That column is the only thing you change.
+
+| name_a | name_b | score | location_evidence | verdict |
+|---|---|---|---|---|
+| Boyd Coffee | Boyds Coffee | 88.9 | `same` | `merge` |
+| Fellow Coffee | Mellow Coffee | 83.3 | `neutral` | `split` |
+
+`location_evidence` is the shortcut:
+
+- **`same`** — one address. Usually the same company, but not always: `Wei Chuan
+  Foods` and `Tehmag Foods` share a city and are unrelated. Read the names.
+- **`neutral`** — same region, different city. Usually different companies.
+- **`unknown`** — no location on one side. Judge on the names alone.
+
+Blank rows are fine; they simply come back next time.
+
+**3. Record the verdicts and re-resolve.**
+
+```bash
+uv run resolve-roasters data/raw/2026-09-19_reviews.csv --outdir data/processed --accept-reviewed --decided-by "$USER"
+```
+
+This folds your answers into `roaster_decisions.csv`, then re-resolves with them
+applied. The queue comes back holding only what you left blank.
+
+**4. Commit all three files**, `roaster_decisions.csv` above all — it is the only
+one that cannot be rebuilt.
+
+### On the next scrape
+
+Run step 1 against the new file. The queue contains **only pairs you have never
+judged**; everything already decided stays decided. If a pair you answered comes
+back, something is wrong — check that `roaster_decisions.csv` is present in
+`--outdir`.
+
+### Occasional extras
+
+Inspect the chain-risk clusters — the ones single-linkage could only have
+assembled transitively, so the likeliest false merges:
+
+```bash
+uv run python -c "import pandas as pd; c=pd.read_csv('data/processed/roaster_crosswalk.csv'); print(c[c.chain_risk][['raw_name','canonical_name','min_internal_score']].to_string(index=False))"
+```
+
+Hunt for merges the name score alone misses — pairs below the normal floor that
+share an address (this found `Starbucks` ~ `Starbucks Reserve Roastery`, which
+scores 72). They are surfaced for judgement, never merged — expect the queue to
+roughly double, 17 to 30 on the current data:
+
+```bash
+uv run resolve-roasters data/raw/2026-09-19_reviews.csv --outdir data/processed --location-review 70
+```
+
+### Two rules
+
+1. **Never hand-edit `roaster_crosswalk.csv`.** It is regenerated on every run.
+   To change a grouping, change the decision that produced it.
+2. **To reverse a call, edit `roaster_decisions.csv` directly.**
+   `--accept-reviewed` will not overwrite an existing verdict, so a change of
+   mind shows up as a visible diff rather than happening silently.
+
+### How it decides, briefly
+
+Two signals. **Name**: normalize (accents, punctuation, legal suffixes, word
+order), then exact-key collision, then fuzzy score. **Location**: populated on
+nearly every review and almost independent of spelling, so it settles most of
+what the name alone cannot — it resolved 41 of 50 queued pairs on the first real
+run.
+
+The two directions are deliberately not symmetric:
+
+- a **region conflict vetoes** a merge (`Heart Coffee Roasters` in Portland vs
+  `Heat Coffee` in Taipei score 88.9 on name alone)
+- a **matching location only surfaces** a pair for review, never merges it,
+  because the score cannot separate the good cases from the bad — `Great Value
+  (Walmart)`/`Great Value (Wal-Mart)` scores 82.1 and is right, `Tehmag
+  Foods`/`Wei Chuan Foods` scores 82.9 and is wrong.
+
+This follows from the asymmetry of the errors: a false merge is silent and
+corrupts every downstream average, while a false split is obvious the moment a
+roaster appears twice in a table. See the module docstring in
+`coffee/roaster_resolution.py` for the full reasoning.
 
 ## Tests
 
