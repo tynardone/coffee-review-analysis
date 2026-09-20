@@ -17,11 +17,19 @@ from requests.adapters import HTTPAdapter
 from tqdm import tqdm
 from urllib3.util.retry import Retry
 
-from coffee.config import OpenExConfig
+from coffee.config import DATA_DIR, HEADERS, OPENEX_API_URL, OPENEX_TIMEOUT
+
+__all__ = [
+    "DEFAULT_OUTPUT",
+    "fetch_rate",
+    "fetch_rates",
+    "load_review_dates",
+    "save_rates",
+]
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_OUTPUT = OpenExConfig.DATA_DIR / "external" / "openex_exchange_rates.json"
+DEFAULT_OUTPUT = DATA_DIR / "external" / "openex_exchange_rates.json"
 
 # OpenExchangeRates' historical data begins in 1999.
 EARLIEST_DATE = "1999-01-01"
@@ -57,17 +65,15 @@ def _build_session(retries: int = 3) -> requests.Session:
     )
     session = requests.Session()
     session.mount("https://", HTTPAdapter(max_retries=retry))
-    session.headers.update(OpenExConfig.HEADERS)
+    session.headers.update(HEADERS)
     return session
 
 
 def fetch_rate(session: requests.Session, day: date, app_id: str) -> dict[str, float]:
     """Fetch rates for a single date; return an empty dict on failure."""
-    url = f"{OpenExConfig.API_URL}{day}.json"
+    url = f"{OPENEX_API_URL}{day}.json"
     try:
-        response = session.get(
-            url, params={"app_id": app_id}, timeout=OpenExConfig.TIMEOUT
-        )
+        response = session.get(url, params={"app_id": app_id}, timeout=OPENEX_TIMEOUT)
         response.raise_for_status()
         return response.json().get("rates", {})
     except requests.RequestException:

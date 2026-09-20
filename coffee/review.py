@@ -15,6 +15,10 @@ import aiohttp
 from coffee.fetch import fetch
 from coffee.parser import parse_html
 
+__all__ = [
+    "scrape_review",
+]
+
 
 async def scrape_review(
     url: str,

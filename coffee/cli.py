@@ -14,14 +14,18 @@ from pathlib import Path
 
 import pandas as pd
 
-from coffee.config import OpenExConfig
+from coffee.config import DATA_DIR, openexchangerates_api_id
 from coffee.exchange_rates import (
     DEFAULT_OUTPUT,
     fetch_rates,
     load_review_dates,
     save_rates,
 )
-from coffee.pipeline import DEFAULT_OUTPUT_DIR, scrape_all_reviews
+from coffee.pipeline import (
+    DEFAULT_CONCURRENCY,
+    DEFAULT_OUTPUT_DIR,
+    scrape_all_reviews,
+)
 from coffee.roaster_resolution import (
     load_decisions,
     promote_reviewed,
@@ -29,9 +33,13 @@ from coffee.roaster_resolution import (
     unpromoted_verdicts,
 )
 
-logger = logging.getLogger(__name__)
+__all__ = [
+    "fetch_exchange_rates",
+    "resolve_roasters",
+    "scrape_reviews",
+]
 
-DEFAULT_CONCURRENCY = 10
+logger = logging.getLogger(__name__)
 
 
 def _configure_logging() -> None:
@@ -92,7 +100,7 @@ def fetch_exchange_rates(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
 
     _configure_logging()
-    app_id = OpenExConfig.OPENEXCHANGERATES_API_ID
+    app_id = openexchangerates_api_id()
     if not app_id:
         raise SystemExit("OPENEXCHANGERATES_API_ID is not set (add it to your .env).")
 
@@ -118,9 +126,7 @@ def resolve_roasters(argv: list[str] | None = None) -> None:
         default="roaster location",
         help="column holding each roaster's location; '' disables the signal",
     )
-    parser.add_argument(
-        "--outdir", type=Path, default=OpenExConfig.DATA_DIR / "processed"
-    )
+    parser.add_argument("--outdir", type=Path, default=DATA_DIR / "processed")
     parser.add_argument(
         "--decisions",
         type=Path,

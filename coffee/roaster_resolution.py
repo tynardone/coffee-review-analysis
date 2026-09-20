@@ -115,6 +115,31 @@ from rapidfuzz import fuzz, process
 # fmt: off
 # Grouped by kind deliberately — the grouping is the documentation for what
 # each line is doing. Keep the formatter from flattening it to one per line.
+__all__ = [
+    "ABBREV",
+    "DECISION_COLUMNS",
+    "Decision",
+    "LocationEvidence",
+    "MAX_SUBSET_TOKEN_DF",
+    "REVIEW_COLUMNS",
+    "STOPWORDS",
+    "Verdict",
+    "compare_locations",
+    "core_key",
+    "fingerprint",
+    "load_decisions",
+    "normalize_location",
+    "parse_verdict",
+    "promote_reviewed",
+    "resolve",
+    "save_decisions",
+    "score",
+    "strip_accents",
+    "token_document_frequency",
+    "tokens",
+    "unpromoted_verdicts",
+]
+
 STOPWORDS = {
     "coffee", "coffees", "coffe", "cofee",
     "roaster", "roasters", "roasting", "roastery", "roasterie",

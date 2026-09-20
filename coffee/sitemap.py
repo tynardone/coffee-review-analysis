@@ -17,8 +17,16 @@ from urllib.parse import urlparse
 import aiohttp
 from lxml import etree
 
-from coffee.config import Config
+from coffee.config import SITEMAP_URL
 from coffee.fetch import fetch
+
+__all__ = [
+    "MAX_SITEMAP_DEPTH",
+    "SitemapError",
+    "get_review_urls",
+    "is_review_url",
+    "parse_sitemap",
+]
 
 logger = logging.getLogger(__name__)
 
@@ -92,7 +100,7 @@ def is_review_url(url: str, path_prefix: str = "/review/") -> bool:
 async def get_review_urls(
     session: aiohttp.ClientSession,
     semaphore: asyncio.Semaphore,
-    index_url: str = Config.SITEMAP_URL,
+    index_url: str = SITEMAP_URL,
     path_prefix: str = "/review/",
 ) -> dict[str, date | None]:
     """Return every review URL mapped to its sitemap ``<lastmod>`` date.
