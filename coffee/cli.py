@@ -22,7 +22,7 @@ from coffee.exchange_rates import (
     save_rates,
 )
 from coffee.pipeline import DEFAULT_OUTPUT_DIR, scrape_all_reviews
-from coffee.roaster_resolution import resolve
+from coffee.roaster_resolution import load_decisions, promote_reviewed, resolve
 
 logger = logging.getLogger(__name__)
 
@@ -108,7 +108,21 @@ def resolve_roasters(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=resolve_roasters.__doc__)
     parser.add_argument("infile", type=Path, help="CSV containing the names")
     parser.add_argument("--column", default="roaster", help="column holding the names")
-    parser.add_argument("--outdir", type=Path, default=Path("."))
+    parser.add_argument(
+        "--location-column",
+        default="roaster location",
+        help="column holding each roaster's location; '' disables the signal",
+    )
+    parser.add_argument(
+        "--outdir", type=Path, default=OpenExConfig.DATA_DIR / "processed"
+    )
+    parser.add_argument(
+        "--decisions",
+        type=Path,
+        default=None,
+        help="CSV of adjudicated pairs (default: <outdir>/roaster_decisions.csv). "
+        "Missing is fine; it is created as you record verdicts.",
+    )
     parser.add_argument(
         "--auto",
         type=int,
@@ -122,14 +136,67 @@ def resolve_roasters(argv: list[str] | None = None) -> None:
         help="score in [review, auto): send to the review queue "
         "(lower it if true matches are being missed entirely)",
     )
+    parser.add_argument(
+        "--location-review",
+        type=int,
+        default=None,
+        help="also queue pairs scoring below --review when their locations match "
+        "exactly (e.g. 70). Recovers true matches the name score alone misses, "
+        "at the cost of more pairs to adjudicate.",
+    )
+    parser.add_argument(
+        "--accept-reviewed",
+        action="store_true",
+        help="first fold any verdicts you filed in the review queue into the "
+        "decisions file, then re-resolve with them applied",
+    )
+    parser.add_argument(
+        "--decided-by",
+        default="manual",
+        help="recorded against decisions promoted by --accept-reviewed",
+    )
     args = parser.parse_args(argv)
 
-    names = pd.read_csv(args.infile)[args.column].dropna().astype(str).tolist()
-    crosswalk, review = resolve(names, args.auto, args.review)
+    frame = pd.read_csv(args.infile)
+    names = frame[args.column].dropna().astype(str).tolist()
+
+    locations = None
+    if args.location_column and args.location_column in frame.columns:
+        locations = (
+            frame.dropna(subset=[args.column, args.location_column])
+            .groupby(args.column)[args.location_column]
+            .apply(lambda values: set(values.astype(str)))
+            .to_dict()
+        )
+    elif args.location_column:
+        logger.warning(
+            "No %r column in %s; resolving on names alone.",
+            args.location_column,
+            args.infile,
+        )
+
+    decisions_path = args.decisions or args.outdir / "roaster_decisions.csv"
+    if args.accept_reviewed:
+        added = promote_reviewed(
+            args.outdir / "roaster_review_queue.csv", decisions_path, args.decided_by
+        )
+        print(f"recorded {added} new decision(s) in {decisions_path}")
+    decisions = load_decisions(decisions_path)
+
+    crosswalk, review = resolve(
+        names,
+        locations=locations,
+        decisions=decisions,
+        auto_threshold=args.auto,
+        review_threshold=args.review,
+        location_review_threshold=args.location_review,
+    )
 
     args.outdir.mkdir(parents=True, exist_ok=True)
-    crosswalk.to_csv(args.outdir / "crosswalk.csv", index=False)
-    review.to_csv(args.outdir / "review.csv", index=False)
+    crosswalk_path = args.outdir / "roaster_crosswalk.csv"
+    review_path = args.outdir / "roaster_review_queue.csv"
+    crosswalk.to_csv(crosswalk_path, index=False)
+    review.to_csv(review_path, index=False)
 
     # Read these in order: did it merge anything, how much review is left, and
     # -- the one that matters -- did single-linkage chain clusters together?
@@ -139,7 +206,12 @@ def resolve_roasters(argv: list[str] | None = None) -> None:
         f"{n_raw} distinct spellings -> {n_canonical} roasters "
         f"({n_raw - n_canonical} merged)"
     )
-    print(f"{len(review)} pairs queued for review  -> review.csv")
+    print(
+        f"{len(decisions)} decisions applied from {decisions_path}"
+        if decisions
+        else f"no decisions yet ({decisions_path} not found)"
+    )
+    print(f"{len(review)} pairs queued for review -> {review_path}")
     print(
         f"{int(crosswalk.chain_risk.sum())} rows in chain-risk clusters"
         f"{'  <-- INSPECT THESE' if crosswalk.chain_risk.any() else ''}"
