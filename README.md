@@ -15,6 +15,7 @@ This project is a complete data pipeline for scraping coffee reviews from [Coffe
 - [Code Layout](#code-layout)
 - [Usage](#usage)
 - [Resolving roaster names](#resolving-roaster-names)
+- [The two layers](#the-two-layers)
 - [Notebooks](#notebooks)
 - [Tests](#tests)
 - [References](#references)
@@ -118,6 +119,10 @@ installed as console commands that wrap it.
   both discovery and scraping.
 - `parser.py` — turns one review's HTML into structured fields.
 - `review.py` — fetches a single review page and parses it into a record.
+- `clean.py` — the cleaned layer: types, price/currency/quantity parsing, USD
+  conversion, inflation adjustment, origin and roaster locations, and the
+  roaster crosswalk. Every step is a pure `DataFrame -> DataFrame` function;
+  reference data is passed in, not read from disk.
 - `pipeline.py` — the full run: discovers every review URL and fetches only
   those that are new or have changed since the last run.
 - `storage.py` — where reviews live. `CsvReviewStore` keeps
@@ -153,6 +158,9 @@ uv run fetch-exchange-rates -i data/raw/reviews.csv
 
 # Resolve roaster-name variants into a canonical crosswalk
 uv run resolve-roasters data/raw/reviews.csv --outdir data/processed
+
+# Build the cleaned layer from the raw scrape
+uv run clean-reviews
 
 # Launch Jupyter for the analysis notebooks
 uv run jupyter lab
@@ -341,13 +349,41 @@ corrupts every downstream average, while a false split is obvious the moment a
 roaster appears twice in a table. See the module docstring in
 `coffee/roaster_resolution.py` for the full reasoning.
 
+## The two layers
+
+```
+data/raw/reviews.csv         RAW      as scraped, never edited
+data/processed/reviews_cleaned.csv   CLEANED  typed, priced in constant USD,
+                                              roasters resolved
+```
+
+`uv run clean-reviews` builds the second from the first. The transformation
+lives in `coffee/clean.py` rather than in a notebook, so it is tested and runs
+in CI — it decides what every downstream number means.
+
+What cleaning does:
+
+- parses `est. price` into a value, an ISO 4217 currency and a quantity
+- converts quantities to pounds, so prices are comparable per unit
+- converts to USD at the **review month's** exchange rate
+- adjusts for inflation to a baseline month (`--baseline-date`, default
+  2024-06), so a 1997 price and a 2026 price can be compared
+- resolves origin and roaster locations to countries, and US states
+- adds `roaster_canonical` from the roaster crosswalk, **keeping** the raw
+  spelling beside it
+
+Rows whose agtron reading exceeds 100 are dropped as site typos; the count is
+reported on every run. Formats that are not whole-bean coffee (capsules, pods)
+keep their review but get no quantity, since a price per pound would be
+meaningless.
+
 ## Notebooks
 
 Run them in order; each depends on the previous one's output.
 
 | notebook | reads | writes |
 |---|---|---|
-| `01-data-cleaning` | `data/raw/reviews.csv` | `data/processed/reviews_cleaned.csv` |
+| `01-data-cleaning` | `data/raw/reviews.csv` | `data/processed/reviews_cleaned.csv` (same as `clean-reviews`) |
 | `02-data-EDA` | `data/processed/reviews_cleaned.csv` | charts |
 | `03-text-features` | `data/processed/reviews_cleaned.csv` | wordclouds in `imgs/` |
 
