@@ -1,19 +1,18 @@
 """Turn scraped reviews into the cleaned layer.
 
-Raw rows are what the site said; cleaned rows are what the analysis can use.
-This module owns that transition: normalising column names and types, parsing
-the free-text price into a value, a currency and a quantity, converting to USD
-at the review month's rate, adjusting for inflation, and resolving origin and
+Raw rows record what the site published; cleaned rows are what the analysis
+consumes. This module owns that transition: coercing types, parsing the
+free-text price into a value, a currency and a quantity, converting to USD at
+the review month's rate, adjusting for inflation, and resolving origin and
 roaster locations to countries.
 
-Every step is a ``DataFrame -> DataFrame`` function and every step is pure:
-reference data (exchange rates, CPI, the roaster crosswalk) is PASSED IN rather
-than read from disk here, so the transformation can be tested against three
-hand-written rows instead of a 14MB download, and so it does not care where
-that data came from.
+Every step is a pure ``DataFrame -> DataFrame`` function. Reference data --
+exchange rates, CPI, the roaster crosswalk -- is passed in rather than read
+from disk here, so the transformation can be tested against a few hand-written
+rows instead of a 14MB download and does not depend on where that data is kept.
 
-:func:`clean_reviews` composes them in order. The individual steps stay public
-because they are useful one at a time when exploring in a notebook.
+:func:`clean_reviews` composes the steps in order. The individual steps remain
+public because they are useful one at a time when exploring in a notebook.
 """
 
 import re
@@ -54,8 +53,8 @@ __all__ = [
 DEFAULT_MAX_AGTRON = 100
 
 # The month whose dollars every adjusted price is expressed in. Changing it
-# changes every price_usd_adj, so it is recorded on the output rather than
-# left implicit.
+# changes every price_usd_adj, so it is recorded on the output rather than left
+# implicit.
 DEFAULT_BASELINE_DATE = "2024-06-01"
 
 # Formats that are not whole-bean coffee sold by weight. Their prices are not
@@ -82,9 +81,9 @@ NON_WHOLE_BEAN_TERMS: list[str] = [
     "capsultes",
 ]
 
-# Currency symbols and aliases the site uses, mapped to ISO 4217. Applied to
-# the whole value after stripping "$", since exact matches avoid the fragility
-# of substring replacement.
+# Currency symbols and aliases the site uses, mapped to ISO 4217. Matched
+# against the whole value after stripping "$", since exact matching avoids the
+# fragility of substring replacement.
 CURRENCY_MAP: dict[str, str] = {
     "": "USD",
     "US": "USD",
@@ -148,8 +147,8 @@ _NUMERIC_COLUMNS = [
 def load_exchange_rates(path: Path) -> pd.DataFrame:
     """Flatten ``{date: {currency: rate}}`` into a (date, currency, rate) table.
 
-    A lookup table rather than the nested mapping, so conversion is a vectorised
-    merge instead of a row-wise apply.
+    A lookup table rather than the nested mapping, so that conversion is a
+    vectorised merge rather than a row-wise apply.
     """
     import json
 
@@ -184,8 +183,8 @@ def load_cpi(path: Path) -> pd.DataFrame:
 def _country_pattern() -> re.Pattern[str]:
     """Alternation over country names, longest first so multi-word names win.
 
-    Built once and cached: assembling it from pycountry on every call would
-    dominate the runtime of origin matching.
+    Built once and cached, since assembling it from pycountry on every call
+    would dominate the runtime of origin matching.
     """
     names = {unidecode(c.name.lower()) for c in pycountry.countries}
     for drop in [
@@ -221,11 +220,11 @@ def _us_states() -> frozenset[str]:
 def check_raw_schema(df: pd.DataFrame) -> pd.DataFrame:
     """Reject raw data whose column names were never normalised.
 
-    Field names are settled at the scrape boundary by
-    :func:`coffee.parser.normalise_field_name`, so the cleaning layer works on
-    data, not on labels. A file that predates that -- with ``"est. price"``
-    where ``est_price`` belongs -- would otherwise fail deep in the pipeline
-    with a bare ``KeyError`` naming a column the caller never typed.
+    Field names are fixed at the scrape boundary by
+    :func:`coffee.parser.normalise_field_name`, so the cleaning layer operates
+    on data rather than on labels. A file predating that, carrying
+    ``"est. price"`` where ``est_price`` belongs, would otherwise fail several
+    steps later with a ``KeyError`` naming a column the caller never wrote.
     """
     stale = [c for c in df.columns if c != normalise_field_name(str(c))]
     if stale:
@@ -255,17 +254,17 @@ def normalise_types(
 ) -> pd.DataFrame:
     """Parse dates, split agtron, coalesce acidity, coerce scores to numbers.
 
-    Also DROPS rows whose agtron exceeds `max_agtron`; those readings are site
-    typos. :func:`clean_reviews` reports how many were removed, because a step
-    that changes the row count should never do so silently.
+    Also drops rows whose agtron exceeds `max_agtron`, those readings being
+    site typos. :func:`clean_reviews` reports how many were removed, since a
+    step that changes the row count should not do so silently.
     """
     return (
         df.assign(
             review_date=lambda d: pd.to_datetime(d["review_date"], format="%B %Y"),
-            # One field under two names: the site renamed it across 2017-18.
+            # One field under two names; the site renamed it across 2017-18.
             acidity=lambda d: d["acidity"].fillna(d["acidity/structure"]),
-            # reindex: a batch where no agtron carries a "/" produces only one
-            # split column, and indexing [1] would raise.
+            # reindex: a batch in which no agtron carries a "/" produces a
+            # single split column, and indexing [1] would raise.
             agtron_external=lambda d: pd.to_numeric(
                 _agtron_parts(d)[0].str.strip(), errors="coerce"
             ),
@@ -278,9 +277,9 @@ def normalise_types(
             ),
         )
         .replace(["", "NR", "N/A", "na"], np.nan)
-        # fillna(False): a MISSING agtron is not a typo. Without it a null
+        # fillna(False): a missing agtron is not a typo. Without it a null
         # reading makes the comparison NA, which propagates through `~` and
-        # silently drops the row instead of keeping it.
+        # drops the row rather than keeping it.
         .loc[
             lambda d: (
                 ~(
@@ -290,8 +289,8 @@ def normalise_types(
             )
         ]
         .map(lambda x: x.strip() if isinstance(x, str) else x)
-        # errors="ignore": the scraped schema drifts with a page's vintage, so
-        # a column being absent is normal rather than a failure.
+        # errors="ignore": the scraped schema varies with a page's vintage, so
+        # an absent column is expected rather than an error.
         .drop(columns=["acidity/structure", "agtron"], errors="ignore")
         .assign(
             **{
@@ -305,17 +304,17 @@ def normalise_types(
 def split_price_and_quantity(df: pd.DataFrame) -> pd.DataFrame:
     """Parse ``est_price`` ("$19.00/16 ounces") into value, currency, quantity.
 
-    Rows whose quantity names a non-whole-bean format, or that cannot be parsed,
-    keep every other field and simply get no quantity: the result is merged back
-    on the index with a LEFT join, so this never removes a review.
+    Rows whose quantity names a non-whole-bean format, or that cannot be
+    parsed, keep every other field and receive no quantity. The result is
+    merged back on the index with a left join, so no review is removed.
     """
     drop_terms = "|".join(NON_WHOLE_BEAN_TERMS)
     parsed = (
         df["est_price"]
         .astype("string")
         .str.split("/", n=1, expand=True)
-        # Guarantee both halves exist: a batch with no "/" anywhere would
-        # otherwise yield one column and lose `quantity`.
+        # Both halves are guaranteed to exist: a batch with no "/" anywhere
+        # would otherwise yield one column and lose `quantity`.
         .reindex(columns=[0, 1])
         .astype("string")
         .replace(",", "", regex=True)
@@ -327,10 +326,10 @@ def split_price_and_quantity(df: pd.DataFrame) -> pd.DataFrame:
                 .str.strip()
                 .str.replace(r"\(.*?\)", "", regex=True)
                 .str.replace(r";.*", "", regex=True)
-                # Kilograms FIRST. The ".g$" rule below exists for "250g",
-                # but it also matches "kg" -- so "1 kg" became "1 gram", a
-                # 1000x error. Real rows write "1 kg." and dodge it only
-                # because of the trailing period.
+                # Kilograms are expanded first. The ".g$" rule below is meant
+                # for "250g" but also matches "kg", which would read "1 kg" as
+                # 1 gram. Rows written "1 kg." escape only via the trailing
+                # period, so the ordering here is what makes the rule safe.
                 .str.replace("kilogram", "kilograms")
                 .str.replace("kg", "kilograms")
                 .str.replace(r".g$", " grams", regex=True)
@@ -399,8 +398,8 @@ def clean_currency(df: pd.DataFrame) -> pd.DataFrame:
 def convert_currency(df: pd.DataFrame, exchange_rates: pd.DataFrame) -> pd.DataFrame:
     """Convert prices to USD at the rate for the review's month.
 
-    Asserts the row count survives the merge: a duplicated (date, currency) pair
-    in the rate table would otherwise multiply reviews silently.
+    Checks that the row count survives the merge, since a duplicated
+    (date, currency) pair in the rate table would otherwise multiply reviews.
     """
     before = len(df)
     merged = df.merge(exchange_rates, on=["review_date", "price_currency"], how="left")
@@ -419,8 +418,8 @@ def cpi_adjust_price(
 ) -> pd.DataFrame:
     """Express prices in `baseline_date` dollars using CPI-U.
 
-    Where CPI is unavailable (typically the current month) the unadjusted USD
-    price is kept rather than dropped.
+    Where CPI is unavailable, typically for the current month, the unadjusted
+    USD price is kept rather than dropped.
     """
     baseline = cpi.loc[cpi["date"] == baseline_date, "cpi"]
     if baseline.empty:
@@ -453,8 +452,9 @@ def price_per_lb(df: pd.DataFrame) -> pd.DataFrame:
 def clean_origin(df: pd.DataFrame) -> pd.DataFrame:
     """Extract origin countries from the coffee_origin text.
 
-    Falls back to the original text when no country matches, so unresolved
-    origins stay visible for manual reconciliation instead of becoming blank.
+    Falls back to the original text when no country matches, so that an
+    unresolved origin stays visible for manual reconciliation rather than
+    becoming blank.
     """
     pattern = _country_pattern()
     origin = df["coffee_origin"].str.lower()
@@ -472,10 +472,10 @@ def clean_roaster_location(df: pd.DataFrame) -> pd.DataFrame:
     """Split roaster_location into a country and, for the US, a state.
 
     The site writes locations most-specific-first ("Portland, Oregon"), so the
-    last comma-separated part is the region — and a US address names the STATE
+    last comma-separated part is the region. A US address names the state
     there rather than the country, which is why states are checked first.
 
-    The source text is messy in ways worth handling: trailing periods
+    The source text carries several irregularities: trailing periods
     ("Montana."), the site's apostrophe spelling of Hawai'i, a missing comma
     ("Scottsdale Arizona"), and common names pycountry does not carry.
     """
@@ -507,9 +507,9 @@ def clean_roaster_location(df: pd.DataFrame) -> pd.DataFrame:
 def apply_roaster_crosswalk(df: pd.DataFrame, crosswalk: pd.DataFrame) -> pd.DataFrame:
     """Add the canonical roaster name beside the raw one.
 
-    The raw spelling is KEPT: the cleaned layer adds to what was scraped rather
-    than overwriting it, so a bad merge stays traceable to its source.
-    Unresolved names fall back to their own spelling.
+    The raw spelling is kept: the cleaned layer adds to what was scraped rather
+    than overwriting it, so an incorrect merge remains traceable to its source.
+    An unresolved name falls back to its own spelling.
     """
     mapping = dict(zip(crosswalk["raw_name"], crosswalk["canonical_name"], strict=True))
     return df.assign(

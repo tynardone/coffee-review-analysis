@@ -178,8 +178,8 @@ uv run jupyter lab
 
 ### Scraping is incremental
 
-`data/raw/reviews.csv` is the single source of truth, updated in place — git
-holds the history, so the filename does not need a date in it.
+`data/raw/reviews.csv` is the single source of truth, updated in place. Git
+holds the history, so the filename carries no date.
 
 Discovery reads `sitemap_index.xml` (~17 requests) and returns every review URL
 with its `<lastmod>`. A run fetches only the URLs that are new, that changed
@@ -187,9 +187,9 @@ since the last run, or whose freshness cannot be proven. On the current corpus
 that is a handful of pages in about a second, against ~9,300 pages and half an
 hour for a full pass.
 
-Each fetched row records `scraped_at`, so you can tell how old any given row
-is. Reviews that vanish from the sitemap are reported and **kept** — they can
-never be fetched again, so the held copy is the only one.
+Each fetched row records `scraped_at`, which gives the age of any given row.
+Reviews that disappear from the sitemap are reported and **kept**: they cannot
+be fetched again, so the held copy is the only one.
 
 Re-fetch everything with:
 
@@ -199,21 +199,19 @@ uv run scrape-reviews --full
 
 Use it after changing `coffee/parser.py`. An incremental run re-parses only the
 pages it re-fetches, so without `--full` a parser fix reaches new rows only and
-the corpus becomes a mixture of two parser versions — `scraped_at` is what
-makes that mixture visible.
+the corpus becomes a mixture of two parser versions. `scraped_at` is what makes
+such a mixture visible.
 
 ## Resolving roaster names
 
-The same roaster is spelled many ways — `Onyx Coffee Lab` / `Onyx Coffee Lab
+The same roaster is spelled many ways: `Onyx Coffee Lab` / `Onyx Coffee Lab
 LLC` / `onyx coffee lab`. `resolve-roasters` groups the spellings and records
-which ones you have already judged, so the manual work shrinks each run instead of
-starting over.
+which pairs have already been judged, so the manual work shrinks with each run
+rather than starting over.
 
 ### The three files
 
-Know which of these you edit and which you never touch:
-
-| file | you edit it? | role |
+| file | edit it? | role |
 |---|---|---|
 | `roaster_decisions.csv` | **yes** | Source of truth: pairs that have been adjudicated. The only file here that cannot be regenerated. Commit it. |
 | `roaster_review_queue.csv` | **yes** — the `verdict` column only | Pairs the tool could not decide. Regenerated every run. |
@@ -243,8 +241,8 @@ column. That column is the only thing you change.
 
 `merge` / `y` / `yes` / `m` / `same` / `1` all mean **same company**;
 `split` / `n` / `no` / `s` / `different` / `0` all mean **different**. Anything
-else is reported as an error rather than skipped, so a typo cannot cost you a
-session of answers.
+else is reported as an error rather than skipped, so a typo cannot silently
+discard a row.
 
 | name_a | name_b | score | location_evidence | verdict |
 |---|---|---|---|---|
@@ -260,10 +258,10 @@ session of answers.
 
 Blank rows are fine; they simply come back next time.
 
-**Save your answers before re-running.** Step 1 regenerates the queue, so a run
-without `--accept-reviewed` would overwrite it. The tool refuses to do that
-while unsaved verdicts are present and tells you which flag to use, but the
-habit to build is: fill in the queue, then always go to step 3.
+**Record answers before re-running.** Step 1 regenerates the queue, so a run
+without `--accept-reviewed` would overwrite it. The command refuses to do that
+while unrecorded verdicts are present and names the flag to use; filling in the
+queue should always be followed by step 3.
 
 **3. Record the verdicts and re-resolve.**
 
@@ -271,32 +269,31 @@ habit to build is: fill in the queue, then always go to step 3.
 uv run resolve-roasters data/raw/reviews.csv --outdir data/processed --accept-reviewed --decided-by "$USER"
 ```
 
-This folds your answers into `roaster_decisions.csv`, then re-resolves with them
-applied. The queue comes back holding only what you left blank.
+This folds the answers into `roaster_decisions.csv`, then re-resolves with them
+applied. The queue returns holding only the rows left blank.
 
-**4. Commit all three files**, `roaster_decisions.csv` above all — it is the only
-one that cannot be rebuilt.
+**4. Commit all three files.** `roaster_decisions.csv` matters most, being the
+only one that cannot be rebuilt.
 
 ### On the next scrape
 
-Run step 1 against the new file. The queue contains **only pairs you have never
-judged**; everything already decided stays decided. If a pair you answered comes
-back, something is wrong — check that `roaster_decisions.csv` is present in
-`--outdir`.
+Run step 1 against the new file. The queue contains only pairs not yet judged;
+everything already decided stays decided. A pair that has been answered
+reappearing indicates `roaster_decisions.csv` is missing from `--outdir`.
 
 ### Occasional extras
 
-Inspect the chain-risk clusters — the ones single-linkage could only have
-assembled transitively, so the likeliest false merges:
+Inspect the chain-risk clusters, which single-linkage could only have assembled
+transitively and are therefore the likeliest false merges:
 
 ```bash
 uv run python -c "import pandas as pd; c=pd.read_csv('data/processed/roaster_crosswalk.csv'); print(c[c.chain_risk][['raw_name','canonical_name','min_internal_score']].to_string(index=False))"
 ```
 
-Hunt for merges the name score alone misses — pairs below the normal floor that
-share an address (this found `Starbucks` ~ `Starbucks Reserve Roastery`, which
-scores 72). They are surfaced for judgement, never merged — expect the queue to
-roughly double, 17 to 30 on the current data:
+Surface merges the name score alone misses: pairs below the normal floor that
+share an address, which is how `Starbucks` ~ `Starbucks Reserve Roastery` (score
+72) is found. Such pairs are queued for judgement and never merged. The queue
+roughly doubles, from 17 to 30 on the current data:
 
 ```bash
 uv run resolve-roasters data/raw/reviews.csv --outdir data/processed --location-review 70
@@ -304,9 +301,8 @@ uv run resolve-roasters data/raw/reviews.csv --outdir data/processed --location-
 
 ### When a split doesn't stick
 
-Occasionally you will split a pair and they stay together. That is not a bug in
-your verdict — single-linkage can rejoin two names through a **third** name that
-resembles both, most often a collaboration:
+A pair can be split and still end up together. Single-linkage can rejoin two
+names through a third name resembling both, most often a collaboration:
 
 ```
 RND                               -> key 'rnd'
@@ -314,8 +310,8 @@ Red Rooster Coffee Roaster        -> key 'red rooster'
 RND & Red Rooster Coffee Roaster  -> key 'red rnd rooster'   superset of both
 ```
 
-Blocking the direct union doesn't help, because they rejoin through the collab.
-The run says so explicitly:
+Blocking the direct union does not help, since the two rejoin through the
+collaboration. The run reports this:
 
 ```
 !! 1 cluster(s) VIOLATE a split decision -- these names were kept together
@@ -323,9 +319,9 @@ The run says so explicitly:
     RND  |  RND & Red Rooster Coffee Roaster  |  Red Rooster Coffee Roaster
 ```
 
-The fix is to split against the **bridging** name too — here, `RND` vs
-`RND & Red Rooster Coffee Roaster`. Rows in an affected cluster are also marked
-`violates_decision` in the crosswalk.
+The fix is to record a split against the bridging name as well: here, `RND`
+against `RND & Red Rooster Coffee Roaster`. Rows in an affected cluster are also
+marked `violates_decision` in the crosswalk.
 
 ### Two rules
 
@@ -339,23 +335,24 @@ The fix is to split against the **bridging** name too — here, `RND` vs
 
 Two signals. **Name**: normalize (accents, punctuation, legal suffixes, word
 order), then exact-key collision, then fuzzy score. **Location**: populated on
-nearly every review and almost independent of spelling, so it settles most of
-what the name alone cannot — it resolved 41 of 50 queued pairs on the first real
-run.
+nearly every review and close to independent of spelling, so it settles most of
+what the name alone cannot; it resolved 41 of 50 queued pairs on the current
+corpus.
 
-The two directions are deliberately not symmetric:
+The two directions are not symmetric:
 
 - a **region conflict vetoes** a merge (`Heart Coffee Roasters` in Portland vs
   `Heat Coffee` in Taipei score 88.9 on name alone)
-- a **matching location only surfaces** a pair for review, never merges it,
-  because the score cannot separate the good cases from the bad — `Great Value
-  (Walmart)`/`Great Value (Wal-Mart)` scores 82.1 and is right, `Tehmag
-  Foods`/`Wei Chuan Foods` scores 82.9 and is wrong.
+- a **matching location only surfaces** a pair for review and never merges it,
+  because the score does not separate the correct cases from the incorrect:
+  `Great Value (Walmart)`/`Great Value (Wal-Mart)` scores 82.1 and is right,
+  `Tehmag Foods`/`Wei Chuan Foods` scores 82.9 and is wrong.
 
-This follows from the asymmetry of the errors: a false merge is silent and
-corrupts every downstream average, while a false split is obvious the moment a
-roaster appears twice in a table. See the module docstring in
-`coffee/roaster_resolution.py` for the full reasoning.
+Both follow from the asymmetry of the errors: a false merge is silent and
+affects every downstream average, while a false split is visible as soon as a
+roaster appears twice in a table. See
+[`docs/roaster-resolution.md`](docs/roaster-resolution.md) for the full
+reasoning.
 
 ## The two layers
 
@@ -367,14 +364,15 @@ data/clean/reviews.csv   CLEANED  typed, priced in constant USD, roasters resolv
 **Field names are settled at the raw boundary, not later.** `coffee/parser.py`
 normalises each scraped table label (`"Est. Price:"` → `est_price`) as it parses,
 so the raw layer lands with the names the rest of the project uses. The scraped
-label is presentation; the field name is schema. Cleaning is therefore about
-*data* only — `clean_reviews` starts by asserting the names are already right
-rather than fixing them, so a file that predates this fails immediately and
-says so instead of dying in a merge several steps later.
+label is presentation; the field name is schema. Cleaning therefore concerns
+data only: `clean_reviews` begins by asserting the names are already correct
+rather than fixing them, so a file predating this fails at the boundary with a
+message naming the offending columns instead of failing inside a merge several
+steps later.
 
 `uv run clean-reviews` builds the second from the first. The transformation
 lives in `coffee/clean.py` rather than in a notebook, so it is tested and runs
-in CI — it decides what every downstream number means.
+in CI.
 
 What cleaning does:
 
@@ -402,20 +400,20 @@ Run them in order; each depends on the previous one's output.
 | `02-data-EDA` | `data/clean/reviews.csv` | charts |
 | `03-text-features` | `data/clean/reviews.csv` | wordclouds in `imgs/` |
 
-`data/clean/reviews.csv` is gitignored — notebook 01 regenerates it, so run that
-first on a fresh checkout. Committed data is limited to the scrape itself and
-to outputs carrying human judgement (the roaster crosswalk and decisions).
+`data/clean/reviews.csv` is gitignored; notebook 01 regenerates it, so run that
+first on a fresh checkout. Committed data is limited to the scrape itself and to
+outputs carrying human judgement, namely the roaster crosswalk and decisions.
 
 Notebook 03 needs two data downloads that are not Python packages. It fetches
-the NLTK corpora itself; the spaCy model you install once:
+the NLTK corpora itself; the spaCy model is installed once:
 
 ```bash
 uv run python -m spacy download en_core_web_sm
 ```
 
-Notebook outputs are cleared before committing — they ran to 13MB of embedded
-images against a repo whose history is already large. The figures that matter
-are written to `imgs/`.
+Notebook outputs are cleared before committing, since they reached 13MB of
+embedded images against an already-large history. The figures worth keeping are
+written to `imgs/`.
 
 ## Tests
 
@@ -424,10 +422,9 @@ uv run pytest
 ```
 
 `tests/fixtures/html/` holds ten real review pages and
-`tests/fixtures/parsed_reviews.json` pins their expected parse, so that a
-silent parser regression fails a test instead of quietly emptying a column —
-see the module docstring in `tests/test_parser.py` for why that matters here.
-After a deliberate parser change, regenerate the golden file and read the diff:
+`tests/fixtures/parsed_reviews.json` pins their expected parse, so that a parser
+regression fails a test rather than emptying a column unnoticed. After a
+deliberate parser change, regenerate the golden file and read the diff:
 
 ```bash
 uv run python tests/generate_golden.py
