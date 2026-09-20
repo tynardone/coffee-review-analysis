@@ -162,7 +162,7 @@ virtual environment without needing to activate it:
 uv run scrape-reviews
 
 # Fetch historical exchange rates for any review months not already held
-uv run fetch-exchange-rates -i data/raw/reviews.csv
+uv run fetch-exchange-rates
 
 # Resolve roaster-name variants into a canonical crosswalk
 uv run resolve-roasters data/raw/reviews.csv --outdir data/processed
@@ -204,11 +204,22 @@ such a mixture visible.
 
 ### Exchange rates are incremental too
 
-`fetch-exchange-rates` requests only the review months not already present in
-`data/external/openex_exchange_rates.json`. Rates for a past date do not change,
-so a date once held is never asked for again. Re-running a current file costs
-zero requests, which matters against a free-tier limit of 1000 per month and a
-corpus spanning 323 distinct months.
+`fetch-exchange-rates` reads the review months from the cleaned layer, since
+those are the months cleaning actually converts, and requests only the ones not
+already present in `data/external/openex_exchange_rates.json`. Rates for a past
+date do not change, so a date once held is never asked for again. Re-running a
+current file costs zero requests, which matters against a free-tier limit of
+1000 per month and a corpus spanning 323 distinct months.
+
+That makes the cleaned layer both an input to this command and a consumer of its
+output. On an existing corpus the two converge in one pass, because a new review
+month reaches the cleaned layer before its rate is needed there. Starting from
+nothing takes two passes — build the layer, fetch its months, rebuild it with
+prices converted — or one, reading months from the raw scrape instead:
+
+```bash
+uv run fetch-exchange-rates -i data/raw/reviews.csv
+```
 
 Two properties protect the stored file, which is the only copy of that data:
 

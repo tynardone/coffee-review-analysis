@@ -104,8 +104,11 @@ def fetch_exchange_rates(argv: list[str] | None = None) -> None:
         "-i",
         "--input",
         type=Path,
-        required=True,
-        help="Scraped reviews file (.csv or .json).",
+        default=DATA_DIR / "clean" / "reviews.csv",
+        help="Reviews file whose review months need rates. Defaults to the "
+        "cleaned layer, whose months are the ones cleaning converts; the raw "
+        "scrape is also accepted, for bootstrapping before a cleaned layer "
+        "exists.",
     )
     parser.add_argument(
         "-o",
@@ -127,7 +130,14 @@ def fetch_exchange_rates(argv: list[str] | None = None) -> None:
     if not app_id:
         raise SystemExit("OPENEXCHANGERATES_API_ID is not set (add it to your .env).")
 
-    dates = load_review_dates(args.input)
+    try:
+        dates = load_review_dates(args.input)
+    except FileNotFoundError as exc:
+        raise SystemExit(
+            f"{args.input} does not exist. Build the cleaned layer first with "
+            "`uv run clean-reviews`, or pass --input data/raw/reviews.csv to "
+            "read months from the raw scrape instead."
+        ) from exc
     held = load_rates(args.output)
     pending = dates if args.refetch else unfetched_dates(dates, held)
 

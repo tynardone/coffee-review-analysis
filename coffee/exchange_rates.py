@@ -1,7 +1,17 @@
 """Fetch historical exchange rates from the OpenExchangeRates API.
 
-Reads the unique review dates from a scraped reviews file and downloads the
-historical rate for each one.
+Reads the unique review months from the cleaned layer and downloads the
+historical rate for each one. Those months are what
+:func:`coffee.clean.convert_currency` merges against, so taking them from the
+cleaned layer requests exactly the rates that will be used, rather than also
+requesting rates for rows that cleaning drops.
+
+That makes the cleaned layer an input here as well as a consumer of the result.
+The two converge in one pass on an existing corpus, since a new review month
+appears in the cleaned layer before its rate is needed there. Bootstrapping
+from nothing takes two: build the cleaned layer, fetch rates for its months,
+then rebuild it with the prices converted. :func:`load_review_dates` also reads
+the raw layer, which is the other way out of that.
 
 Runs incrementally. Rates for a past date do not change, so a date already held
 is never re-fetched. This matters because free-tier accounts are limited to
@@ -61,18 +71,33 @@ DEFAULT_CHECKPOINT_EVERY = 25
 RateMapping = dict[str, dict[str, float]]
 
 
+def _review_dates(column: pd.Series) -> pd.Series:
+    """Parse a ``review_date`` column from either data layer.
+
+    The cleaned layer stores ISO dates, the raw layer the site's own "November
+    2016". Both are accepted so that rates can still be fetched from the raw
+    scrape before a cleaned layer exists; see the note on ordering above.
+    """
+    try:
+        return pd.to_datetime(column, format="ISO8601")
+    except ValueError:
+        return pd.to_datetime(column, format="%B %Y")
+
+
 def load_review_dates(path: Path) -> list[date]:
-    """Return the sorted, unique review dates (>= 1999) from a scraped file."""
+    """Return the sorted, unique review months (>= 1999) from a reviews file.
+
+    Read from the cleaned layer by default, because the months that need a rate
+    are exactly the months the cleaned layer will convert. Reading from the raw
+    scrape instead would request rates for rows that cleaning drops.
+    """
     readers = {".csv": pd.read_csv, ".json": pd.read_json}
     if path.suffix not in readers:
         raise ValueError(f"Unsupported file type {path.suffix!r}; use .csv or .json.")
     if not path.exists():
         raise FileNotFoundError(f"{path} does not exist.")
 
-    # Review dates are stored as "Month Year", e.g. "November 2016".
-    review_dates = pd.to_datetime(
-        readers[path.suffix](path)["review_date"], format="%B %Y"
-    )
+    review_dates = _review_dates(readers[path.suffix](path)["review_date"])
     return (
         review_dates[review_dates >= EARLIEST_DATE]
         .dt.date.drop_duplicates()

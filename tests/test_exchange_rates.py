@@ -9,11 +9,13 @@ populated entry with a blank one.
 import json
 from datetime import date
 
+import pandas as pd
 import pytest
 
 from coffee.exchange_rates import (
     fetch_rates,
     load_rates,
+    load_review_dates,
     merge_rates,
     save_rates,
     unfetched_dates,
@@ -224,3 +226,49 @@ def test_nothing_is_written_when_nothing_is_pending(tmp_path, recording_fetch):
 
     assert requested == []
     assert path.read_text() == before
+
+
+# --------------------------------------------------------------------------
+# Reading review months out of a data layer
+# --------------------------------------------------------------------------
+
+
+def _write_reviews(tmp_path, values, name="reviews.csv"):
+    path = tmp_path / name
+    pd.DataFrame({"review_date": values}).to_csv(path, index=False)
+    return path
+
+
+def test_review_dates_are_read_from_the_cleaned_layer(tmp_path):
+    """The cleaned layer stores ISO dates."""
+    path = _write_reviews(tmp_path, ["2000-01-01", "2000-02-01", "2000-01-01"])
+    assert load_review_dates(path) == [JAN, FEB]
+
+
+def test_review_dates_are_also_read_from_the_raw_layer(tmp_path):
+    """The raw layer stores the site's own "Month Year", used when
+    bootstrapping before a cleaned layer exists."""
+    path = _write_reviews(tmp_path, ["January 2000", "February 2000"])
+    assert load_review_dates(path) == [JAN, FEB]
+
+
+def test_review_dates_are_deduplicated_and_sorted(tmp_path):
+    path = _write_reviews(tmp_path, ["2000-03-01", "2000-01-01", "2000-03-01"])
+    assert load_review_dates(path) == [JAN, MAR]
+
+
+def test_dates_before_the_api_history_are_excluded(tmp_path):
+    """OpenExchangeRates has no data before 1999, so requesting it wastes quota."""
+    path = _write_reviews(tmp_path, ["1996-05-01", "2000-01-01"])
+    assert load_review_dates(path) == [JAN]
+
+
+def test_a_missing_reviews_file_raises(tmp_path):
+    with pytest.raises(FileNotFoundError):
+        load_review_dates(tmp_path / "absent.csv")
+
+
+def test_an_unsupported_suffix_raises(tmp_path):
+    (tmp_path / "reviews.parquet").touch()
+    with pytest.raises(ValueError, match="Unsupported file type"):
+        load_review_dates(tmp_path / "reviews.parquet")
