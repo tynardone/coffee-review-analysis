@@ -113,8 +113,9 @@ installed as console commands that wrap it.
 `fixtures/parsed_reviews.json` pins their expected parse; `generate_golden.py`
 regenerates that file after a deliberate parser change.
 
-**`docs/`** — [`roaster-resolution.md`](docs/roaster-resolution.md), the design
-behind roaster entity resolution.
+**`docs/`** — [`data-flow.md`](docs/data-flow.md), a diagram of every file under
+`data/` with what writes and reads it; [`roaster-resolution.md`](docs/roaster-resolution.md),
+the design behind roaster entity resolution.
 
 ## Usage
 
