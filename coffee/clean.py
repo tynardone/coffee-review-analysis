@@ -5,15 +5,15 @@ consumes. This module owns that transition: coercing types, parsing the
 free-text price into a value, a currency and a quantity, and resolving origin
 and roaster locations to countries.
 
-The cleaned layer depends on the raw scrape and nothing else, so it can be
-rebuilt on a fresh checkout with no external data. Expressing prices in
-comparable money needs historical exchange rates and CPI, which are fetched
-using the cleaned layer's own review months; that step lives in
-:mod:`coffee.enrich` and runs afterwards.
+The field-level work needs nothing but the raw scrape. Putting prices in
+comparable money needs historical exchange rates and CPI; those steps live in
+:mod:`coffee.enrich`, and :func:`clean_reviews` applies them when both are
+passed. They are optional so that this module still runs on a fresh checkout
+before any reference data has been fetched.
 
-Every step is a pure ``DataFrame -> DataFrame`` function. The one piece of
-reference data used here, the roaster crosswalk, is passed in rather than read
-from disk, so the transformation can be tested against a few hand-written rows.
+Every step is a pure ``DataFrame -> DataFrame`` function, and every piece of
+reference data is passed in rather than read from disk, so the transformation
+can be tested against a few hand-written rows.
 
 :func:`clean_reviews` composes the steps in order. The individual steps remain
 public because they are useful one at a time when exploring in a notebook.
@@ -27,10 +27,12 @@ import pandas as pd
 import pycountry
 from unidecode import unidecode
 
+from coffee.enrich import DEFAULT_BASELINE_DATE, enrich_reviews
 from coffee.parser import normalise_field_name
 
 __all__ = [
     "CURRENCY_MAP",
+    "DEFAULT_BASELINE_DATE",
     "DEFAULT_MAX_AGTRON",
     "NON_WHOLE_BEAN_TERMS",
     "US_PRICE_UNITS",
@@ -427,14 +429,21 @@ def apply_roaster_crosswalk(df: pd.DataFrame, crosswalk: pd.DataFrame) -> pd.Dat
 def clean_reviews(
     raw: pd.DataFrame,
     *,
+    exchange_rates: pd.DataFrame | None = None,
+    cpi: pd.DataFrame | None = None,
     crosswalk: pd.DataFrame | None = None,
+    baseline_date: str = DEFAULT_BASELINE_DATE,
     max_agtron: int = DEFAULT_MAX_AGTRON,
 ) -> pd.DataFrame:
     """Raw scraped reviews in, cleaned layer out.
 
-    Depends on nothing but the raw scrape. Putting prices in comparable money
-    needs exchange rates and CPI, which are reference data fetched separately;
-    that belongs to :func:`coffee.enrich.enrich_reviews` and runs after this.
+    The field-level work needs nothing but the raw scrape. Putting prices in
+    comparable money needs exchange rates and CPI, which :mod:`coffee.enrich`
+    applies; pass both and the result carries ``price_usd``, ``price_usd_adj``
+    and ``price_usd_adj_per_lb`` as well.
+
+    Omitting them returns the field-level layer alone, which is what makes this
+    runnable before any reference data has been fetched.
     """
     cleaned = (
         raw.pipe(check_raw_schema)
@@ -447,4 +456,11 @@ def clean_reviews(
     )
     if crosswalk is not None:
         cleaned = cleaned.pipe(apply_roaster_crosswalk, crosswalk)
+    if exchange_rates is not None and cpi is not None:
+        cleaned = enrich_reviews(
+            cleaned,
+            exchange_rates=exchange_rates,
+            cpi=cpi,
+            baseline_date=baseline_date,
+        )
     return cleaned

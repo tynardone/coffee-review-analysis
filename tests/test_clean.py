@@ -248,8 +248,8 @@ def test_a_roaster_absent_from_the_crosswalk_keeps_its_own_name():
 # --------------------------------------------------------------------------
 
 
-def test_clean_reviews_runs_the_whole_chain():
-    raw = pd.DataFrame(
+def _raw_row() -> pd.DataFrame:
+    return pd.DataFrame(
         [
             {
                 "rating": "93",
@@ -270,6 +270,10 @@ def test_clean_reviews_runs_the_whole_chain():
             }
         ]
     )
+
+
+def test_clean_reviews_runs_the_whole_chain():
+    raw = _raw_row()
     out = clean_reviews(
         raw,
         crosswalk=pd.DataFrame(
@@ -281,9 +285,46 @@ def test_clean_reviews_runs_the_whole_chain():
     assert row["price_currency"] == "USD"
     assert row["quantity_in_lbs"] == 1.0  # 16 ounces
     assert row["origin_country"] == "ethiopia"
-    assert row["roaster_canonical"] == "Boyds Coffee"
-    # Prices in comparable money are coffee.enrich's job, not this layer's.
-    assert "price_usd" not in out.columns
     assert row["roaster_us_state"] == "oregon"
     assert row["roaster_canonical"] == "Boyds Coffee"
     assert row["agtron_external"] == 57
+    # Without reference data the field-level layer is still produced, which is
+    # what lets this run before any rates have been fetched.
+    assert "price_usd" not in out.columns
+
+
+def test_clean_reviews_enriches_when_reference_data_is_given():
+    raw = _raw_row()
+    out = clean_reviews(
+        raw,
+        exchange_rates=pd.DataFrame(
+            [("2000-01-01", "USD", 1.0)],
+            columns=["review_date", "price_currency", "rate"],
+        ).assign(review_date=lambda d: pd.to_datetime(d["review_date"])),
+        cpi=pd.DataFrame(
+            [(150.0, "2000-01-01"), (300.0, "2026-01-01")], columns=["cpi", "date"]
+        ).assign(date=lambda d: pd.to_datetime(d["date"])),
+        baseline_date="2026-01-01",
+    )
+    row = out.iloc[0]
+    assert row["price_usd"] == 20.0
+    assert row["price_usd_adj"] == 40.0  # CPI 150 -> 300
+    assert row["price_usd_adj_per_lb"] == 40.0
+
+
+def test_a_baseline_the_cpi_table_does_not_cover_is_refused():
+    """Silently adjusting to a different month would change every price."""
+    cpi = pd.DataFrame([(300.0, "2024-06-01")], columns=["cpi", "date"]).assign(
+        date=lambda d: pd.to_datetime(d["date"])
+    )
+    rates = pd.DataFrame(
+        [("2000-01-01", "USD", 1.0)],
+        columns=["review_date", "price_currency", "rate"],
+    ).assign(review_date=lambda d: pd.to_datetime(d["review_date"]))
+    with pytest.raises(ValueError, match="covers through 2024-06-01"):
+        clean_reviews(
+            _raw_row(),
+            exchange_rates=rates,
+            cpi=cpi,
+            baseline_date="2026-01-01",
+        )

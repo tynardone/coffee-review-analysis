@@ -147,6 +147,7 @@ def test_enrichment_keeps_what_the_site_printed():
         cleaned,
         exchange_rates=rates([("2024-07-01", "TWD", 32.0)]),
         cpi=cpi_table([(300.0, "2024-06-01"), (310.0, "2024-07-01")]),
+        baseline_date="2024-06-01",
     )
     assert out["price_value"].iloc[0] == 500.0
     assert out["price_currency"].iloc[0] == "TWD"

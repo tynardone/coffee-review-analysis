@@ -87,14 +87,15 @@ installed as console commands that wrap it.
   `data/raw/reviews.{csv,json}`; the pipeline talks to the protocol, so a
   database backend can replace it without touching the scrape.
 - `clean.py` — the cleaned layer: types, price/currency/quantity parsing,
-  origin and roaster locations, the roaster crosswalk. Depends on the raw
-  scrape and nothing else.
-- `enrich.py` — the step after cleaning: USD conversion and inflation
-  adjustment. Separate because it needs reference data the reviews do not
-  carry. Every step in both modules is a pure `DataFrame -> DataFrame` function
-  taking its reference data as an argument.
-- `exchange_rates.py` — fetches historical rates for the review months the
-  cleaned layer holds.
+  origin and roaster locations, the roaster crosswalk, and the price
+  conversions from `enrich.py`.
+- `enrich.py` — USD conversion and inflation adjustment, applied by
+  `clean_reviews` when reference data is available. A separate module because
+  it is the only part of cleaning that needs data the reviews do not carry.
+  Every step in both modules is a pure `DataFrame -> DataFrame` function taking
+  its reference data as an argument.
+- `exchange_rates.py` — fetches historical rates for the review months in the
+  raw scrape.
 - `roaster_resolution.py` — entity resolution for messy roaster names, using
   name *and* location and applying previously adjudicated pairs. See
   [Resolving roaster names](#resolving-roaster-names) for the workflow and
@@ -112,31 +113,33 @@ behind roaster entity resolution.
 ## Usage
 
 Run from the repository root. `uv run` executes inside the project's virtual
-environment without activating it. The steps depend on each other in this order:
+environment without activating it.
+
+Collection and cleaning are automated end to end:
 
 ```bash
-# 1. Scrape. Updates data/raw/reviews.{csv,json}, fetching only what changed.
-uv run scrape-reviews
-
-# 2. Group roaster-name spellings into data/roasters/roaster_crosswalk.csv.
-uv run resolve-roasters data/raw/reviews.csv
-
-# 3. Build data/clean/reviews.csv from the raw scrape and the crosswalk.
-uv run clean-reviews
-
-# 4. Fetch rates for any review month not already held. Needs the cleaned
-#    layer, and is needed in turn by enrichment.
-uv run fetch-exchange-rates
-
-# Analysis
+uv run refresh-data
 uv run jupyter lab
 ```
 
-`--help` on any command lists its options.
+`refresh-data` runs the four steps in dependency order and prints what each did:
 
-Putting prices in comparable money happens after all four, through
-`coffee.enrich`. It has no command yet; the notebooks apply it in memory. See
-[Data layers](#data-layers).
+```bash
+uv run scrape-reviews                            # 1. data/raw/reviews.csv
+uv run resolve-roasters data/raw/reviews.csv     # 2. the roaster crosswalk
+uv run fetch-exchange-rates                      # 3. rates for the review months
+uv run clean-reviews                             # 4. data/clean/reviews.csv
+```
+
+Each is also a command in its own right, and `--help` lists the options. Useful
+flags on `refresh-data`:
+
+- `--full` re-fetches and re-parses every review, not only what changed
+- `--skip-scrape` rebuilds from reviews already held, making no review requests
+- `--baseline-date` sets the month whose dollars adjusted prices use
+
+Analysis stops there. The notebooks read `data/clean/reviews.csv`; the pipeline
+does not produce charts or aggregates.
 
 ### Scraping is incremental
 
@@ -164,12 +167,14 @@ makes such a mixture visible.
 
 ### Exchange rates are incremental too
 
-`fetch-exchange-rates` reads the review months from the cleaned layer, since
-those are the months enrichment converts, and requests only the ones missing
-from `data/external/openex_exchange_rates.json`. Rates for a past date do not
-change, so a month once held is never requested again. Re-running against a
-current file costs zero requests, which matters against 1000 per month and a
-corpus spanning 323 distinct months.
+`fetch-exchange-rates` reads the review months from the raw scrape and requests
+only the ones missing from `data/external/openex_exchange_rates.json`. Reading
+from the raw layer keeps the pipeline acyclic: cleaning consumes these rates, so
+it cannot also be what produces the list of months to fetch.
+
+Rates for a past date do not change, so a month once held is never requested
+again. Re-running against a current file costs zero requests, which matters
+against 1000 per month and a corpus spanning 323 distinct months.
 
 Two properties protect the stored file, which is the only copy of that data:
 
@@ -180,13 +185,6 @@ Two properties protect the stored file, which is the only copy of that data:
 
 A month whose request failed is left unheld and retried next run. `--refetch`
 re-requests everything and exists only for repairing a corrupt file.
-
-Rates can also be fetched before a cleaned layer exists, by reading months from
-the raw scrape:
-
-```bash
-uv run fetch-exchange-rates -i data/raw/reviews.csv
-```
 
 ## Data layers
 
@@ -202,10 +200,9 @@ concerns data only: `clean_reviews` asserts the names are already correct rather
 than fixing them, so a file predating this fails at the boundary naming the
 offending columns instead of failing inside a merge several steps later.
 
-**The cleaned layer depends on the raw scrape and nothing else**, so it can be
-rebuilt on a fresh checkout with no external data. `uv run clean-reviews` builds
-it; the transformation lives in `coffee/clean.py` rather than in a notebook, so
-it is tested and runs in CI. Cleaning:
+`uv run clean-reviews` builds the cleaned layer. The transformation lives in
+`coffee/clean.py` rather than in a notebook, so it is tested and runs in CI.
+Cleaning:
 
 - parses `est_price` into a value, an ISO 4217 currency and a quantity
 - converts quantities to pounds, so prices are comparable per unit
@@ -217,22 +214,26 @@ is reported on every run. Formats that are not whole-bean coffee (capsules,
 pods) keep their review but get no quantity, since a price per pound would not
 mean anything.
 
-**Enrichment runs after cleaning**, in `coffee/enrich.py`. It needs historical
-exchange rates and CPI, which are fetched using the cleaned layer's own review
-months — folding them into cleaning would have made the cleaned layer
-unbuildable until the rates existed.
+**Prices are made comparable as part of cleaning**, by `coffee/enrich.py`.
+`clean_reviews` applies it when given exchange rates and CPI, adding:
 
-```python
-from coffee.enrich import enrich_reviews, load_cpi, load_exchange_rates
+- `price_usd`, converted at the review month's rate
+- `price_usd_adj`, in a baseline month's dollars, so a 1997 price and a 2026
+  price can be compared
+- `price_usd_adj_per_lb`
 
-priced = enrich_reviews(df, exchange_rates=..., cpi=...)
-```
+The figures the field-level steps recorded — `price_value`, `price_currency`,
+`quantity_in_lbs` — are left untouched beside them.
 
-It adds `price_usd` at the review month's rate, `price_usd_adj` in a baseline
-month's dollars (default 2024-06) so a 1997 price and a 2026 price are
-comparable, and `price_usd_adj_per_lb`. The figures the cleaned layer recorded
-are left untouched. There is no `enrich-reviews` command and no enriched layer
-on disk yet; the notebooks apply it in memory.
+`--baseline-date` chooses the month (default `2026-01-01`). It must be a month
+the CPI table covers; a baseline outside that range is refused rather than
+silently adjusted, since a different baseline changes every price. Refresh the
+table from the [BLS](https://www.bls.gov/cpi/data.htm) when the default moves
+past what is committed.
+
+Both reference files are optional. Without them `clean-reviews` still produces
+the field-level layer and warns that prices stay in their original currency,
+which is what lets it run on a fresh checkout.
 
 ## Resolving roaster names
 
@@ -372,8 +373,8 @@ Run them in order; each depends on the previous one's output.
 
 | notebook | reads | writes |
 |---|---|---|
-| `01-data-cleaning` | `data/raw/reviews.csv` | `data/clean/reviews.csv` (same as `clean-reviews`) |
-| `02-data-EDA` | `data/clean/reviews.csv`, enriched in memory | charts |
+| `01-data-cleaning` | `data/raw/reviews.csv` | `data/clean/reviews.csv` (the same work `clean-reviews` does) |
+| `02-data-EDA` | `data/clean/reviews.csv` | charts |
 | `03-text-features` | `data/clean/reviews.csv` | wordclouds in `imgs/` |
 
 `data/clean/reviews.csv` is gitignored; notebook 01 regenerates it, so run that
