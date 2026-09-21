@@ -293,7 +293,7 @@ def test_clean_reviews_runs_the_whole_chain():
     assert "price_usd" not in out.columns
 
 
-def test_clean_reviews_enriches_when_reference_data_is_given():
+def test_clean_reviews_prices_when_reference_data_is_given():
     raw = _raw_row()
     out = clean_reviews(
         raw,

@@ -7,7 +7,7 @@ and roaster locations to countries.
 
 The field-level work needs nothing but the raw scrape. Putting prices in
 comparable money needs historical exchange rates and CPI; those steps live in
-:mod:`coffee.enrich`, and :func:`clean_reviews` applies them when both are
+:mod:`coffee.prices`, and :func:`clean_reviews` applies them when both are
 passed. They are optional so that this module still runs on a fresh checkout
 before any reference data has been fetched.
 
@@ -27,8 +27,8 @@ import pandas as pd
 import pycountry
 from unidecode import unidecode
 
-from coffee.enrich import DEFAULT_BASELINE_DATE, enrich_reviews
 from coffee.parser import normalise_field_name
+from coffee.prices import DEFAULT_BASELINE_DATE, add_comparable_prices
 
 __all__ = [
     "CURRENCY_MAP",
@@ -438,7 +438,7 @@ def clean_reviews(
     """Raw scraped reviews in, cleaned layer out.
 
     The field-level work needs nothing but the raw scrape. Putting prices in
-    comparable money needs exchange rates and CPI, which :mod:`coffee.enrich`
+    comparable money needs exchange rates and CPI, which :mod:`coffee.prices`
     applies; pass both and the result carries ``price_usd``, ``price_usd_adj``
     and ``price_usd_adj_per_lb`` as well.
 
@@ -457,7 +457,7 @@ def clean_reviews(
     if crosswalk is not None:
         cleaned = cleaned.pipe(apply_roaster_crosswalk, crosswalk)
     if exchange_rates is not None and cpi is not None:
-        cleaned = enrich_reviews(
+        cleaned = add_comparable_prices(
             cleaned,
             exchange_rates=exchange_rates,
             cpi=cpi,

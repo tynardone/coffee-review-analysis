@@ -3,7 +3,7 @@
 Reads the CPI-U series from the BLS public API and merges it into the table at
 ``data/external/consumer_price_index.csv``. The series is ``CUUR0000SA0``: all
 urban consumers, U.S. city average, all items, not seasonally adjusted, which
-is what :func:`coffee.enrich.cpi_adjust_price` expects.
+is what :func:`coffee.prices.cpi_adjust_price` expects.
 
 Runs incrementally, like :mod:`coffee.exchange_rates`. A published CPI figure
 for a past month does not change, so only the recent window is requested and
@@ -12,7 +12,7 @@ key, which covers any gap short of leaving this unrun for that long.
 
 The stored table keeps the BLS's own wide layout -- a row per year, a column
 per month, plus the semiannual averages -- so the file stays readable and
-:func:`coffee.enrich.load_cpi` needs no change. The API does not publish the
+:func:`coffee.prices.load_cpi` needs no change. The API does not publish the
 semiannual columns, so they are left as found.
 """
 

@@ -87,8 +87,8 @@ installed as console commands that wrap it.
   backend can replace it without touching the scrape.
 - `clean.py` — the cleaned layer: types, price/currency/quantity parsing,
   origin and roaster locations, the roaster crosswalk, and the price
-  conversions from `enrich.py`.
-- `enrich.py` — USD conversion and inflation adjustment, applied by
+  conversions from `prices.py`.
+- `prices.py` — USD conversion and inflation adjustment, applied by
   `clean_reviews` when reference data is available. A separate module because
   it is the only part of cleaning that needs data the reviews do not carry.
   Every step in both modules is a pure `DataFrame -> DataFrame` function taking
@@ -250,7 +250,7 @@ is reported on every run. Formats that are not whole-bean coffee (capsules,
 pods) keep their review but get no quantity, since a price per pound would not
 mean anything.
 
-**Prices are made comparable as part of cleaning**, by `coffee/enrich.py`.
+**Prices are made comparable as part of cleaning**, by `coffee/prices.py`.
 `clean_reviews` applies it when given exchange rates and CPI, adding:
 
 - `price_usd`, converted at the review month's rate
