@@ -19,7 +19,7 @@ __all__ = [
 # The month whose dollars every adjusted price is expressed in. Changing it
 # changes every price_usd_adj, so it is recorded on the output rather than left
 # implicit.
-DEFAULT_BASELINE_DATE = "2024-06-01"
+DEFAULT_BASELINE_DATE = "2026-01-01"
 
 
 # ==========================================================================
@@ -95,7 +95,16 @@ def cpi_adjust_price(
     """
     baseline = cpi.loc[cpi["date"] == baseline_date, "cpi"]
     if baseline.empty:
-        raise ValueError(f"No CPI value for baseline date {baseline_date!r}.")
+        # Naming the range turns this into a one-step fix: either the baseline
+        # is a typo, or the CPI table needs a newer download from the BLS.
+        published = cpi.dropna(subset=["cpi"])["date"]
+        latest = published.max().date() if not published.empty else "none"
+        raise ValueError(
+            f"No CPI value for baseline date {baseline_date!r}. "
+            f"The CPI table covers through {latest}. Either pass a "
+            "--baseline-date within that range, or download a newer table "
+            "from https://www.bls.gov/cpi/data.htm."
+        )
 
     before = len(df)
     merged = df.merge(cpi, how="left", left_on="review_date", right_on="date")

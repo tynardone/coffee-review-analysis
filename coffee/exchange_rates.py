@@ -1,4 +1,22 @@
-"""Fetch historical exchange rates from the OpenExchangeRates API."""
+"""Fetch historical exchange rates from the OpenExchangeRates API.
+
+Reads the unique review months from the raw scrape and downloads the historical
+rate for each one. Reading from the raw layer rather than the cleaned one keeps
+the order of the pipeline acyclic: cleaning consumes these rates, so it cannot
+also be what produces the list of months to fetch.
+
+Runs incrementally. Rates for a past date do not change, so a month already
+held is never re-fetched. This matters because free-tier accounts are limited
+to 1000 requests per month and the current corpus spans 323 distinct months.
+
+Two properties protect the stored file, which is the only copy:
+
+* A failed fetch is never persisted. :func:`merge_rates` keeps the held value
+  whenever the incoming one is empty, so a rate-limited run cannot replace
+  populated dates with blanks.
+* Results are checkpointed as they arrive rather than at the end, so a run that
+  dies partway keeps the requests it already spent.
+"""
 
 import json
 import logging
@@ -46,9 +64,8 @@ RateMapping = dict[str, dict[str, float]]
 def _review_dates(column: pd.Series) -> pd.Series:
     """Parse a ``review_date`` column from either data layer.
 
-    The cleaned layer stores ISO dates, the raw layer the site's own "November
-    2016". Both are accepted so that rates can still be fetched from the raw
-    scrape before a cleaned layer exists; see the note on ordering above.
+    The raw layer stores the site's own "November 2016"; the cleaned layer
+    stores ISO dates. Both are accepted so either can be pointed at.
     """
     try:
         return pd.to_datetime(column, format="ISO8601")
@@ -59,9 +76,8 @@ def _review_dates(column: pd.Series) -> pd.Series:
 def load_review_dates(path: Path) -> list[date]:
     """Return the sorted, unique review months (>= 1999) from a reviews file.
 
-    Read from the cleaned layer by default, because the months that need a rate
-    are exactly the months the cleaned layer will convert. Reading from the raw
-    scrape instead would request rates for rows that cleaning drops.
+    Accepts either layer: the raw scrape writes the site's own "November 2016",
+    the cleaned layer writes ISO dates.
     """
     readers = {".csv": pd.read_csv, ".json": pd.read_json}
     if path.suffix not in readers:

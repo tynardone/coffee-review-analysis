@@ -10,12 +10,16 @@ in the modules these import, so it stays importable from notebooks and tests.
 import argparse
 import asyncio
 import logging
+from collections.abc import Callable
 from pathlib import Path
 
 import pandas as pd
+import requests
 
-from coffee.clean import clean_reviews
+from coffee.clean import DEFAULT_BASELINE_DATE, clean_reviews
 from coffee.config import DATA_DIR, openexchangerates_api_id
+from coffee.cpi import DEFAULT_CPI_PATH, MONTH_COLUMNS, fetch_cpi
+from coffee.enrich import load_cpi, load_exchange_rates
 from coffee.exchange_rates import (
     DEFAULT_OUTPUT,
     fetch_rates,
@@ -38,6 +42,8 @@ from coffee.storage import CsvReviewStore
 
 __all__ = [
     "clean_reviews_command",
+    "fetch_cpi_command",
+    "refresh_data",
     "fetch_exchange_rates",
     "resolve_roasters",
     "scrape_reviews",
@@ -99,11 +105,10 @@ def fetch_exchange_rates(argv: list[str] | None = None) -> None:
         "-i",
         "--input",
         type=Path,
-        default=DATA_DIR / "clean" / "reviews.csv",
-        help="Reviews file whose review months need rates. Defaults to the "
-        "cleaned layer, whose months are the ones cleaning converts; the raw "
-        "scrape is also accepted, for bootstrapping before a cleaned layer "
-        "exists.",
+        default=DATA_DIR / "raw" / "reviews.csv",
+        help="Reviews file whose review months need rates. Defaults to the raw "
+        "scrape, which is what keeps this independent of the cleaning step it "
+        "feeds; the cleaned layer is also accepted.",
     )
     parser.add_argument(
         "-o",
@@ -129,9 +134,8 @@ def fetch_exchange_rates(argv: list[str] | None = None) -> None:
         dates = load_review_dates(args.input)
     except FileNotFoundError as exc:
         raise SystemExit(
-            f"{args.input} does not exist. Build the cleaned layer first with "
-            "`uv run clean-reviews`, or pass --input data/raw/reviews.csv to "
-            "read months from the raw scrape instead."
+            f"{args.input} does not exist. Run `uv run scrape-reviews` first, "
+            "or pass --input to point at a different reviews file."
         ) from exc
     held = load_rates(args.output)
     pending = dates if args.refetch else unfetched_dates(dates, held)
@@ -321,6 +325,25 @@ def clean_reviews_command(argv: list[str] | None = None) -> None:
         default=DATA_DIR / "roasters" / "roaster_crosswalk.csv",
         help="roaster crosswalk; skipped if absent",
     )
+    parser.add_argument(
+        "--rates",
+        type=Path,
+        default=DATA_DIR / "external" / "openex_exchange_rates.json",
+        help="historical exchange rates; price conversion is skipped if absent",
+    )
+    parser.add_argument(
+        "--cpi",
+        type=Path,
+        default=DATA_DIR / "external" / "consumer_price_index.csv",
+        help="BLS CPI-U table; inflation adjustment is skipped if absent",
+    )
+    parser.add_argument(
+        "--baseline-date",
+        default=DEFAULT_BASELINE_DATE,
+        help="the month whose dollars adjusted prices are expressed in "
+        f"(default {DEFAULT_BASELINE_DATE}). Must be a month the CPI table "
+        "covers.",
+    )
     args = parser.parse_args(argv)
 
     _configure_logging()
@@ -331,7 +354,27 @@ def clean_reviews_command(argv: list[str] | None = None) -> None:
             "No crosswalk at %s; roaster spellings stay unresolved.", args.crosswalk
         )
 
-    cleaned = clean_reviews(raw, crosswalk=crosswalk)
+    rates = load_exchange_rates(args.rates) if args.rates.exists() else None
+    cpi = load_cpi(args.cpi) if args.cpi.exists() else None
+    if rates is None or cpi is None:
+        missing = [
+            str(p) for p, v in ((args.rates, rates), (args.cpi, cpi)) if v is None
+        ]
+        logger.warning(
+            "Missing %s; prices stay in their original currency.",
+            " and ".join(missing),
+        )
+
+    try:
+        cleaned = clean_reviews(
+            raw,
+            exchange_rates=rates,
+            cpi=cpi,
+            crosswalk=crosswalk,
+            baseline_date=args.baseline_date,
+        )
+    except ValueError as exc:  # an unusable baseline is a user error
+        raise SystemExit(str(exc)) from exc
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     cleaned.to_csv(args.output, index=False)
@@ -339,4 +382,95 @@ def clean_reviews_command(argv: list[str] | None = None) -> None:
     print(
         f"{len(raw)} raw -> {len(cleaned)} cleaned ({dropped} dropped as agtron typos)"
     )
+    if rates is not None and cpi is not None:
+        print(f"prices in {args.baseline_date} dollars")
     print(f"wrote {args.output}")
+
+
+def fetch_cpi_command(argv: list[str] | None = None) -> None:
+    """Update the BLS consumer price index table."""
+    parser = argparse.ArgumentParser(description=fetch_cpi_command.__doc__)
+    parser.add_argument(
+        "-o",
+        "--output",
+        type=Path,
+        default=DEFAULT_CPI_PATH,
+        help="CPI table to update in place.",
+    )
+    parser.add_argument(
+        "--start-year",
+        type=int,
+        help="rebuild a specific range instead of the recent window; the "
+        "unkeyed API allows spans of up to ten years",
+    )
+    parser.add_argument("--end-year", type=int)
+    args = parser.parse_args(argv)
+
+    _configure_logging()
+    if (args.start_year is None) != (args.end_year is None):
+        raise SystemExit("--start-year and --end-year must be given together.")
+
+    try:
+        table = fetch_cpi(
+            args.output, start_year=args.start_year, end_year=args.end_year
+        )
+    except (requests.RequestException, RuntimeError, ValueError) as exc:
+        raise SystemExit(f"Could not update the CPI table: {exc}") from exc
+
+    months = table[MONTH_COLUMNS].map(lambda v: str(v).strip() not in {"", "nan"})
+    print(
+        f"{int(months.to_numpy().sum())} monthly CPI values across "
+        f"{len(table)} years -> {args.output}"
+    )
+
+
+def refresh_data(argv: list[str] | None = None) -> None:
+    """Run the whole collection-and-cleaning pipeline in dependency order.
+
+    The four steps have to run in this order and each reads what the previous
+    one wrote, which is the kind of thing that is easy to get wrong by hand:
+
+        scrape  ->  resolve roasters  ->  fetch rates  ->  clean
+
+    Everything downstream of this is analysis, which belongs in a notebook.
+    """
+    parser = argparse.ArgumentParser(description=refresh_data.__doc__)
+    parser.add_argument(
+        "--full",
+        action="store_true",
+        help="re-fetch and re-parse every review, not only what changed",
+    )
+    parser.add_argument(
+        "--baseline-date",
+        default=DEFAULT_BASELINE_DATE,
+        help=f"month whose dollars adjusted prices use (default "
+        f"{DEFAULT_BASELINE_DATE})",
+    )
+    parser.add_argument(
+        "--skip-scrape",
+        action="store_true",
+        help="rebuild from the reviews already held, making no review requests",
+    )
+    args = parser.parse_args(argv)
+
+    raw = DEFAULT_OUTPUT_DIR / "reviews.csv"
+    steps: list[tuple[str, Callable[[], None]]] = []
+    if not args.skip_scrape:
+        steps.append(
+            ("scrape", lambda: scrape_reviews(["--full"] if args.full else []))
+        )
+    steps += [
+        ("resolve roasters", lambda: resolve_roasters([str(raw)])),
+        ("fetch exchange rates", lambda: fetch_exchange_rates([])),
+        ("fetch CPI", lambda: fetch_cpi_command([])),
+        (
+            "clean",
+            lambda: clean_reviews_command(["--baseline-date", args.baseline_date]),
+        ),
+    ]
+
+    for number, (name, run) in enumerate(steps, start=1):
+        print(f"\n=== {number}/{len(steps)}  {name} " + "=" * (40 - len(name)))
+        run()
+
+    print(f"\nDone. The cleaned layer is at {DATA_DIR / 'clean' / 'reviews.csv'}.")
