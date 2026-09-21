@@ -29,6 +29,7 @@ refresh-data = "coffee.cli:refresh_data"
 scrape-reviews = "coffee.cli:scrape_reviews"
 clean-reviews = "coffee.cli:clean_reviews_command"
 fetch-exchange-rates = "coffee.cli:fetch_exchange_rates"
+fetch-cpi = "coffee.cli:fetch_cpi_command"
 resolve-roasters = "coffee.cli:resolve_roasters"
 
 [project.urls]

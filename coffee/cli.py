@@ -14,9 +14,11 @@ from collections.abc import Callable
 from pathlib import Path
 
 import pandas as pd
+import requests
 
 from coffee.clean import DEFAULT_BASELINE_DATE, clean_reviews
 from coffee.config import DATA_DIR, openexchangerates_api_id
+from coffee.cpi import DEFAULT_CPI_PATH, MONTH_COLUMNS, fetch_cpi
 from coffee.enrich import load_cpi, load_exchange_rates
 from coffee.exchange_rates import (
     DEFAULT_OUTPUT,
@@ -40,6 +42,7 @@ from coffee.storage import CsvReviewStore
 
 __all__ = [
     "clean_reviews_command",
+    "fetch_cpi_command",
     "refresh_data",
     "fetch_exchange_rates",
     "resolve_roasters",
@@ -384,6 +387,43 @@ def clean_reviews_command(argv: list[str] | None = None) -> None:
     print(f"wrote {args.output}")
 
 
+def fetch_cpi_command(argv: list[str] | None = None) -> None:
+    """Update the BLS consumer price index table."""
+    parser = argparse.ArgumentParser(description=fetch_cpi_command.__doc__)
+    parser.add_argument(
+        "-o",
+        "--output",
+        type=Path,
+        default=DEFAULT_CPI_PATH,
+        help="CPI table to update in place.",
+    )
+    parser.add_argument(
+        "--start-year",
+        type=int,
+        help="rebuild a specific range instead of the recent window; the "
+        "unkeyed API allows spans of up to ten years",
+    )
+    parser.add_argument("--end-year", type=int)
+    args = parser.parse_args(argv)
+
+    _configure_logging()
+    if (args.start_year is None) != (args.end_year is None):
+        raise SystemExit("--start-year and --end-year must be given together.")
+
+    try:
+        table = fetch_cpi(
+            args.output, start_year=args.start_year, end_year=args.end_year
+        )
+    except (requests.RequestException, RuntimeError, ValueError) as exc:
+        raise SystemExit(f"Could not update the CPI table: {exc}") from exc
+
+    months = table[MONTH_COLUMNS].map(lambda v: str(v).strip() not in {"", "nan"})
+    print(
+        f"{int(months.to_numpy().sum())} monthly CPI values across "
+        f"{len(table)} years -> {args.output}"
+    )
+
+
 def refresh_data(argv: list[str] | None = None) -> None:
     """Run the whole collection-and-cleaning pipeline in dependency order.
 
@@ -422,6 +462,7 @@ def refresh_data(argv: list[str] | None = None) -> None:
     steps += [
         ("resolve roasters", lambda: resolve_roasters([str(raw)])),
         ("fetch exchange rates", lambda: fetch_exchange_rates([])),
+        ("fetch CPI", lambda: fetch_cpi_command([])),
         (
             "clean",
             lambda: clean_reviews_command(["--baseline-date", args.baseline_date]),

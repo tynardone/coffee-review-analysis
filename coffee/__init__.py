@@ -11,8 +11,10 @@ own (see ``[project.scripts]``):
 2. **resolve** (``resolve-roasters``) — :mod:`roaster_resolution` clusters
    roaster-name spellings into a canonical crosswalk, combining automatic
    grouping with recorded manual verdicts.
-3. **augment** (``fetch-exchange-rates``) — :mod:`exchange_rates` fetches
-   historical rates for the review months in the raw scrape.
+3. **augment** (``fetch-exchange-rates``, ``fetch-cpi``) —
+   :mod:`exchange_rates` fetches historical rates for the review months in the
+   raw scrape, and :mod:`cpi` fetches the BLS price index. Both merge into what
+   is already held rather than replacing it.
 4. **clean** (``clean-reviews``) — :mod:`clean` turns raw rows into the cleaned
    layer, applying :mod:`enrich` to put prices in comparable money when
    exchange rates and CPI are available.

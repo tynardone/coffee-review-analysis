@@ -60,9 +60,9 @@ requests instead of hundreds. Each entry carries a `<lastmod>` date, recorded as
 at the rate for the month a review was published.
 
 **US Consumer Price Index** (`data/external/consumer_price_index.csv`) — CPI-U,
-US city average, all items, not seasonally adjusted, from the
-[Bureau of Labor Statistics](https://www.bls.gov/cpi/data.htm). Used to express
-historical prices in constant dollars.
+US city average, all items, not seasonally adjusted. Fetched from the BLS public
+API (series `CUUR0000SA0`), which needs no key. Used to express historical
+prices in constant dollars.
 
 **Geocoding** (planned) — a free API from [Map Maker](https://maps.co/), for
 resolving roaster and origin locations to coordinates. Nothing calls it yet.
@@ -96,6 +96,9 @@ installed as console commands that wrap it.
   its reference data as an argument.
 - `exchange_rates.py` — fetches historical rates for the review months in the
   raw scrape.
+- `cpi.py` — fetches the BLS consumer price index. Merges into the stored table
+  rather than replacing it, so a three-year API window cannot shrink a series
+  going back to 1990.
 - `roaster_resolution.py` — entity resolution for messy roaster names, using
   name *and* location and applying previously adjudicated pairs. See
   [Resolving roaster names](#resolving-roaster-names) for the workflow and
@@ -122,13 +125,14 @@ uv run refresh-data
 uv run jupyter lab
 ```
 
-`refresh-data` runs the four steps in dependency order and prints what each did:
+`refresh-data` runs the five steps in dependency order and prints what each did:
 
 ```bash
 uv run scrape-reviews                            # 1. data/raw/reviews.csv
 uv run resolve-roasters data/raw/reviews.csv     # 2. the roaster crosswalk
 uv run fetch-exchange-rates                      # 3. rates for the review months
-uv run clean-reviews                             # 4. data/clean/reviews.csv
+uv run fetch-cpi                                 # 4. the CPI table
+uv run clean-reviews                             # 5. data/clean/reviews.csv
 ```
 
 Each is also a command in its own right, and `--help` lists the options. Useful
@@ -164,6 +168,27 @@ Use `--full` after changing `coffee/parser.py`. An incremental run re-parses
 only the pages it re-fetches, so without it a parser fix reaches new rows only
 and the corpus becomes a mixture of two parser versions. `scraped_at` is what
 makes such a mixture visible.
+
+### The CPI table
+
+`fetch-cpi` reads series `CUUR0000SA0` from the BLS public API — CPI-U, US city
+average, all items, not seasonally adjusted — and merges it into
+`data/external/consumer_price_index.csv`, keeping the BLS's own wide layout.
+
+No API key. The unkeyed v1 tier returns the last three years, which is all an
+incremental update needs, and allows 25 requests a day. `--start-year` and
+`--end-year` switch to the POST form for rebuilding a specific range, up to ten
+years per request.
+
+A published CPI figure for a past month does not change, so months already held
+are never overwritten with anything and the response's narrow window cannot
+shrink a table going back to 1990. Two details the series carries:
+
+- period `M13` is the **annual average**, not a month, and is discarded
+- a month BLS never published reads as `-` and is left blank. October 2025 is
+  one: the index was not produced during that year's lapse in appropriations.
+  `cpi_adjust_price` leaves such a month's prices unadjusted rather than
+  dropping them.
 
 ### Exchange rates are incremental too
 
@@ -227,9 +252,8 @@ The figures the field-level steps recorded — `price_value`, `price_currency`,
 
 `--baseline-date` chooses the month (default `2026-01-01`). It must be a month
 the CPI table covers; a baseline outside that range is refused rather than
-silently adjusted, since a different baseline changes every price. Refresh the
-table from the [BLS](https://www.bls.gov/cpi/data.htm) when the default moves
-past what is committed.
+silently adjusted, since a different baseline changes every price. `fetch-cpi`
+keeps the table current.
 
 Both reference files are optional. Without them `clean-reviews` still produces
 the field-level layer and warns that prices stay in their original currency,
