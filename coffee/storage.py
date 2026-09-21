@@ -1,18 +1,11 @@
 """Where scraped reviews are read from and written to.
 
 The corpus is a single ``reviews.csv`` with a ``reviews.json`` twin, updated in
-place. Version history is left to git rather than encoded in filenames, so that
-downstream code has one stable path to read.
+place.
 
 The pipeline talks to a :class:`ReviewStore` rather than to files. Incremental
 scraping needs to know what is already held and how fresh it is, and that
 question is answered differently by a CSV than by a database.
-
-The store owns the merge: :meth:`ReviewStore.upsert` receives only the records
-that were fetched and combines them with what is already held. The pipeline
-therefore never loads the whole corpus in order to write it back, and the
-interface maps onto what a database does natively with
-``INSERT ... ON CONFLICT DO UPDATE``.
 """
 
 import logging

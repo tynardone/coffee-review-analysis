@@ -1,24 +1,4 @@
-"""Augment cleaned reviews with the reference data needed to compare prices.
-
-The cleaned layer records what a coffee cost in the currency and quantity the
-site printed. Comparing those figures across 30 years and a dozen currencies
-takes two further conversions, and both depend on reference data that the
-reviews themselves do not carry:
-
-* historical exchange rates, to put every price in USD at the rate for the
-  month the review was published
-* the BLS consumer price index, to express those dollars in one month's money
-
-Kept separate from :mod:`coffee.clean` because the dependency runs the other
-way. Cleaning needs only the raw scrape, so it can run on a fresh checkout with
-no external data at all; enrichment needs files that are themselves fetched
-using the cleaned layer's review months. Folding the two together made the
-cleaned layer unbuildable until the rates existed.
-
-Every step is a pure ``DataFrame -> DataFrame`` function taking its reference
-data as an argument, so none of it reads from disk. :func:`enrich_reviews`
-composes them.
-"""
+"""Augment cleaned reviews with the reference data needed to compare prices."""
 
 from datetime import datetime
 from pathlib import Path

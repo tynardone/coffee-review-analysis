@@ -2,15 +2,10 @@
 
 Runs incrementally by default. Discovery returns every review URL with its
 sitemap ``<lastmod>`` in about 17 requests, so a run can compare that against
-what the store holds and fetch only what is new or newer. On the current corpus
-that is roughly 300 pages rather than 9,300, and a monthly cadence brings it to
-about 50.
+what the store holds and fetch only what is new or newer.
 
-``full=True`` ignores what is held and re-fetches everything. This is what a
-parser change requires: an incremental run re-parses only the pages it
-re-fetches, so a fix in :mod:`coffee.parser` reaches older rows only on a full
-run. ``scraped_at`` records when each row was last fetched, which makes such a
-mixture visible.
+``full=True`` ignores what is held and re-fetches everything. This needs to be run if
+a parser changes changes the data stored.
 """
 
 import asyncio
