@@ -99,8 +99,13 @@ def cpi_adjust_price(
 ) -> pd.DataFrame:
     """Express prices in `baseline_date` dollars using CPI-U.
 
-    Where CPI is unavailable, typically for the current month, the unadjusted
-    USD price is kept rather than dropped.
+    Adds ``price_usd_adj`` and ``price_baseline_date``. The baseline travels
+    with the number because it is the number's unit: two files can hold the
+    same column in different dollars and look identical without it.
+
+    Where the review month has no published CPI, the unadjusted USD price is
+    kept rather than dropped, and ``price_baseline_date`` is left empty. Those
+    rows are not in baseline dollars, and stamping them would say they were.
     """
     baseline = cpi.loc[cpi["date"] == baseline_date, "cpi"]
     if baseline.empty:
@@ -121,13 +126,22 @@ def cpi_adjust_price(
         raise ValueError(
             f"CPI merge changed the row count ({before} -> {len(merged)})."
         )
+    adjusted = merged["cpi"].notna()
     return merged.assign(
         price_usd_adj=lambda d: np.where(
             d["cpi"].isna(),
             d["price_usd"],
             (d["price_usd"] * baseline.iloc[0] / d["cpi"]).round(2),
-        )
-    )
+        ),
+        # .where keeps the baseline only where the adjustment actually ran,
+        # leaving NA on the rows that kept their unadjusted price.
+        price_baseline_date=lambda d: pd.Series(
+            baseline_date, index=d.index, dtype="string"
+        ).where(adjusted),
+        # The CPI table's own columns came in on the merge and have no business
+        # downstream: `date` duplicates review_date exactly, and `cpi` is the
+        # input to the calculation rather than part of its result.
+    ).drop(columns=["cpi", "date"])
 
 
 def price_per_lb(df: pd.DataFrame) -> pd.DataFrame:

@@ -151,3 +151,56 @@ def test_pricing_keeps_what_the_site_printed():
     )
     assert out["price_value"].iloc[0] == 500.0
     assert out["price_currency"].iloc[0] == "TWD"
+
+
+# --------------------------------------------------------------------------
+# The baseline travels with the number
+# --------------------------------------------------------------------------
+
+
+def test_the_baseline_is_recorded_on_every_adjusted_row():
+    """Without it, two files in different dollars look identical."""
+    df = pd.DataFrame(
+        {"review_date": pd.to_datetime(["2000-01-01"]), "price_usd": [10.0]}
+    )
+    cpi = cpi_table([(150.0, "2000-01-01"), (300.0, "2024-06-01")])
+    out = cpi_adjust_price(df, cpi, baseline_date="2024-06-01")
+    assert out["price_baseline_date"].iloc[0] == "2024-06-01"
+
+
+def test_a_month_without_cpi_gets_no_baseline():
+    """Its price was never adjusted, so claiming a baseline would be a lie."""
+    df = pd.DataFrame(
+        {"review_date": pd.to_datetime(["2026-09-01"]), "price_usd": [25.0]}
+    )
+    cpi = cpi_table([(300.0, "2024-06-01")])
+    out = cpi_adjust_price(df, cpi, baseline_date="2024-06-01")
+    assert out["price_usd_adj"].iloc[0] == 25.0  # unadjusted
+    assert pd.isna(out["price_baseline_date"].iloc[0])
+
+
+def test_the_baseline_follows_the_argument():
+    df = pd.DataFrame(
+        {"review_date": pd.to_datetime(["2000-01-01"] * 2), "price_usd": [10.0, 10.0]}
+    )
+    cpi = cpi_table(
+        [(150.0, "2000-01-01"), (300.0, "2024-06-01"), (450.0, "2026-01-01")]
+    )
+    a = cpi_adjust_price(df, cpi, baseline_date="2024-06-01")
+    b = cpi_adjust_price(df, cpi, baseline_date="2026-01-01")
+    assert a["price_usd_adj"].iloc[0] == 20.0  # 150 -> 300
+    assert b["price_usd_adj"].iloc[0] == 30.0  # 150 -> 450
+    assert a["price_baseline_date"].iloc[0] == "2024-06-01"
+    assert b["price_baseline_date"].iloc[0] == "2026-01-01"
+
+
+def test_the_cpi_tables_own_columns_do_not_survive_the_merge():
+    """`date` duplicated review_date and `cpi` was only an input."""
+    df = pd.DataFrame(
+        {"review_date": pd.to_datetime(["2000-01-01"]), "price_usd": [10.0]}
+    )
+    out = cpi_adjust_price(
+        df, cpi_table([(150.0, "2000-01-01"), (300.0, "2024-06-01")]), "2024-06-01"
+    )
+    assert "cpi" not in out.columns
+    assert "date" not in out.columns
