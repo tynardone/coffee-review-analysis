@@ -1,30 +1,4 @@
-"""Fetch historical exchange rates from the OpenExchangeRates API.
-
-Reads the unique review months from the cleaned layer and downloads the
-historical rate for each one. Those months are what
-:func:`coffee.enrich.convert_currency` merges against, so taking them from the
-cleaned layer requests exactly the rates that will be used, rather than also
-requesting rates for rows that cleaning drops.
-
-The cleaned layer is built from the raw scrape alone, so this reads a file that
-already exists rather than one this command is needed to produce. The order is
-scrape, clean, fetch rates, enrich. :func:`load_review_dates` also accepts the
-raw layer, for fetching rates before a cleaned layer has been built.
-
-Runs incrementally. Rates for a past date do not change, so a date already held
-is never re-fetched. This matters because free-tier accounts are limited to
-1000 requests per month and the current corpus spans 323 distinct months: an
-unconditional run would spend a third of the monthly budget re-downloading
-values that cannot have moved.
-
-Two properties protect the stored file, which is the only copy:
-
-* A failed fetch is never persisted. :func:`merge_rates` keeps the held value
-  whenever the incoming one is empty, so a rate-limited run cannot replace
-  populated dates with blanks.
-* Results are checkpointed as they arrive rather than at the end, so a run that
-  dies partway keeps the requests it already spent.
-"""
+"""Fetch historical exchange rates from the OpenExchangeRates API."""
 
 import json
 import logging
