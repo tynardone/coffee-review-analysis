@@ -258,6 +258,7 @@ mean anything.
 - `price_usd_adj`, in a baseline month's dollars, so a 1997 price and a 2026
   price can be compared
 - `price_usd_adj_per_lb`
+- `price_baseline_date`, the month those adjusted dollars are in
 
 The figures the field-level steps recorded — `price_value`, `price_currency`,
 `quantity_in_lbs` — are left untouched beside them.
@@ -266,6 +267,13 @@ The figures the field-level steps recorded — `price_value`, `price_currency`,
 the CPI table covers; a baseline outside that range is refused rather than
 silently adjusted, since a different baseline changes every price. `fetch-cpi`
 keeps the table current.
+
+The chosen baseline is written to `price_baseline_date` rather than left
+implicit, because it is the unit the adjusted number is in — the same coffee
+comes out at $77.64 in 2026-01 dollars and $61.58 in 2020-01, and two files
+would otherwise look identical while disagreeing by a quarter. A review month
+the CPI does not cover keeps its unadjusted USD price and is left with no
+baseline, so those rows are visible rather than silently mixed in.
 
 Both reference files are optional. Without them `clean-reviews` still produces
 the field-level layer and warns that prices stay in their original currency,
