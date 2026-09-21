@@ -80,9 +80,8 @@ installed as console commands that wrap it.
 - `fetch.py` — shared async HTTP GET with bounded concurrency and retry, used by
   both discovery and scraping.
 - `parser.py` — turns one review's HTML into structured fields.
-- `review.py` — fetches a single review page and parses it into a record.
-- `pipeline.py` — the full run: discovers every review URL and fetches only
-  those that are new or have changed.
+- `pipeline.py` — the full run: discovers every review URL, fetches only those
+  that are new or have changed, and parses each one.
 - `storage.py` — where reviews live. `CsvReviewStore` keeps
   `data/raw/reviews.{csv,json}`; the pipeline talks to the protocol, so a
   database backend can replace it without touching the scrape.
