@@ -6,8 +6,8 @@ own (see ``[project.scripts]``):
 
 1. **scrape** (``scrape-reviews``) — :mod:`sitemap` discovers review URLs,
    :mod:`fetch` retrieves pages, :mod:`parser` turns one page into a record,
-   :mod:`review` combines those two, and :mod:`pipeline` drives the run.
-   Incremental by default: only new or changed URLs are fetched.
+   and :mod:`pipeline` combines those and drives the run. Incremental by
+   default: only new or changed URLs are fetched.
 2. **resolve** (``resolve-roasters``) — :mod:`roasters` clusters
    roaster-name spellings into a canonical crosswalk, combining automatic
    grouping with recorded manual verdicts.
