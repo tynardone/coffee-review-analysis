@@ -77,7 +77,7 @@ def scrape_reviews(argv: list[str] | None = None) -> None:
         "--output-dir",
         type=Path,
         default=DEFAULT_OUTPUT_DIR,
-        help="Directory holding reviews.csv and reviews.json.",
+        help="Directory holding reviews.csv.",
     )
     parser.add_argument(
         "-c",
@@ -292,7 +292,7 @@ def clean_reviews_command(argv: list[str] | None = None) -> None:
         "-o",
         "--output",
         type=Path,
-        default=DATA_DIR / "clean" / "reviews.csv",
+        default=DATA_DIR / "clean" / "reviews.parquet",
     )
     parser.add_argument(
         "--crosswalk",
@@ -352,7 +352,7 @@ def clean_reviews_command(argv: list[str] | None = None) -> None:
         raise SystemExit(str(exc)) from exc
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    cleaned.to_csv(args.output, index=False)
+    cleaned.to_parquet(args.output, index=False)
     dropped = len(raw) - len(cleaned)
     print(
         f"{len(raw)} raw -> {len(cleaned)} cleaned ({dropped} dropped as agtron typos)"
@@ -448,4 +448,4 @@ def refresh_data(argv: list[str] | None = None) -> None:
         print(f"\n=== {number}/{len(steps)}  {name} " + "=" * (40 - len(name)))
         run()
 
-    print(f"\nDone. The cleaned layer is at {DATA_DIR / 'clean' / 'reviews.csv'}.")
+    print(f"\nDone. The cleaned layer is at {DATA_DIR / 'clean' / 'reviews.parquet'}.")

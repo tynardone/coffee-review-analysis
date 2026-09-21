@@ -269,6 +269,15 @@ def test_a_missing_reviews_file_raises(tmp_path):
 
 
 def test_an_unsupported_suffix_raises(tmp_path):
-    (tmp_path / "reviews.parquet").touch()
+    (tmp_path / "reviews.xlsx").touch()
     with pytest.raises(ValueError, match="Unsupported file type"):
-        load_review_dates(tmp_path / "reviews.parquet")
+        load_review_dates(tmp_path / "reviews.xlsx")
+
+
+def test_review_dates_are_read_from_the_parquet_cleaned_layer(tmp_path):
+    """The cleaned layer is Parquet, and keeps review_date as a datetime."""
+    path = tmp_path / "reviews.parquet"
+    pd.DataFrame(
+        {"review_date": pd.to_datetime(["2000-01-01", "2000-02-01"])}
+    ).to_parquet(path)
+    assert load_review_dates(path) == [JAN, FEB]

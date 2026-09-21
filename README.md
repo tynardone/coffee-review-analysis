@@ -83,8 +83,8 @@ installed as console commands that wrap it.
 - `pipeline.py` — the full run: discovers every review URL, fetches only those
   that are new or have changed, and parses each one.
 - `storage.py` — where reviews live. `CsvReviewStore` keeps
-  `data/raw/reviews.{csv,json}`; the pipeline talks to the protocol, so a
-  database backend can replace it without touching the scrape.
+  `data/raw/reviews.csv`; the pipeline talks to the protocol, so a database
+  backend can replace it without touching the scrape.
 - `clean.py` — the cleaned layer: types, price/currency/quantity parsing,
   origin and roaster locations, the roaster crosswalk, and the price
   conversions from `enrich.py`.
@@ -135,7 +135,7 @@ uv run scrape-reviews                            # 1. data/raw/reviews.csv
 uv run resolve-roasters data/raw/reviews.csv     # 2. the roaster crosswalk
 uv run fetch-exchange-rates                      # 3. rates for the review months
 uv run fetch-cpi                                 # 4. the CPI table
-uv run clean-reviews                             # 5. data/clean/reviews.csv
+uv run clean-reviews                             # 5. data/clean/reviews.parquet
 ```
 
 Each is also a command in its own right, and `--help` lists the options. Useful
@@ -145,7 +145,7 @@ flags on `refresh-data`:
 - `--skip-scrape` rebuilds from reviews already held, making no review requests
 - `--baseline-date` sets the month whose dollars adjusted prices use
 
-Analysis stops there. The notebooks read `data/clean/reviews.csv`; the pipeline
+Analysis stops there. The notebooks read `data/clean/reviews.parquet`; the pipeline
 does not produce charts or aggregates.
 
 ### Scraping is incremental
@@ -217,9 +217,17 @@ re-requests everything and exists only for repairing a corrupt file.
 ## Data layers
 
 ```
-data/raw/reviews.csv     RAW      as scraped, never edited
-data/clean/reviews.csv   CLEANED  typed, parsed, roasters resolved
+data/raw/reviews.csv       RAW      as scraped, never edited
+data/clean/reviews.parquet CLEANED  typed, parsed, roasters resolved
 ```
+
+The two layers use different formats on purpose. Raw is the irreplaceable one —
+a review that disappears from the sitemap can never be fetched again, so the
+held copy is the only one in existence — and plain text needs no library to read
+in ten years. The cleaned layer is regenerated from it by one command and read
+only by code, so it is Parquet: about a third the size, and it keeps the types
+the writer already knew. Read back from CSV, `review_date` returns as a string
+and every consumer has to re-parse it.
 
 **Field names are settled at the raw boundary.** `coffee/parser.py` normalises
 each scraped table label (`"Est. Price:"` → `est_price`) as it parses, so the
@@ -400,11 +408,11 @@ Run them in order; each depends on the previous one's output.
 
 | notebook | reads | writes |
 |---|---|---|
-| `01-data-cleaning` | `data/raw/reviews.csv` | `data/clean/reviews.csv` (the same work `clean-reviews` does) |
-| `02-data-EDA` | `data/clean/reviews.csv` | charts |
-| `03-text-features` | `data/clean/reviews.csv` | wordclouds in `imgs/` |
+| `01-data-cleaning` | `data/raw/reviews.csv` | `data/clean/reviews.parquet` (the same work `clean-reviews` does) |
+| `02-data-EDA` | `data/clean/reviews.parquet` | charts |
+| `03-text-features` | `data/clean/reviews.parquet` | wordclouds in `imgs/` |
 
-`data/clean/reviews.csv` is gitignored; notebook 01 regenerates it, so run that
+`data/clean/reviews.parquet` is gitignored; notebook 01 regenerates it, so run that
 first on a fresh checkout. Committed data is limited to the scrape itself and to
 outputs carrying human judgement, namely the roaster crosswalk and decisions.
 
