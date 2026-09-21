@@ -33,6 +33,8 @@ from coffee.pipeline import (
     scrape_all_reviews,
 )
 from coffee.roasters import (
+    format_resolution_report,
+    format_violations,
     load_decisions,
     promote_reviewed,
     resolve,
@@ -267,44 +269,17 @@ def resolve_roasters(argv: list[str] | None = None) -> None:
     crosswalk.to_csv(crosswalk_path, index=False)
     review.to_csv(review_path, index=False)
 
-    # Reported in order: what was merged, how much review remains, and whether
-    # single-linkage chained any clusters together.
-    n_raw = crosswalk.raw_name.nunique()
-    n_canonical = crosswalk.canonical_name.nunique()
     print(
-        f"{n_raw} distinct spellings -> {n_canonical} roasters "
-        f"({n_raw - n_canonical} merged)"
-    )
-    # An absent decisions file and an empty one are reported differently,
-    # since they call for different action.
-    if decisions:
-        print(f"{len(decisions)} decisions applied from {decisions_path}")
-    elif decisions_path.exists():
-        print(f"0 decisions in {decisions_path} (nothing adjudicated yet)")
-    else:
-        print(f"no decisions file yet; it will be created at {decisions_path}")
-    print(f"{len(review)} pairs queued for review -> {review_path}")
-    print(
-        f"{int(crosswalk.chain_risk.sum())} rows in chain-risk clusters"
-        f"{'  <-- INSPECT THESE' if crosswalk.chain_risk.any() else ''}"
-    )
-
-    # A recorded split that the clustering defeated transitively. Reported
-    # prominently, since a decision that was accepted and then not applied is
-    # harder to notice than one that was rejected.
-    if "violates_decision" in crosswalk and crosswalk.violates_decision.any():
-        offenders = crosswalk[crosswalk.violates_decision]
-        print(
-            f"\n!! {offenders.cluster_id.nunique()} cluster(s) VIOLATE a split "
-            "decision -- these names were kept together despite your verdict:"
+        format_resolution_report(
+            crosswalk,
+            review,
+            decisions,
+            decisions_path=decisions_path,
+            review_path=review_path,
         )
-        for _, group in offenders.groupby("cluster_id"):
-            print("    " + "  |  ".join(sorted(group.raw_name)))
-        print(
-            "   A split can be defeated through a third name that resembles "
-            "both\n   (often a collaboration, e.g. 'A & B Coffee'). Record a "
-            "split against\n   that bridging name too."
-        )
+    )
+    if violations := format_violations(crosswalk):
+        print(violations)
 
 
 def clean_reviews_command(argv: list[str] | None = None) -> None:

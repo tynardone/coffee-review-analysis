@@ -50,6 +50,7 @@ from coffee.roasters.normalize import (
     strip_accents,
     tokens,
 )
+from coffee.roasters.report import format_resolution_report, format_violations
 from coffee.roasters.similarity import (
     MAX_SUBSET_TOKEN_DF,
     score,
@@ -70,6 +71,8 @@ __all__ = [
     "compare_locations",
     "core_key",
     "fingerprint",
+    "format_resolution_report",
+    "format_violations",
     "load_decisions",
     "normalize_location",
     "parse_verdict",

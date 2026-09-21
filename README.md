@@ -102,8 +102,9 @@ installed as console commands that wrap it.
 - `roasters/` — entity resolution for messy roaster names, split along the
   cascade it runs: `normalize` reduces a name to a comparable key,
   `similarity` scores two keys, `location` supplies the second signal,
-  `cluster` assembles the crosswalk, and `decisions` holds the adjudicated
-  pairs — the only module here that touches disk. See
+  `cluster` assembles the crosswalk, `decisions` holds the adjudicated pairs —
+  the only module here that touches disk — and `report` formats what a run
+  says about itself. See
   [Resolving roaster names](#resolving-roaster-names) for the workflow and
   [`docs/roaster-resolution.md`](docs/roaster-resolution.md) for the design.
 - `config.py` — paths and credentials, read from the environment or `.env`.
