@@ -32,7 +32,7 @@ from coffee.pipeline import (
     DEFAULT_OUTPUT_DIR,
     scrape_all_reviews,
 )
-from coffee.roaster_resolution import (
+from coffee.roasters import (
     load_decisions,
     promote_reviewed,
     resolve,

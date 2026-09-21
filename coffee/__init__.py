@@ -8,7 +8,7 @@ own (see ``[project.scripts]``):
    :mod:`fetch` retrieves pages, :mod:`parser` turns one page into a record,
    :mod:`review` combines those two, and :mod:`pipeline` drives the run.
    Incremental by default: only new or changed URLs are fetched.
-2. **resolve** (``resolve-roasters``) — :mod:`roaster_resolution` clusters
+2. **resolve** (``resolve-roasters``) — :mod:`roasters` clusters
    roaster-name spellings into a canonical crosswalk, combining automatic
    grouping with recorded manual verdicts.
 3. **augment** (``fetch-exchange-rates``, ``fetch-cpi``) —
