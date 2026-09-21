@@ -79,9 +79,15 @@ def load_review_dates(path: Path) -> list[date]:
     Accepts either layer: the raw scrape writes the site's own "November 2016",
     the cleaned layer writes ISO dates.
     """
-    readers = {".csv": pd.read_csv, ".json": pd.read_json}
+    readers = {
+        ".csv": pd.read_csv,
+        ".json": pd.read_json,
+        ".parquet": pd.read_parquet,
+    }
     if path.suffix not in readers:
-        raise ValueError(f"Unsupported file type {path.suffix!r}; use .csv or .json.")
+        raise ValueError(
+            f"Unsupported file type {path.suffix!r}; use .csv, .json or .parquet."
+        )
     if not path.exists():
         raise FileNotFoundError(f"{path} does not exist.")
 

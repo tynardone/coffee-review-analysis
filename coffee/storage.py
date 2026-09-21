@@ -1,7 +1,6 @@
 """Where scraped reviews are read from and written to.
 
-The corpus is a single ``reviews.csv`` with a ``reviews.json`` twin, updated in
-place.
+The corpus is a single ``reviews.csv``, updated in place.
 
 The pipeline talks to a :class:`ReviewStore` rather than to files. Incremental
 scraping needs to know what is already held and how fresh it is, and that
@@ -51,12 +50,11 @@ class ReviewStore(Protocol):
 
 
 class CsvReviewStore:
-    """A single ``reviews.csv`` + ``reviews.json`` pair, updated in place."""
+    """A single ``reviews.csv``, updated in place."""
 
     def __init__(self, directory: Path, stem: str = "reviews") -> None:
         self.directory = directory
         self.csv_path = directory / f"{stem}.csv"
-        self.json_path = directory / f"{stem}.json"
 
     # -- reading -----------------------------------------------------------
 
@@ -118,6 +116,5 @@ class CsvReviewStore:
         self.directory.mkdir(parents=True, exist_ok=True)
         frame = frame.sort_values(URL_COLUMN).reset_index(drop=True)
         frame.to_csv(self.csv_path, index=False)
-        frame.to_json(self.json_path, orient="records", indent=2)
         logger.info("Wrote %d reviews to %s", len(frame), self.csv_path)
         return len(frame)

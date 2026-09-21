@@ -82,7 +82,7 @@ def test_data_without_urls_is_an_error(tmp_path):
 def test_upsert_into_an_empty_store_writes_both_formats(tmp_path):
     store = CsvReviewStore(tmp_path)
     assert store.upsert([{"url": "u1", "rating": "93"}]) == 1
-    assert store.csv_path.exists() and store.json_path.exists()
+    assert store.csv_path.exists()
 
 
 def test_upsert_replaces_by_url_and_keeps_the_rest(tmp_path):

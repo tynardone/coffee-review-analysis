@@ -20,8 +20,10 @@ own (see ``[project.scripts]``):
    exchange rates and CPI are available.
 
 That produces two layers: ``data/raw/reviews.csv`` as scraped, and
-``data/clean/reviews.csv`` ready for analysis. Analysis itself lives in the
-notebooks; nothing here produces charts or aggregates.
+``data/clean/reviews.parquet`` ready for analysis. Raw stays plain text because
+it is the irreplaceable copy; the cleaned layer is Parquet because it is
+regenerated on demand, read only by code, and Parquet keeps its types. Analysis
+itself lives in the notebooks; nothing here produces charts or aggregates.
 
 :mod:`storage` sits between the pipeline and where reviews are kept, so the CSV
 corpus can be replaced by a database without changing the scrape.
