@@ -33,8 +33,7 @@ def normalise_field_name(label: str) -> str:
 
     This is not a general slugifier. ``acidity/structure`` keeps its slash,
     since that is the name the site uses and the name the cleaning layer
-    coalesces the field by; renaming it here would relocate the translation
-    rather than remove it.
+    coalesces the field by.
     """
     return label.strip().lower().replace(":", "").replace(" ", "_").replace(".", "")
 
