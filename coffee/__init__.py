@@ -16,7 +16,7 @@ own (see ``[project.scripts]``):
    raw scrape, and :mod:`cpi` fetches the BLS price index. Both merge into what
    is already held rather than replacing it.
 4. **clean** (``clean-reviews``) — :mod:`clean` turns raw rows into the cleaned
-   layer, applying :mod:`enrich` to put prices in comparable money when
+   layer, applying :mod:`prices` to put prices in comparable money when
    exchange rates and CPI are available.
 
 That produces two layers: ``data/raw/reviews.csv`` as scraped, and

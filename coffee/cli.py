@@ -19,7 +19,6 @@ import requests
 from coffee.clean import DEFAULT_BASELINE_DATE, clean_reviews
 from coffee.config import DATA_DIR, openexchangerates_api_id
 from coffee.cpi import DEFAULT_CPI_PATH, MONTH_COLUMNS, fetch_cpi
-from coffee.enrich import load_cpi, load_exchange_rates
 from coffee.exchange_rates import (
     DEFAULT_OUTPUT,
     fetch_rates,
@@ -32,6 +31,7 @@ from coffee.pipeline import (
     DEFAULT_OUTPUT_DIR,
     scrape_all_reviews,
 )
+from coffee.prices import load_cpi, load_exchange_rates
 from coffee.roasters import (
     format_resolution_report,
     format_violations,

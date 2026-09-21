@@ -1,4 +1,13 @@
-"""Augment cleaned reviews with the reference data needed to compare prices."""
+"""Put every price in the same money, so they can be compared.
+
+The site prints what a coffee cost in the currency and quantity of its day: NT$
+per 225 grams in 2015, dollars per pound in 1997. Comparing those takes two
+conversions and two reference tables the reviews do not carry -- historical
+exchange rates, and the CPI.
+
+:func:`add_comparable_prices` composes the steps; :func:`coffee.clean.clean_reviews`
+calls it when both tables are available.
+"""
 
 from datetime import datetime
 from pathlib import Path
@@ -8,9 +17,9 @@ import pandas as pd
 
 __all__ = [
     "DEFAULT_BASELINE_DATE",
+    "add_comparable_prices",
     "convert_currency",
     "cpi_adjust_price",
-    "enrich_reviews",
     "load_cpi",
     "load_exchange_rates",
     "price_per_lb",
@@ -135,7 +144,7 @@ def price_per_lb(df: pd.DataFrame) -> pd.DataFrame:
 # ==========================================================================
 
 
-def enrich_reviews(
+def add_comparable_prices(
     cleaned: pd.DataFrame,
     *,
     exchange_rates: pd.DataFrame,
@@ -146,8 +155,8 @@ def enrich_reviews(
 
     Adds ``price_usd``, ``price_usd_adj`` and ``price_usd_adj_per_lb``. The
     figures the cleaned layer already carries -- ``price_value``,
-    ``price_currency``, ``quantity_in_lbs`` -- are left untouched, so an
-    enriched row stays traceable back to what the site printed.
+    ``price_currency``, ``quantity_in_lbs`` -- are left untouched, so a
+    priced row stays traceable back to what the site printed.
     """
     return (
         cleaned.pipe(convert_currency, exchange_rates)

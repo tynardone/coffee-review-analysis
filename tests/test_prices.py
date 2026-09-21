@@ -1,4 +1,4 @@
-"""Tests for the enrichment layer.
+"""Tests for the price conversions.
 
 These conversions decide what every price comparison means, and a bug in them
 is invisible: a wrong rate or a missing CPI month does not raise, it quietly
@@ -8,10 +8,10 @@ changes a conclusion.
 import pandas as pd
 import pytest
 
-from coffee.enrich import (
+from coffee.prices import (
+    add_comparable_prices,
     convert_currency,
     cpi_adjust_price,
-    enrich_reviews,
     price_per_lb,
 )
 
@@ -112,7 +112,7 @@ def test_price_per_pound():
 # --------------------------------------------------------------------------
 
 
-def test_enrich_reviews_runs_the_whole_chain():
+def test_add_comparable_prices_runs_the_whole_chain():
     cleaned = pd.DataFrame(
         {
             "review_date": pd.to_datetime(["2000-01-01"]),
@@ -121,7 +121,7 @@ def test_enrich_reviews_runs_the_whole_chain():
             "quantity_in_lbs": [1.0],
         }
     )
-    out = enrich_reviews(
+    out = add_comparable_prices(
         cleaned,
         exchange_rates=rates([("2000-01-01", "USD", 1.0)]),
         cpi=cpi_table([(150.0, "2000-01-01"), (300.0, "2024-06-01")]),
@@ -133,8 +133,8 @@ def test_enrich_reviews_runs_the_whole_chain():
     assert row["price_usd_adj_per_lb"] == 40.0
 
 
-def test_enrichment_keeps_what_the_site_printed():
-    """An enriched row stays traceable back to the original figures."""
+def test_pricing_keeps_what_the_site_printed():
+    """A priced row stays traceable back to the original figures."""
     cleaned = pd.DataFrame(
         {
             "review_date": pd.to_datetime(["2024-07-01"]),
@@ -143,7 +143,7 @@ def test_enrichment_keeps_what_the_site_printed():
             "quantity_in_lbs": [0.5],
         }
     )
-    out = enrich_reviews(
+    out = add_comparable_prices(
         cleaned,
         exchange_rates=rates([("2024-07-01", "TWD", 32.0)]),
         cpi=cpi_table([(300.0, "2024-06-01"), (310.0, "2024-07-01")]),
