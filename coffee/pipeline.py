@@ -6,6 +6,11 @@ what the store holds and fetch only what is new or newer.
 
 ``full=True`` ignores what is held and re-fetches everything. This needs to be run if
 a parser changes changes the data stored.
+
+:func:`scrape_review` is the unit of work the run is made of: fetch one page,
+parse it off the event loop, and return its fields. A page that cannot be
+fetched or parsed yields ``None`` rather than raising, so one malformed page
+does not abort the run.
 """
 
 import asyncio
@@ -19,7 +24,8 @@ import aiohttp
 from tqdm.asyncio import tqdm
 
 from coffee.config import DATA_DIR, HEADERS
-from coffee.review import scrape_review
+from coffee.fetch import fetch
+from coffee.parser import parse_html
 from coffee.sitemap import get_review_urls
 from coffee.storage import ReviewStore
 
@@ -28,6 +34,7 @@ __all__ = [
     "DEFAULT_OUTPUT_DIR",
     "plan_fetch",
     "scrape_all_reviews",
+    "scrape_review",
 ]
 
 logger = logging.getLogger(__name__)
@@ -36,6 +43,29 @@ DEFAULT_OUTPUT_DIR = DATA_DIR / "raw"
 
 
 DEFAULT_CONCURRENCY = 10
+
+
+async def scrape_review(
+    url: str,
+    session: aiohttp.ClientSession,
+    semaphore: asyncio.Semaphore,
+    retries: int = 5,
+) -> dict | None:
+    review_page = await fetch(url, session, semaphore, retries=retries)
+    if review_page is None:
+        return None
+    try:
+        # Parse off the event loop so CPU-bound parsing overlaps network I/O.
+        data = await asyncio.to_thread(parse_html, review_page)
+    except Exception:
+        # The caller awaits these one at a time, so an exception escaping here
+        # would abort the whole run and write nothing. Returning None puts a
+        # parse failure on the same footing as a fetch failure, which the
+        # caller already counts and reports.
+        logging.exception("Failed to parse %s", url)
+        return None
+    data["url"] = url
+    return data
 
 
 def plan_fetch(
