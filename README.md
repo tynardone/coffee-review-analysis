@@ -98,8 +98,12 @@ installed as console commands that wrap it.
 - `cpi.py` — fetches the BLS consumer price index. Merges into the stored table
   rather than replacing it, so a three-year API window cannot shrink a series
   going back to 1990.
-- `roaster_resolution.py` — entity resolution for messy roaster names, using
-  name *and* location and applying previously adjudicated pairs. See
+- `roasters/` — entity resolution for messy roaster names, split along the
+  cascade it runs: `normalize` reduces a name to a comparable key,
+  `similarity` scores two keys, `location` supplies the second signal,
+  `cluster` assembles the crosswalk, `decisions` holds the adjudicated pairs —
+  the only module here that touches disk — and `report` formats what a run
+  says about itself. See
   [Resolving roaster names](#resolving-roaster-names) for the workflow and
   [`docs/roaster-resolution.md`](docs/roaster-resolution.md) for the design.
 - `config.py` — paths and credentials, read from the environment or `.env`.

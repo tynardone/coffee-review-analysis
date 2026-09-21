@@ -69,7 +69,7 @@ default-groups = ["dev", "analysis"]
 
 [tool.setuptools]
 # Flat layout: only the `coffee` package ships; notebooks/ and tests/ do not.
-packages = ["coffee"]
+packages = ["coffee", "coffee.roasters"]
 
 [tool.setuptools.package-data]
 # Ship the inline type information (PEP 561) so importers get the annotations.

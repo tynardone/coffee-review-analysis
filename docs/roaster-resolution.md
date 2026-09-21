@@ -1,6 +1,6 @@
 # Roaster name resolution: the design
 
-The design behind [`coffee/roaster_resolution.py`](../coffee/roaster_resolution.py).
+The design behind [`coffee/roasters/`](../coffee/roasters/).
 For the workflow — which commands to run, in what order, and what to do with the
 review queue — see [Resolving roaster names](../README.md#resolving-roaster-names)
 in the README.
