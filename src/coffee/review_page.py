@@ -7,7 +7,7 @@ are synchronous; run them in a thread (e.g. ``asyncio.to_thread``) to avoid
 blocking the event loop during a scrape.
 
 Field names are normalized at this boundary by :func:`normalize_field_name`, so
-the raw layer lands as ``est_price`` rather than ``"Est. Price:"``. The scraped
+the parsed reviews carry ``est_price`` rather than ``"Est. Price:"``. The scraped
 label is presentation and the field name is schema; fixing the mapping here
 means no downstream consumer re-derives it.
 """

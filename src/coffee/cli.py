@@ -94,7 +94,7 @@ def _positive_int(value: str) -> int:
 
 
 def scrape_reviews(argv: list[str] | None = None) -> None:
-    """Download new and changed review pages into the bronze layer."""
+    """Download new and changed review pages into data/downloaded/."""
     settings = _settings()
     parser = argparse.ArgumentParser(description=scrape_reviews.__doc__)
     parser.add_argument(
@@ -119,7 +119,7 @@ def scrape_reviews(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
 
     _configure_logging(settings)
-    pages = PageStore(settings.bronze_reviews)
+    pages = PageStore(settings.downloaded_dir)
     result = asyncio.run(
         scrape_all_reviews(pages, args.concurrency, full=args.full, limit=args.limit)
     )
@@ -131,7 +131,7 @@ def scrape_reviews(argv: list[str] | None = None) -> None:
 
 
 def parse_reviews(argv: list[str] | None = None) -> None:
-    """Parse saved review pages into data/raw/reviews.csv. No network."""
+    """Parse downloaded review pages into data/parsed/reviews.csv. No network."""
     settings = _settings()
     parser = argparse.ArgumentParser(description=parse_reviews.__doc__)
     parser.add_argument(
@@ -148,9 +148,9 @@ def parse_reviews(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
 
     _configure_logging(settings)
-    store = CsvReviewStore(settings.raw_reviews)
+    store = CsvReviewStore(settings.parsed_reviews)
     result = parse_saved_reviews(
-        PageStore(settings.bronze_reviews), store, full=args.full, limit=args.limit
+        PageStore(settings.downloaded_dir), store, full=args.full, limit=args.limit
     )
     print(f"parsed {result.parsed} page(s); {store.csv_path} holds {result.total}")
     if result.failed:
@@ -168,10 +168,10 @@ def fetch_exchange_rates(argv: list[str] | None = None) -> None:
         "-i",
         "--input",
         type=Path,
-        default=settings.raw_reviews,
-        help="Reviews file whose review months need rates. Defaults to the raw "
-        "scrape, which is what keeps this independent of the cleaning step it "
-        "feeds; the cleaned layer is also accepted.",
+        default=settings.parsed_reviews,
+        help="Reviews file whose review months need rates. Defaults to the "
+        "parsed reviews, which keeps this independent of the cleaning step it "
+        "feeds; the cleaned reviews are also accepted.",
     )
     parser.add_argument(
         "-o",
@@ -305,7 +305,7 @@ def resolve_roasters(argv: list[str] | None = None) -> None:
         )
 
     decisions_path = args.decisions
-    review_path = args.outdir / "roaster_review_queue.csv"
+    review_path = args.outdir / settings.roaster_review_queue.name
 
     if args.accept_reviewed:
         try:
@@ -338,7 +338,7 @@ def resolve_roasters(argv: list[str] | None = None) -> None:
     )
 
     args.outdir.mkdir(parents=True, exist_ok=True)
-    crosswalk_path = args.outdir / "roaster_crosswalk.csv"
+    crosswalk_path = args.outdir / settings.roaster_crosswalk.name
     crosswalk.to_csv(crosswalk_path, index=False)
     review.to_csv(review_path, index=False)
 
@@ -356,11 +356,11 @@ def resolve_roasters(argv: list[str] | None = None) -> None:
 
 
 def clean_reviews_command(argv: list[str] | None = None) -> None:
-    """Build the cleaned layer from the raw scrape."""
+    """Build the cleaned dataset from the parsed reviews."""
     settings = _settings()
     parser = argparse.ArgumentParser(description=clean_reviews_command.__doc__)
-    parser.add_argument("-i", "--input", type=Path, default=settings.raw_reviews)
-    parser.add_argument("-o", "--output", type=Path, default=settings.clean_reviews)
+    parser.add_argument("-i", "--input", type=Path, default=settings.parsed_reviews)
+    parser.add_argument("-o", "--output", type=Path, default=settings.cleaned_reviews)
     parser.add_argument(
         "--crosswalk",
         type=Path,
@@ -389,7 +389,7 @@ def clean_reviews_command(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
 
     _configure_logging(settings)
-    raw = pd.read_csv(args.input)
+    parsed = pd.read_csv(args.input)
     crosswalk = pd.read_csv(args.crosswalk) if args.crosswalk.exists() else None
     if crosswalk is None:
         logger.warning(
@@ -409,7 +409,7 @@ def clean_reviews_command(argv: list[str] | None = None) -> None:
 
     try:
         cleaned = clean_reviews(
-            raw,
+            parsed,
             exchange_rates=rates,
             cpi=cpi,
             crosswalk=crosswalk,
@@ -420,9 +420,10 @@ def clean_reviews_command(argv: list[str] | None = None) -> None:
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     cleaned.to_parquet(args.output, index=False)
-    dropped = len(raw) - len(cleaned)
+    dropped = len(parsed) - len(cleaned)
     print(
-        f"{len(raw)} raw -> {len(cleaned)} cleaned ({dropped} dropped as agtron typos)"
+        f"{len(parsed)} parsed -> {len(cleaned)} cleaned "
+        f"({dropped} dropped as agtron typos)"
     )
     if rates is not None and cpi is not None:
         print(f"prices in {args.baseline_date} dollars")
@@ -502,14 +503,14 @@ def refresh_data(argv: list[str] | None = None) -> None:
     )
     args = parser.parse_args(argv)
 
-    raw = settings.raw_reviews
+    parsed = settings.parsed_reviews
     full = ["--full"] if args.full else []
     steps: list[tuple[str, Callable[[], None]]] = []
     if not args.skip_scrape:
         steps.append(("scrape", lambda: scrape_reviews(full)))
     steps += [
         ("parse", lambda: parse_reviews(full)),
-        ("resolve roasters", lambda: resolve_roasters([str(raw)])),
+        ("resolve roasters", lambda: resolve_roasters([str(parsed)])),
         ("fetch exchange rates", lambda: fetch_exchange_rates([])),
         ("fetch CPI", lambda: fetch_cpi_command([])),
         (
@@ -522,4 +523,4 @@ def refresh_data(argv: list[str] | None = None) -> None:
         print(f"\n=== {number}/{len(steps)}  {name} " + "=" * (40 - len(name)))
         run()
 
-    print(f"\nDone. The cleaned layer is at {settings.clean_reviews}.")
+    print(f"\nDone. The cleaned dataset is at {settings.cleaned_reviews}.")

@@ -55,7 +55,7 @@ def test_paths_default_to_the_project_root():
     settings = settings_from()
     assert settings.data_dir == PROJECT_ROOT / "data"
     assert settings.seeds_dir == PROJECT_ROOT / "seeds"
-    assert settings.raw_reviews == PROJECT_ROOT / "data" / "raw" / "reviews.csv"
+    assert settings.parsed_reviews == PROJECT_ROOT / "data" / "parsed" / "reviews.csv"
     assert (
         settings.roaster_decisions == PROJECT_ROOT / "seeds" / "roaster_decisions.csv"
     )
@@ -106,7 +106,7 @@ def test_paths_can_be_moved(tmp_path, monkeypatch):
     monkeypatch.setenv("COFFEE_DATA_DIR", str(tmp_path / "d"))
     monkeypatch.setenv("COFFEE_SEEDS_DIR", str(tmp_path / "s"))
     settings = settings_from()
-    assert settings.clean_reviews == tmp_path / "d" / "clean" / "reviews.parquet"
+    assert settings.cleaned_reviews == tmp_path / "d" / "cleaned" / "reviews.parquet"
     assert settings.roaster_decisions == tmp_path / "s" / "roaster_decisions.csv"
 
 

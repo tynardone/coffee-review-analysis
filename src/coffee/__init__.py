@@ -17,18 +17,19 @@ own (see ``[project.scripts]``):
    grouping with recorded manual verdicts.
 4. **augment** (``fetch-exchange-rates``, ``fetch-cpi``) —
    :mod:`exchange_rates` fetches historical rates for the review months in the
-   raw scrape, and :mod:`cpi` fetches the BLS price index. Both merge into what
+   parsed reviews, and :mod:`cpi` fetches the BLS price index. Both merge into what
    is already held rather than replacing it.
-5. **clean** (``clean-reviews``) — :mod:`clean` turns raw rows into the cleaned
-   layer, applying :mod:`prices` to put prices in comparable money when
+5. **clean** (``clean-reviews``) — :mod:`clean` turns parsed rows into the
+   cleaned dataset, applying :mod:`prices` to put prices in comparable money when
    exchange rates and CPI are available.
 
-That produces three layers: the saved HTML in ``data/bronze/reviews/``,
-``data/raw/reviews.csv`` as parsed, and ``data/clean/reviews.parquet`` ready for
-analysis. Raw stays plain text because it is the committed copy; the cleaned
-layer is Parquet because it is regenerated on demand, read only by code, and
-Parquet keeps its types. Analysis itself lives in the notebooks; nothing here
-produces charts or aggregates.
+The review data moves through three folders under ``data/``, in pipeline
+order: ``downloaded/`` holds the pages as served, ``parsed/reviews.csv`` one row
+per review, and ``cleaned/reviews.parquet`` the typed, priced table the
+notebooks read. The parsed CSV stays plain text because it is the committed
+copy; the cleaned table is Parquet because it is regenerated on demand, read
+only by code, and Parquet keeps its types. Analysis itself lives in the
+notebooks; nothing here produces charts or aggregates.
 
 :mod:`review_store` sits between the parse and where reviews are kept, so the
 CSV corpus can be replaced by a database without changing the parse.

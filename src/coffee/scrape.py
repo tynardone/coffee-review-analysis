@@ -1,6 +1,6 @@
 """Step 1, ``scrape-reviews``: download new and changed review pages.
 
-:func:`scrape_all_reviews` saves each page to the bronze layer
+:func:`scrape_all_reviews` saves each page to ``data/downloaded/``
 (:mod:`coffee.page_store`) and never parses; that is :mod:`coffee.parse`.
 Discovery returns every review URL with its sitemap ``<lastmod>`` in about 17
 requests, so a run compares that with what is already saved and fetches only
@@ -93,7 +93,7 @@ async def scrape_all_reviews(
     full: bool = False,
     limit: int | None = None,
 ) -> ScrapeResult:
-    """Discover review URLs and save every new or changed page to bronze.
+    """Discover review URLs and save every new or changed page.
 
     ``full`` re-downloads every page regardless of what is saved. ``limit``
     caps how many pages are fetched, for a quick trial run.

@@ -31,7 +31,7 @@ def crosswalk(rows):
 def paths(tmp_path):
     return {
         "decisions_path": tmp_path / "roaster_decisions.csv",
-        "review_path": tmp_path / "roaster_review_queue.csv",
+        "review_path": tmp_path / "review_queue.csv",
     }
 
 

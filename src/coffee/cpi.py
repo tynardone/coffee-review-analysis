@@ -1,7 +1,7 @@
 """Fetch the BLS consumer price index used to put prices in constant dollars.
 
 Reads the CPI-U series from the BLS public API and merges it into the CPI
-table, ``data/external/consumer_price_index.csv`` by default. The series is
+table, ``data/reference/cpi.csv`` by default. The series is
 ``CUUR0000SA0``: all urban consumers, U.S. city average, all items, not
 seasonally adjusted, which is what :func:`coffee.prices.cpi_adjust_price`
 expects.

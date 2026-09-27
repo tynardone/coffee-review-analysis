@@ -130,23 +130,29 @@ class Settings(BaseSettings):
             TomlConfigSettingsSource(settings_cls),
         )
 
-    # -- data/ -------------------------------------------------------------
+    # -- data/, in pipeline order -----------------------------------------
 
     @property
-    def bronze_reviews(self) -> Path:
-        return self.data_dir / "bronze" / "reviews"
+    def downloaded_dir(self) -> Path:
+        """Review pages as the site served them, plus their manifest."""
+        return self.data_dir / "downloaded"
 
     @property
-    def raw_dir(self) -> Path:
-        return self.data_dir / "raw"
+    def parsed_reviews(self) -> Path:
+        """One row per review, parsed from its downloaded page."""
+        return self.data_dir / "parsed" / "reviews.csv"
 
     @property
-    def raw_reviews(self) -> Path:
-        return self.raw_dir / "reviews.csv"
+    def reference_dir(self) -> Path:
+        return self.data_dir / "reference"
 
     @property
-    def clean_reviews(self) -> Path:
-        return self.data_dir / "clean" / "reviews.parquet"
+    def exchange_rates(self) -> Path:
+        return self.reference_dir / "exchange_rates.json"
+
+    @property
+    def cpi(self) -> Path:
+        return self.reference_dir / "cpi.csv"
 
     @property
     def roasters_dir(self) -> Path:
@@ -154,15 +160,16 @@ class Settings(BaseSettings):
 
     @property
     def roaster_crosswalk(self) -> Path:
-        return self.roasters_dir / "roaster_crosswalk.csv"
+        return self.roasters_dir / "crosswalk.csv"
 
     @property
-    def exchange_rates(self) -> Path:
-        return self.data_dir / "external" / "openex_exchange_rates.json"
+    def roaster_review_queue(self) -> Path:
+        return self.roasters_dir / "review_queue.csv"
 
     @property
-    def cpi(self) -> Path:
-        return self.data_dir / "external" / "consumer_price_index.csv"
+    def cleaned_reviews(self) -> Path:
+        """Typed and priced, with roasters resolved: what the notebooks read."""
+        return self.data_dir / "cleaned" / "reviews.parquet"
 
     # -- seeds/ ------------------------------------------------------------
 
