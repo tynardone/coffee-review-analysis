@@ -2,7 +2,7 @@
 
 Kept out of the command so it can be tested: the summary reports how much was
 merged, how much manual work is outstanding, and whether the clustering did
-anything that needs looking at. Those are judgements about the result, not
+anything that needs looking at. Those are judgments about the result, not
 about argument parsing.
 """
 

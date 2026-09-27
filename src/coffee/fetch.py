@@ -2,7 +2,7 @@
 
 :func:`fetch` gives URL discovery and review scraping one common request path:
 a per-request timeout, retries limited to transient failures (429/5xx) with
-exponential backoff and jitter honouring ``Retry-After``, and backoff performed
+exponential backoff and jitter honoring ``Retry-After``, and backoff performed
 outside the caller's semaphore so that a slow-failing URL does not hold a
 concurrency slot idle. Permanent errors such as 404 return ``None`` at once.
 """
@@ -33,7 +33,7 @@ JITTER = 1.0
 
 
 def _retry_delay(attempt: int, retry_after: str | None) -> float:
-    """Exponential backoff with jitter, honouring a numeric Retry-After header."""
+    """Exponential backoff with jitter, honoring a numeric Retry-After header."""
     if retry_after and retry_after.isdigit():
         return float(retry_after)
     return min(BASE_DELAY * 2**attempt, MAX_DELAY) + random.uniform(0, JITTER)

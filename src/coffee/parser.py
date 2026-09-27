@@ -6,7 +6,7 @@ price, agtron, etc.). Parsing is pure CPU work with no I/O, so the functions
 are synchronous; run them in a thread (e.g. ``asyncio.to_thread``) to avoid
 blocking the event loop during a scrape.
 
-Field names are normalised at this boundary by :func:`normalise_field_name`, so
+Field names are normalized at this boundary by :func:`normalize_field_name`, so
 the raw layer lands as ``est_price`` rather than ``"Est. Price:"``. The scraped
 label is presentation and the field name is schema; fixing the mapping here
 means no downstream consumer re-derives it.
@@ -19,12 +19,12 @@ from bs4 import BeautifulSoup
 from bs4.element import Tag
 
 __all__ = [
-    "normalise_field_name",
+    "normalize_field_name",
     "parse_html",
 ]
 
 
-def normalise_field_name(label: str) -> str:
+def normalize_field_name(label: str) -> str:
     """The site's table label -> the field name it is stored under.
 
     ``"Est. Price:"`` becomes ``"est_price"``. Applying this at parse time
@@ -88,14 +88,14 @@ def _parse_notes_section(soup: BeautifulSoup) -> str | None:
 
 
 def _parse_tables(soup: BeautifulSoup) -> dict[str, str]:
-    """Extract two-column tables into a dict, keyed by normalised field name."""
+    """Extract two-column tables into a dict, keyed by normalized field name."""
     data: dict[str, str] = {}
     for table in soup.find_all("table"):
         for row in table.find_all("tr"):
             cells = row.find_all("td")
             if len(cells) == 2:
                 data[cells[0].get_text().strip()] = cells[1].get_text().strip()
-    return {normalise_field_name(key): value for key, value in data.items()}
+    return {normalize_field_name(key): value for key, value in data.items()}
 
 
 def parse_html(text: str) -> dict[str, str | None]:

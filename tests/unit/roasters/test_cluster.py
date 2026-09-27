@@ -81,7 +81,7 @@ def test_a_split_can_be_defeated_by_a_bridging_name():
     """Blocking a union is not the same as keeping two names apart.
 
     A collaboration name is a superset of both partners' keys, so single
-    linkage rejoins them through it. This is accepted behaviour — the point of
+    linkage rejoins them through it. This is accepted behavior — the point of
     the next test is that it must not be SILENT.
     """
     decisions = [Decision(COLLAB[0], COLLAB[1], Verdict.SPLIT)]
@@ -112,7 +112,7 @@ def test_splitting_the_bridge_too_resolves_the_violation():
     assert not crosswalk.violates_decision.any()
 
 
-def test_honoured_splits_are_not_flagged():
+def test_honored_splits_are_not_flagged():
     decisions = [Decision("Fellow Coffee", "Mellow Coffee", Verdict.SPLIT)]
     crosswalk, _ = resolve(["Fellow Coffee", "Mellow Coffee"], decisions=decisions)
     assert not crosswalk.violates_decision.any()

@@ -19,7 +19,7 @@ from coffee.roasters import (
 )
 
 # --------------------------------------------------------------------------
-# Decisions — durable human judgement
+# Decisions — durable human judgment
 # --------------------------------------------------------------------------
 
 

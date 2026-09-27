@@ -142,7 +142,7 @@ def resolve(
     # The subset guard in score() needs to know which tokens are generic in
     # this corpus, so the statistic is bound to the scorer before any
     # comparison happens. Every scoring path below uses `scorer`; a bare
-    # `score` call would revert to the conservative no-corpus behaviour.
+    # `score` call would revert to the conservative no-corpus behavior.
     token_df = token_document_frequency(distinct_keys)
     scorer = partial(score, token_df=token_df)
 
@@ -161,7 +161,7 @@ def resolve(
         for j in range(i + 1, len(distinct_keys)):  # upper triangle only
             s = matrix[i][j]
 
-            # cdist honours score_cutoff for built-in scorers but merely
+            # cdist honors score_cutoff for built-in scorers but merely
             # passes it through to custom ones, where it lands in **kwargs and
             # is ignored. The cutoff is therefore enforced here; without it
             # every pair in the matrix, down to score 8, reaches the queue.
