@@ -61,7 +61,7 @@ cp .env.example .env
 
 Every variable is named `COFFEE_` plus the setting's name, with a double
 underscore for a value inside a TOML table: `COFFEE_OPENEXCHANGERATES_API_ID`,
-`COFFEE_DATA_DIR` (default `data/`), `COFFEE_SEEDS_DIR` (default `seeds/`),
+`COFFEE_DATA_DIR` (default `data/`), `COFFEE_CURATED_DIR` (default `curated/`),
 `COFFEE_SCRAPE__CONCURRENCY`. Settings are checked when a command starts, so a
 bad value stops it immediately with a message naming the setting.
 
@@ -210,7 +210,7 @@ data/
     review_queue.csv   pairs for you to judge                  committed
   cleaned/
     reviews.parquet    typed, priced, roasters resolved        not committed
-seeds/
+curated/
   roaster_decisions.csv  your judgments; nothing regenerates it  committed
 ```
 
@@ -286,7 +286,7 @@ explains the design.
 
 | File | Location | Edit? | Purpose |
 |---|---|---|---|
-| `roaster_decisions.csv` | `seeds/` | Yes | Every pair that has been judged. The only file that cannot be regenerated. |
+| `roaster_decisions.csv` | `curated/` | Yes | Every pair that has been judged. The only file that cannot be regenerated. |
 | `review_queue.csv` | `data/roasters/` | `verdict` column only | Pairs awaiting judgment. Regenerated on every run. |
 | `crosswalk.csv` | `data/roasters/` | No | The output, mapping `raw_name` to `canonical_name`. Regenerated on every run. |
 
@@ -337,7 +337,7 @@ The `location_evidence` column is a useful guide:
 uv run resolve-roasters data/parsed/reviews.csv --accept-reviewed --decided-by "$USER"
 ```
 
-This adds your answers to `seeds/roaster_decisions.csv` and resolves again with
+This adds your answers to `curated/roaster_decisions.csv` and resolves again with
 them applied. The new queue holds only the rows you left blank.
 
 Always follow step 2 with this step. A plain run regenerates the queue, which
@@ -348,7 +348,7 @@ queue holds any and tells you to add `--accept-reviewed`.
 
 After the next scrape and parse, start again at step 1. Pairs already decided stay
 decided, so the queue holds only new questions. If an answered pair reappears,
-check that `seeds/roaster_decisions.csv` exists and that `--decisions` is not
+check that `curated/roaster_decisions.csv` exists and that `--decisions` is not
 pointing elsewhere.
 
 ### Checking the results
@@ -398,7 +398,7 @@ To fix it, also record a split against the bridging name: here, `RND` against
 
 1. Never edit `data/roasters/crosswalk.csv` by hand; it is overwritten on every run. To
    change a grouping, change the decision behind it.
-2. To reverse a decision, edit `seeds/roaster_decisions.csv` directly.
+2. To reverse a decision, edit `curated/roaster_decisions.csv` directly.
    `--accept-reviewed` never overwrites an existing verdict, so a change of mind
    always shows up as a diff.
 
@@ -437,7 +437,7 @@ src/coffee/   the package
 config/       settings.toml, the committed default settings
 tests/        unit and integration tests, with saved review pages as fixtures
 data/         pipeline inputs and outputs; committed except downloaded/ and cleaned/
-seeds/        hand-kept reference data that nothing can regenerate
+curated/      files kept by hand that nothing can regenerate
 docs/         data flow and roaster resolution design
 notebooks/    analysis
 notes/        background on how CoffeeReview scores coffee

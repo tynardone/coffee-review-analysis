@@ -95,7 +95,7 @@ class Settings(BaseSettings):
     )
 
     data_dir: Path = PROJECT_ROOT / "data"
-    seeds_dir: Path = PROJECT_ROOT / "seeds"
+    curated_dir: Path = PROJECT_ROOT / "curated"
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
 
     scrape: ScrapeSettings = ScrapeSettings()
@@ -171,11 +171,11 @@ class Settings(BaseSettings):
         """Typed and priced, with roasters resolved: what the notebooks read."""
         return self.data_dir / "cleaned" / "reviews.parquet"
 
-    # -- seeds/ ------------------------------------------------------------
+    # -- curated/: kept by hand, nothing regenerates it --------------------
 
     @property
     def roaster_decisions(self) -> Path:
-        return self.seeds_dir / "roaster_decisions.csv"
+        return self.curated_dir / "roaster_decisions.csv"
 
 
 @lru_cache

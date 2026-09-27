@@ -1,6 +1,6 @@
 # Data flow
 
-Every file under `data/` and `seeds/`, what writes it, and what reads it. `uv run refresh-data`
+Every file under `data/` and `curated/`, what writes it, and what reads it. `uv run refresh-data`
 runs the six commands top to bottom; the notebooks pick up where it stops.
 
 ```mermaid
@@ -25,7 +25,7 @@ flowchart TD
 
     DOWNLOADED["data/downloaded/<br/><i>saved HTML + manifest · ~240 MB · gitignored</i>"]:::data
     PARSED["data/parsed/reviews.csv<br/><i>10.4 MB · committed</i>"]:::data
-    DEC["seeds/roaster_decisions.csv<br/><i>hand-edited · irreplaceable</i>"]:::human
+    DEC["curated/roaster_decisions.csv<br/><i>hand-edited · irreplaceable</i>"]:::human
     QUEUE["data/roasters/review_queue.csv<br/><i>you fill the verdict column</i>"]:::human
     XWALK["data/roasters/crosswalk.csv<br/><i>derived every run</i>"]:::ref
     FX["data/reference/exchange_rates.json"]:::ref
@@ -71,7 +71,7 @@ and the review queue feeds back into the decisions file when you pass
 | --- | --- | --- |
 | `downloaded/` | `scrape-reviews` into an empty folder | ~30 min, ~9,300 requests; pages since removed from the site are gone |
 | `parsed/reviews.csv` | `parse-reviews --full` from `downloaded/` | about a minute, no requests; reviews removed from the site before bronze held them are gone |
-| `seeds/roaster_decisions.csv` | **nothing rebuilds it** | every pair re-adjudicated by hand |
+| `curated/roaster_decisions.csv` | **nothing rebuilds it** | every pair re-adjudicated by hand |
 | `roasters/crosswalk.csv` | `resolve-roasters` | seconds |
 | `roasters/review_queue.csv` | `resolve-roasters` | seconds |
 | `reference/exchange_rates.json` | `fetch-exchange-rates --refetch` | 323 calls — a third of the monthly free tier |

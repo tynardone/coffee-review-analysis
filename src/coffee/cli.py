@@ -246,9 +246,9 @@ def resolve_roasters(argv: list[str] | None = None) -> None:
         "--decisions",
         type=Path,
         default=settings.roaster_decisions,
-        help="CSV of adjudicated pairs, kept with the other seed files rather "
-        "than under --outdir. Missing is fine; it is created as you record "
-        "verdicts.",
+        help="CSV of adjudicated pairs, kept in curated/ with the other "
+        "hand-kept files rather than under --outdir. Missing is fine; it is "
+        "created as you record verdicts.",
     )
     parser.add_argument(
         "--auto",

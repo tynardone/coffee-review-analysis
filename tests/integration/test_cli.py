@@ -1,7 +1,7 @@
 """The console commands against a fresh, empty data directory.
 
 These run the real entry points with ``COFFEE_DATA_DIR`` and
-``COFFEE_SEEDS_DIR`` pointed at a temporary directory, so they prove that every
+``COFFEE_CURATED_DIR`` pointed at a temporary directory, so they prove that every
 default path comes from the settings rather than from the repository's own
 ``data/``. No network: only the commands that work from files are run.
 """
@@ -19,14 +19,14 @@ from tests.paths import GOLDEN, review_pages
 
 @pytest.fixture
 def dirs(tmp_path, monkeypatch):
-    """Empty data and seed directories, and no developer .env."""
-    data, seeds = tmp_path / "data", tmp_path / "seeds"
+    """Empty data and curated directories, and no developer .env."""
+    data, curated = tmp_path / "data", tmp_path / "curated"
     monkeypatch.setenv("COFFEE_DATA_DIR", str(data))
-    monkeypatch.setenv("COFFEE_SEEDS_DIR", str(seeds))
+    monkeypatch.setenv("COFFEE_CURATED_DIR", str(curated))
     # A developer's .env could supply the API key or redirect the data dir,
     # and the real get_settings() caches its first result across tests.
     monkeypatch.setattr(cli, "get_settings", lambda: Settings(_env_file=None))
-    return data, seeds
+    return data, curated
 
 
 @pytest.fixture
@@ -55,12 +55,12 @@ def test_clean_reviews_writes_under_the_configured_data_dir(dirs, parsed_reviews
     assert cleaned["url"].is_unique
 
 
-def test_resolve_roasters_reads_decisions_from_the_seeds_dir(
+def test_resolve_roasters_reads_decisions_from_the_curated_dir(
     dirs, parsed_reviews, capsys
 ):
-    data, seeds = dirs
-    seeds.mkdir()
-    (seeds / "roaster_decisions.csv").write_text(
+    data, curated = dirs
+    curated.mkdir()
+    (curated / "roaster_decisions.csv").write_text(
         "name_a,name_b,verdict,decided_by,decided_on,note\n"
         "1980 CAFE,U&Me Buna,split,test,2026-09-27,\n"
     )
@@ -69,7 +69,7 @@ def test_resolve_roasters_reads_decisions_from_the_seeds_dir(
 
     assert (data / "roasters" / "crosswalk.csv").exists()
     assert not (data / "roasters" / "roaster_decisions.csv").exists()
-    assert f"1 decisions applied from {seeds / 'roaster_decisions.csv'}" in (
+    assert f"1 decisions applied from {curated / 'roaster_decisions.csv'}" in (
         capsys.readouterr().out
     )
 
