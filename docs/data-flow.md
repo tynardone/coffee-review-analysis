@@ -23,14 +23,14 @@ flowchart TD
     CPICMD(["5 · fetch-cpi"]):::cmd
     CLEAN(["6 · clean-reviews"]):::cmd
 
-    BRONZE["data/bronze/reviews/<br/><i>saved HTML + manifest · ~100 MB · gitignored</i>"]:::raw
-    RAW["data/raw/reviews.csv<br/><i>9.7 MB · committed</i>"]:::raw
+    BRONZE["data/bronze/reviews/<br/><i>saved HTML + manifest · ~240 MB · gitignored</i>"]:::raw
+    RAW["data/raw/reviews.csv<br/><i>10.4 MB · committed</i>"]:::raw
     DEC["seeds/roaster_decisions.csv<br/><i>hand-edited · irreplaceable</i>"]:::human
     QUEUE["roasters/roaster_review_queue.csv<br/><i>you fill the verdict column</i>"]:::human
     XWALK["roasters/roaster_crosswalk.csv<br/><i>derived every run</i>"]:::ref
     FX["external/openex_exchange_rates.json"]:::ref
     CPI["external/consumer_price_index.csv"]:::ref
-    CLEANED["data/clean/reviews.parquet<br/><i>3.6 MB · gitignored</i>"]:::out
+    CLEANED["data/clean/reviews.parquet<br/><i>3.8 MB · gitignored</i>"]:::out
     NB["notebooks 01 · 02 · 03"]:::out
 
     SITE --> SCRAPE --> BRONZE
