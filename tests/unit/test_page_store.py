@@ -3,7 +3,7 @@
 import gzip
 from datetime import date
 
-from coffee.bronze import PageStore, _filename
+from coffee.page_store import PageStore, _filename
 
 URL = "https://www.coffeereview.com/review/some-coffee/"
 JAN = date(2026, 1, 1)

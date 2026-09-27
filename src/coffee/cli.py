@@ -20,7 +20,6 @@ from pathlib import Path
 import pandas as pd
 import requests
 
-from coffee.bronze import PageStore
 from coffee.clean import DEFAULT_BASELINE_DATE, clean_reviews
 from coffee.cpi import MONTH_COLUMNS, fetch_cpi
 from coffee.exchange_rates import (
@@ -29,12 +28,10 @@ from coffee.exchange_rates import (
     load_review_dates,
     unfetched_dates,
 )
-from coffee.pipeline import (
-    DEFAULT_CONCURRENCY,
-    parse_saved_reviews,
-    scrape_all_reviews,
-)
+from coffee.page_store import PageStore
+from coffee.parse import parse_saved_reviews
 from coffee.prices import load_cpi, load_exchange_rates
+from coffee.review_store import CsvReviewStore
 from coffee.roasters import (
     format_resolution_report,
     format_violations,
@@ -43,8 +40,8 @@ from coffee.roasters import (
     resolve,
     unpromoted_verdicts,
 )
+from coffee.scrape import DEFAULT_CONCURRENCY, scrape_all_reviews
 from coffee.settings import Settings, load_env, require_env
-from coffee.storage import CsvReviewStore
 
 __all__ = [
     "clean_reviews_command",

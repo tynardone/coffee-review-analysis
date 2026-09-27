@@ -9,7 +9,7 @@ changes, so regenerating it without reading the diff silently discards the test.
 
 import json
 
-from coffee.parser import parse_html
+from coffee.review_page import parse_html
 from tests.paths import GOLDEN, review_pages
 
 

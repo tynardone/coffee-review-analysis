@@ -24,7 +24,7 @@ from typing import Any
 import pandas as pd
 import requests
 
-from coffee.fetch import HEADERS
+from coffee.http_client import HEADERS
 
 __all__ = [
     "BLS_API_URL",

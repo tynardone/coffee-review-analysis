@@ -14,7 +14,7 @@ change, and read the diff.
 import pytest
 from bs4 import BeautifulSoup
 
-from coffee.parser import _parse_tables, normalize_field_name, parse_html
+from coffee.review_page import _parse_tables, normalize_field_name, parse_html
 from tests.paths import review_pages
 
 

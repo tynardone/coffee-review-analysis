@@ -12,7 +12,7 @@ import pandas as pd
 import pytest
 
 from coffee import cli
-from coffee.bronze import PageStore
+from coffee.page_store import PageStore
 from tests.paths import GOLDEN, review_pages
 
 

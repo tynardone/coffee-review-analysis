@@ -1,24 +1,22 @@
-"""Tests for the scrape and the parse.
+"""Tests for the scrape: which pages to fetch, and what a bad one costs.
 
 `plan_fetch` is the decision that turns a 29-minute run into a one-minute one,
 so the cases that matter are the ones where it could wrongly SKIP a page — a
 skipped page stays quietly stale, while a wrongly re-fetched one costs a single
 request.
 
-The scrape and parse tests pin the failure contract: one bad page is reported
-and skipped, never the end of the run.
+The rest pin the failure contract: one bad page is reported and skipped, never
+the end of the run.
 """
 
 import asyncio
 from datetime import date
 
-import pandas as pd
 import pytest
 
-from coffee import pipeline
-from coffee.bronze import PageStore
-from coffee.pipeline import parse_saved_reviews, plan_fetch, scrape_all_reviews
-from coffee.storage import CsvReviewStore
+from coffee import scrape as scrape_module
+from coffee.page_store import PageStore
+from coffee.scrape import plan_fetch, scrape_all_reviews
 
 JAN = date(2026, 1, 1)
 JUN = date(2026, 6, 1)
@@ -111,8 +109,8 @@ def site(monkeypatch):
         Site.fetched.append(url)
         return Site.served.get(url)
 
-    monkeypatch.setattr(pipeline, "get_review_urls", fake_discovery)
-    monkeypatch.setattr(pipeline, "fetch", fake_fetch)
+    monkeypatch.setattr(scrape_module, "get_review_urls", fake_discovery)
+    monkeypatch.setattr(scrape_module, "fetch", fake_fetch)
     Site.fetched = []
     return Site
 
@@ -150,7 +148,7 @@ def test_an_exception_while_fetching_does_not_abort_the_run(pages, site, monkeyp
             raise RuntimeError("unexpected")
         return "b"
 
-    monkeypatch.setattr(pipeline, "fetch", exploding_fetch)
+    monkeypatch.setattr(scrape_module, "fetch", exploding_fetch)
     result = scrape(pages)
     assert result.failed == [A]
     assert set(pages.manifest()) == {B}
@@ -193,93 +191,3 @@ def test_a_page_gone_from_the_sitemap_is_reported_and_kept(pages, site):
     result = scrape(pages)
     assert result.retired == 1
     assert set(pages.manifest()) == {A, B}
-
-
-# --------------------------------------------------------------------------
-# Parse: saved pages to rows, no network
-# --------------------------------------------------------------------------
-
-PAGE = "<html><h1 class='review-title'>{}</h1></html>"
-
-
-@pytest.fixture
-def store(tmp_path):
-    return CsvReviewStore(tmp_path / "reviews.csv")
-
-
-def rows(store):
-    return pd.read_csv(store.csv_path).set_index("url")
-
-
-def test_parse_writes_a_row_per_page_with_its_provenance(pages, store):
-    pages.save(A, PAGE.format("Coffee A"), JAN, fetched_at="t1")
-
-    result = parse_saved_reviews(pages, store)
-
-    assert (result.parsed, result.total) == (1, 1)
-    row = rows(store).loc[A]
-    assert row["title"] == "Coffee A"
-    assert row["sitemap_lastmod"] == "2026-01-01"
-    assert row["scraped_at"] == "t1"
-
-
-def test_parse_skips_pages_already_parsed_from_the_same_fetch(pages, store):
-    pages.save(A, PAGE.format("A"), JAN, fetched_at="t1")
-    parse_saved_reviews(pages, store)
-    pages.save(B, PAGE.format("B"), JAN, fetched_at="t1")
-
-    assert parse_saved_reviews(pages, store).parsed == 1  # only B
-
-
-def test_parse_picks_up_a_page_fetched_again(pages, store):
-    pages.save(A, PAGE.format("old title"), JAN, fetched_at="t1")
-    parse_saved_reviews(pages, store)
-    pages.save(A, PAGE.format("new title"), JUN, fetched_at="t2")
-
-    assert parse_saved_reviews(pages, store).parsed == 1
-    assert rows(store).loc[A, "title"] == "new title"
-
-
-def test_full_reparses_every_saved_page(pages, store):
-    pages.save(A, PAGE.format("A"), JAN, fetched_at="t1")
-    pages.save(B, PAGE.format("B"), JAN, fetched_at="t1")
-    parse_saved_reviews(pages, store)
-
-    assert parse_saved_reviews(pages, store).parsed == 0
-    assert parse_saved_reviews(pages, store, full=True).parsed == 2
-
-
-def test_limit_caps_the_pages_parsed(pages, store):
-    for url in (A, B, C):
-        pages.save(url, PAGE.format(url), JAN, fetched_at="t1")
-    assert parse_saved_reviews(pages, store, limit=2).parsed == 2
-    assert parse_saved_reviews(pages, store).parsed == 1  # the rest, next time
-
-
-def test_a_page_that_fails_to_parse_keeps_its_old_row(pages, store, monkeypatch):
-    pages.save(A, PAGE.format("good A"), JAN, fetched_at="t1")
-    pages.save(B, PAGE.format("B"), JAN, fetched_at="t1")
-    parse_saved_reviews(pages, store)
-
-    def parse_that_fails_on_a(text):
-        if "A" in text:
-            raise ValueError("malformed")
-        return {"title": "B again"}
-
-    monkeypatch.setattr(pipeline, "parse_html", parse_that_fails_on_a)
-    result = parse_saved_reviews(pages, store, full=True)
-
-    assert result.failed == [A]
-    assert rows(store).loc[A, "title"] == "good A"
-    assert rows(store).loc[B, "title"] == "B again"
-
-
-def test_rows_without_a_saved_page_are_never_removed(pages, store):
-    """A review gone from the site before bronze existed survives a re-parse."""
-    store.upsert([{"url": C, "title": "only copy"}])
-    pages.save(A, PAGE.format("A"), JAN, fetched_at="t1")
-
-    parse_saved_reviews(pages, store, full=True)
-
-    assert rows(store).loc[C, "title"] == "only copy"
-    assert len(rows(store)) == 2
