@@ -384,8 +384,15 @@ model, installed once:
 uv run python -m spacy download en_core_web_sm
 ```
 
-Clear notebook outputs before committing; embedded images once pushed the
-notebooks past 13 MB. Save figures worth keeping to `imgs/`.
+Notebook outputs are stripped automatically when you commit, by the
+`nbstripout` pre-commit hook. Embedded chart images once pushed the notebooks
+past 13 MB, and every re-run stored another copy in git history.
+
+Figures worth keeping go in `imgs/`. Git cannot store a new version of an image
+as a small difference, so each changed PNG adds its full size to the history.
+Commit a figure when you mean to update it. The word clouds use a fixed random
+seed, so re-running notebook 03 on unchanged data rewrites them byte for byte
+and git sees no change.
 
 ## Project layout
 
@@ -448,8 +455,8 @@ parser change, regenerate the file and review the diff:
 uv run python -m tests.generate_golden
 ```
 
-Ruff (linting and formatting) and mypy run as pre-commit hooks. Install them
-once after cloning:
+Ruff (linting and formatting), mypy and nbstripout run as pre-commit hooks.
+Install them once after cloning:
 
 ```bash
 uv run pre-commit install

@@ -32,6 +32,13 @@ repos:
     rev: v2.3.1
     hooks:
     -   id: mypy
+-   repo: https://github.com/kynan/nbstripout
+    rev: 0.9.1
+    hooks:
+    # Strip outputs and execution counts from notebooks on commit. Embedded
+    # chart images once took the notebooks past 13 MB each, and every re-run
+    # stored a fresh copy in history; clearing outputs by hand was not enough.
+    -   id: nbstripout
 - repo: https://github.com/astral-sh/ruff-pre-commit
   # Keep this rev in step with the `ruff` floor in pyproject.toml's dev group.
   # When the hook and the local venv disagree, every commit reformats whatever
