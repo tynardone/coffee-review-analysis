@@ -12,7 +12,8 @@ import pandas as pd
 import pytest
 
 from coffee import cli
-from tests.paths import GOLDEN
+from coffee.bronze import PageStore
+from tests.paths import GOLDEN, review_pages
 
 
 @pytest.fixture
@@ -75,3 +76,33 @@ def test_fetch_exchange_rates_without_a_key_exits_naming_the_variable(
     monkeypatch.delenv("OPENEXCHANGERATES_API_ID", raising=False)
     with pytest.raises(SystemExit, match="OPENEXCHANGERATES_API_ID is not set"):
         cli.fetch_exchange_rates([])
+
+
+def test_parse_reviews_turns_saved_pages_into_the_golden_rows(dirs):
+    """The real pages, saved to bronze and parsed by the command, give exactly
+    the fields the parser's golden file pins, plus where each came from."""
+    data, _ = dirs
+    pages = PageStore(data / "bronze" / "reviews")
+    for path in review_pages():
+        url = f"https://www.coffeereview.com/review/{path.stem}/"
+        pages.save(url, path.read_text(encoding="utf-8"), None, "2026-09-27T12:00Z")
+
+    cli.parse_reviews([])
+
+    held = pd.read_csv(data / "raw" / "reviews.csv", dtype=str, keep_default_na=False)
+    held = held.set_index("url")
+    golden = json.loads(GOLDEN.read_text(encoding="utf-8"))
+    assert len(held) == len(golden) == 10
+    for name, fields in golden.items():
+        row = held.loc[f"https://www.coffeereview.com/review/{name[:-5]}/"]
+        assert {k: row[k] for k in fields} == {
+            k: "" if v is None else v for k, v in fields.items()
+        }
+        assert row["scraped_at"] == "2026-09-27T12:00Z"
+
+
+def test_parse_reviews_with_nothing_saved_writes_nothing(dirs, capsys):
+    data, _ = dirs
+    cli.parse_reviews([])
+    assert "parsed 0 page(s)" in capsys.readouterr().out
+    assert not (data / "raw" / "reviews.csv").exists()

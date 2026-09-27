@@ -1,23 +1,24 @@
-"""Tests for the scrape: which pages to fetch, and what a bad one costs.
+"""Tests for the scrape and the parse.
 
 `plan_fetch` is the decision that turns a 29-minute run into a one-minute one,
 so the cases that matter are the ones where it could wrongly SKIP a page — a
-skipped page is a row that stays quietly wrong, while a wrongly re-fetched one
-costs a single request.
+skipped page stays quietly stale, while a wrongly re-fetched one costs a single
+request.
 
-`scrape_review` carries the failure contract. `scrape_all_reviews` awaits each
-review in turn, so an exception escaping it abandons the remaining tasks and
-writes nothing: one bad page out of ~9,000 would lose the run. Every failure
-mode has to return None instead.
+The scrape and parse tests pin the failure contract: one bad page is reported
+and skipped, never the end of the run.
 """
 
 import asyncio
 from datetime import date
 
+import pandas as pd
 import pytest
 
 from coffee import pipeline
-from coffee.pipeline import plan_fetch
+from coffee.bronze import PageStore
+from coffee.pipeline import parse_saved_reviews, plan_fetch, scrape_all_reviews
+from coffee.storage import CsvReviewStore
 
 JAN = date(2026, 1, 1)
 JUN = date(2026, 6, 1)
@@ -78,69 +79,207 @@ def test_a_realistic_mixture():
 
 
 # --------------------------------------------------------------------------
-# One review: a bad page is a dropped row, never a dead run
+# Scrape: download to bronze, never parse
 # --------------------------------------------------------------------------
+
+A = "https://www.coffeereview.com/review/a/"
+B = "https://www.coffeereview.com/review/b/"
+C = "https://www.coffeereview.com/review/c/"
 
 
 @pytest.fixture
-def semaphore():
-    return asyncio.Semaphore(2)
+def pages(tmp_path):
+    return PageStore(tmp_path / "bronze")
 
 
-async def _ok_fetch(url, session, semaphore, retries=5):
-    return "<html><h1 class='review-title'>A Coffee</h1></html>"
+@pytest.fixture
+def site(monkeypatch):
+    """A fake site: discovery lists `listed`, and fetch serves `served`.
 
-
-def test_returns_none_when_fetch_fails(monkeypatch, semaphore):
-    async def failing_fetch(url, session, semaphore, retries=5):
-        return None
-
-    monkeypatch.setattr(pipeline, "fetch", failing_fetch)
-    result = asyncio.run(pipeline.scrape_review("u", None, semaphore))
-    assert result is None
-
-
-def test_returns_none_when_parsing_raises(monkeypatch, semaphore):
-    def exploding_parse(text):
-        raise AttributeError("unexpected page shape")
-
-    monkeypatch.setattr(pipeline, "fetch", _ok_fetch)
-    monkeypatch.setattr(pipeline, "parse_html", exploding_parse)
-    result = asyncio.run(pipeline.scrape_review("u", None, semaphore))
-    assert result is None
-
-
-def test_one_bad_page_does_not_abort_the_batch(monkeypatch, semaphore):
-    """The regression this file exists for.
-
-    Before the fix, the single failing page below aborted the gather and the
-    caller collected zero results — not two.
+    A URL missing from `served` fails to fetch. Every fetch is recorded.
     """
 
-    def parse_one_bad(text):
-        if "boom" in text:
+    class Site:
+        listed: dict = {}
+        served: dict = {}
+        fetched: list = []
+
+    async def fake_discovery(session, semaphore):
+        return dict(Site.listed)
+
+    async def fake_fetch(url, session, semaphore, retries=5):
+        Site.fetched.append(url)
+        return Site.served.get(url)
+
+    monkeypatch.setattr(pipeline, "get_review_urls", fake_discovery)
+    monkeypatch.setattr(pipeline, "fetch", fake_fetch)
+    Site.fetched = []
+    return Site
+
+
+def scrape(pages, **kwargs):
+    return asyncio.run(scrape_all_reviews(pages, **kwargs))
+
+
+def test_scrape_saves_each_page_with_its_lastmod(pages, site):
+    site.listed = {A: JAN, B: JUN}
+    site.served = {A: "<html>a</html>", B: "<html>b</html>"}
+
+    result = scrape(pages)
+
+    assert result.saved == 2
+    assert pages.known_lastmods() == {A: JAN, B: JUN}
+    assert pages.read(pages.manifest()[A]) == "<html>a</html>"
+
+
+def test_a_failed_fetch_is_not_saved_and_the_rest_are(pages, site):
+    site.listed = {A: JAN, B: JAN, C: JAN}
+    site.served = {A: "a", C: "c"}  # B fails
+
+    result = scrape(pages)
+
+    assert result.failed == [B]
+    assert set(pages.manifest()) == {A, C}
+
+
+def test_an_exception_while_fetching_does_not_abort_the_run(pages, site, monkeypatch):
+    site.listed = {A: JAN, B: JAN}
+
+    async def exploding_fetch(url, session, semaphore, retries=5):
+        if url == A:
+            raise RuntimeError("unexpected")
+        return "b"
+
+    monkeypatch.setattr(pipeline, "fetch", exploding_fetch)
+    result = scrape(pages)
+    assert result.failed == [A]
+    assert set(pages.manifest()) == {B}
+
+
+def test_a_second_run_fetches_only_what_changed(pages, site):
+    site.listed = {A: JAN, B: JAN}
+    site.served = {A: "a", B: "b"}
+    scrape(pages)
+
+    site.fetched = []
+    site.listed = {A: JAN, B: JUN}  # B changed upstream
+    scrape(pages)
+
+    assert site.fetched == [B]
+
+
+def test_full_refetches_everything(pages, site):
+    site.listed = {A: JAN, B: JAN}
+    site.served = {A: "a", B: "b"}
+    scrape(pages)
+
+    site.fetched = []
+    scrape(pages, full=True)
+    assert sorted(site.fetched) == [A, B]
+
+
+def test_limit_caps_the_pages_fetched(pages, site):
+    site.listed = {A: JAN, B: JAN, C: JAN}
+    site.served = {A: "a", B: "b", C: "c"}
+    assert scrape(pages, limit=2).saved == 2
+
+
+def test_a_page_gone_from_the_sitemap_is_reported_and_kept(pages, site):
+    site.listed = {A: JAN, B: JAN}
+    site.served = {A: "a", B: "b"}
+    scrape(pages)
+
+    site.listed = {A: JAN}
+    result = scrape(pages)
+    assert result.retired == 1
+    assert set(pages.manifest()) == {A, B}
+
+
+# --------------------------------------------------------------------------
+# Parse: saved pages to rows, no network
+# --------------------------------------------------------------------------
+
+PAGE = "<html><h1 class='review-title'>{}</h1></html>"
+
+
+@pytest.fixture
+def store(tmp_path):
+    return CsvReviewStore(tmp_path / "reviews.csv")
+
+
+def rows(store):
+    return pd.read_csv(store.csv_path).set_index("url")
+
+
+def test_parse_writes_a_row_per_page_with_its_provenance(pages, store):
+    pages.save(A, PAGE.format("Coffee A"), JAN, fetched_at="t1")
+
+    result = parse_saved_reviews(pages, store)
+
+    assert (result.parsed, result.total) == (1, 1)
+    row = rows(store).loc[A]
+    assert row["title"] == "Coffee A"
+    assert row["sitemap_lastmod"] == "2026-01-01"
+    assert row["scraped_at"] == "t1"
+
+
+def test_parse_skips_pages_already_parsed_from_the_same_fetch(pages, store):
+    pages.save(A, PAGE.format("A"), JAN, fetched_at="t1")
+    parse_saved_reviews(pages, store)
+    pages.save(B, PAGE.format("B"), JAN, fetched_at="t1")
+
+    assert parse_saved_reviews(pages, store).parsed == 1  # only B
+
+
+def test_parse_picks_up_a_page_fetched_again(pages, store):
+    pages.save(A, PAGE.format("old title"), JAN, fetched_at="t1")
+    parse_saved_reviews(pages, store)
+    pages.save(A, PAGE.format("new title"), JUN, fetched_at="t2")
+
+    assert parse_saved_reviews(pages, store).parsed == 1
+    assert rows(store).loc[A, "title"] == "new title"
+
+
+def test_full_reparses_every_saved_page(pages, store):
+    pages.save(A, PAGE.format("A"), JAN, fetched_at="t1")
+    pages.save(B, PAGE.format("B"), JAN, fetched_at="t1")
+    parse_saved_reviews(pages, store)
+
+    assert parse_saved_reviews(pages, store).parsed == 0
+    assert parse_saved_reviews(pages, store, full=True).parsed == 2
+
+
+def test_limit_caps_the_pages_parsed(pages, store):
+    for url in (A, B, C):
+        pages.save(url, PAGE.format(url), JAN, fetched_at="t1")
+    assert parse_saved_reviews(pages, store, limit=2).parsed == 2
+    assert parse_saved_reviews(pages, store).parsed == 1  # the rest, next time
+
+
+def test_a_page_that_fails_to_parse_keeps_its_old_row(pages, store, monkeypatch):
+    pages.save(A, PAGE.format("good A"), JAN, fetched_at="t1")
+    pages.save(B, PAGE.format("B"), JAN, fetched_at="t1")
+    parse_saved_reviews(pages, store)
+
+    def parse_that_fails_on_a(text):
+        if "A" in text:
             raise ValueError("malformed")
-        return {"title": text}
+        return {"title": "B again"}
 
-    async def fetch_by_url(url, session, semaphore, retries=5):
-        return url
+    monkeypatch.setattr(pipeline, "parse_html", parse_that_fails_on_a)
+    result = parse_saved_reviews(pages, store, full=True)
 
-    monkeypatch.setattr(pipeline, "fetch", fetch_by_url)
-    monkeypatch.setattr(pipeline, "parse_html", parse_one_bad)
-
-    async def run():
-        urls = ["good-1", "boom", "good-2"]
-        tasks = [pipeline.scrape_review(u, None, semaphore) for u in urls]
-        return [r for r in await asyncio.gather(*tasks) if r is not None]
-
-    results = asyncio.run(run())
-    assert len(results) == 2
-    assert {r["url"] for r in results} == {"good-1", "good-2"}
+    assert result.failed == [A]
+    assert rows(store).loc[A, "title"] == "good A"
+    assert rows(store).loc[B, "title"] == "B again"
 
 
-def test_successful_scrape_is_tagged_with_its_url(monkeypatch, semaphore):
-    monkeypatch.setattr(pipeline, "fetch", _ok_fetch)
-    result = asyncio.run(pipeline.scrape_review("http://x/r/1", None, semaphore))
-    assert result is not None
-    assert result["url"] == "http://x/r/1"
-    assert result["title"] == "A Coffee"
+def test_rows_without_a_saved_page_are_never_removed(pages, store):
+    """A review gone from the site before bronze existed survives a re-parse."""
+    store.upsert([{"url": C, "title": "only copy"}])
+    pages.save(A, PAGE.format("A"), JAN, fetched_at="t1")
+
+    parse_saved_reviews(pages, store, full=True)
+
+    assert rows(store).loc[C, "title"] == "only copy"
+    assert len(rows(store)) == 2

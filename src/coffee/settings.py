@@ -86,6 +86,10 @@ class Settings:
     # -- data/ -------------------------------------------------------------
 
     @property
+    def bronze_reviews(self) -> Path:
+        return self.data_dir / "bronze" / "reviews"
+
+    @property
     def raw_dir(self) -> Path:
         return self.data_dir / "raw"
 

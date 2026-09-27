@@ -1,28 +1,31 @@
-"""End-to-end scrape: discover review URLs, fetch what changed, store the lot.
+"""The two halves of collecting reviews: scrape, then parse.
 
-Runs incrementally by default. Discovery returns every review URL with its
-sitemap ``<lastmod>`` in about 17 requests, so a run can compare that against
-what the store holds and fetch only what is new or newer.
+:func:`scrape_all_reviews` downloads review pages and saves them to the bronze
+layer (:mod:`coffee.bronze`). It never parses. Discovery returns every review
+URL with its sitemap ``<lastmod>`` in about 17 requests, so a run compares that
+with what bronze holds and fetches only what is new or changed.
 
-``full=True`` ignores what is held and re-fetches everything. This needs to be run if
-a parser changes changes the data stored.
+:func:`parse_saved_reviews` turns saved pages into rows of ``reviews.csv``. It
+never touches the network. After a parser change, re-parse everything with
+``full=True`` instead of downloading the site again.
 
-:func:`scrape_review` is the unit of work the run is made of: fetch one page,
-parse it off the event loop, and return its fields. A page that cannot be
-fetched or parsed yields ``None`` rather than raising, so one malformed page
-does not abort the run.
+Both steps survive a bad page. A page that cannot be fetched is not saved and
+is tried again next run; a page that cannot be parsed keeps its previous row.
+Either way the rest of the run carries on and the failure is reported.
 """
 
 import asyncio
 import logging
 import time
 from collections.abc import Mapping
-from datetime import date, datetime
-from typing import Any
+from dataclasses import dataclass, field
+from datetime import UTC, date, datetime
 
 import aiohttp
-from tqdm.asyncio import tqdm
+from tqdm import tqdm
+from tqdm.asyncio import tqdm as async_tqdm
 
+from coffee.bronze import PageStore
 from coffee.fetch import HEADERS, fetch
 from coffee.parser import parse_html
 from coffee.sitemap import get_review_urls
@@ -30,9 +33,11 @@ from coffee.storage import ReviewStore
 
 __all__ = [
     "DEFAULT_CONCURRENCY",
+    "ParseResult",
+    "ScrapeResult",
+    "parse_saved_reviews",
     "plan_fetch",
     "scrape_all_reviews",
-    "scrape_review",
 ]
 
 logger = logging.getLogger(__name__)
@@ -40,27 +45,18 @@ logger = logging.getLogger(__name__)
 DEFAULT_CONCURRENCY = 10
 
 
-async def scrape_review(
-    url: str,
-    session: aiohttp.ClientSession,
-    semaphore: asyncio.Semaphore,
-    retries: int = 5,
-) -> dict | None:
-    review_page = await fetch(url, session, semaphore, retries=retries)
-    if review_page is None:
-        return None
-    try:
-        # Parse off the event loop so CPU-bound parsing overlaps network I/O.
-        data = await asyncio.to_thread(parse_html, review_page)
-    except Exception:
-        # The caller awaits these one at a time, so an exception escaping here
-        # would abort the whole run and write nothing. Returning None puts a
-        # parse failure on the same footing as a fetch failure, which the
-        # caller already counts and reports.
-        logging.exception("Failed to parse %s", url)
-        return None
-    data["url"] = url
-    return data
+@dataclass
+class ScrapeResult:
+    saved: int = 0
+    failed: list[str] = field(default_factory=list)
+    retired: int = 0
+
+
+@dataclass
+class ParseResult:
+    parsed: int = 0
+    failed: list[str] = field(default_factory=list)
+    total: int = 0  # reviews held afterwards
 
 
 def plan_fetch(
@@ -70,17 +66,17 @@ def plan_fetch(
 
     A URL is fetched when it is new, when its sitemap date has moved on, or
     when either date is unknown. An unprovable "unchanged" is treated as
-    changed: re-fetching costs one request, while wrongly skipping leaves a row
-    permanently stale.
+    changed: re-fetching costs one request, while wrongly skipping leaves a
+    page permanently stale.
 
     Retired URLs are held but no longer listed upstream. They are reported and
     never deleted, since a review that has disappeared from the site cannot be
-    re-fetched and the held copy is the only one.
+    fetched again and the held copy is the only one.
     """
 
     def is_stale(url: str, listed: date | None) -> bool:
         if url not in known:
-            return True  # never scraped
+            return True  # never fetched
         held = known[url]
         if listed is None or held is None:
             return True  # freshness unprovable on one side; assume changed
@@ -90,18 +86,44 @@ def plan_fetch(
     return to_fetch, set(known) - set(discovered)
 
 
+def _now() -> str:
+    return datetime.now(UTC).isoformat(timespec="seconds")
+
+
+async def _fetch_one(
+    url: str, session: aiohttp.ClientSession, semaphore: asyncio.Semaphore
+) -> tuple[str, str | None]:
+    """Fetch one page, returning None for its HTML on any failure.
+
+    The caller awaits pages one at a time, so an exception escaping here would
+    abandon every page still in flight.
+    """
+    try:
+        return url, await fetch(url, session, semaphore)
+    except Exception:
+        logger.exception("Failed to fetch %s", url)
+        return url, None
+
+
 async def scrape_all_reviews(
-    store: ReviewStore, concurrency: int, *, full: bool = False
-) -> None:
-    """Discover, fetch what changed (or everything), and store the results."""
+    pages: PageStore,
+    concurrency: int = DEFAULT_CONCURRENCY,
+    *,
+    full: bool = False,
+    limit: int | None = None,
+) -> ScrapeResult:
+    """Discover review URLs and save every new or changed page to bronze.
+
+    ``full`` re-downloads every page regardless of what is saved. ``limit``
+    caps how many pages are fetched, for a quick trial run.
+    """
+    result = ScrapeResult()
     semaphore = asyncio.Semaphore(concurrency)
-    results: list[dict[str, Any]] = []
 
     async with aiohttp.ClientSession(headers=HEADERS) as session:
         start = time.perf_counter()
-        # Maps each review URL to its sitemap <lastmod>. Raises rather than
-        # returning a short list, so a partial discovery cannot produce a
-        # dataset that only appears complete.
+        # Raises rather than returning a short list, so a partial discovery
+        # cannot look like a complete one.
         discovered = await get_review_urls(session=session, semaphore=semaphore)
         logger.info(
             "Found %d review links in %.2f seconds",
@@ -109,48 +131,93 @@ async def scrape_all_reviews(
             time.perf_counter() - start,
         )
 
+        known = pages.known_lastmods()
+        to_fetch, retired = plan_fetch(discovered, known)
         if full:
-            to_fetch: set[str] = set(discovered)
-            retired: set[str] = set()
-            logger.info("Full run: fetching all %d reviews", len(to_fetch))
-        else:
-            known = store.known_lastmods()
-            to_fetch, retired = plan_fetch(discovered, known)
-            logger.info(
-                "Held %d; fetching %d (%d new, %d changed), skipping %d unchanged",
-                len(known),
-                len(to_fetch),
-                len(to_fetch - set(known)),
-                len(to_fetch & set(known)),
-                len(discovered) - len(to_fetch),
-            )
-        if retired:
+            to_fetch = set(discovered)
+        result.retired = len(retired)
+        logger.info(
+            "%d saved; fetching %d (%d new, %d changed), skipping %d unchanged",
+            len(known),
+            len(to_fetch),
+            len(to_fetch - set(known)),
+            len(to_fetch & set(known)),
+            len(discovered) - len(to_fetch),
+        )
+        if result.retired:
             logger.warning(
-                "%d held review(s) are no longer in the sitemap; keeping them",
-                len(retired),
+                "%d saved review(s) are no longer in the sitemap; keeping them",
+                result.retired,
             )
 
-        if not to_fetch:
-            logger.info("Nothing to fetch; the corpus is already current.")
-            return
+        urls = sorted(to_fetch)[:limit] if limit is not None else sorted(to_fetch)
+        tasks = [_fetch_one(url, session, semaphore) for url in urls]
+        for future in async_tqdm(asyncio.as_completed(tasks), total=len(tasks)):
+            url, html = await future
+            if html is None:
+                result.failed.append(url)
+                continue
+            # Stamped per page, so a page keeps the time it was actually
+            # fetched even when a run takes half an hour.
+            pages.save(url, html, discovered.get(url), fetched_at=_now())
+            result.saved += 1
 
-        scraped_at = datetime.now().isoformat(timespec="seconds")
-        # The semaphore bounds concurrent requests.
-        tasks = [scrape_review(url, session, semaphore) for url in to_fetch]
-        for future in tqdm(asyncio.as_completed(tasks), total=len(tasks)):
-            # Failed scrapes return None; skipping them keeps all-NaN rows
-            # out of the output.
-            if (review := await future) is not None:
-                # Carried through so a later run can compare freshness.
-                review["sitemap_lastmod"] = discovered.get(review["url"])
-                # Stamped per row rather than per run, so a carried-forward
-                # row keeps the time it was actually fetched.
-                review["scraped_at"] = scraped_at
-                results.append(review)
+    if result.failed:
+        logger.warning("%d of %d pages failed to fetch", len(result.failed), len(urls))
+    return result
 
-    failed = len(to_fetch) - len(results)
-    if failed:
-        logger.warning("%d of %d reviews failed to scrape", failed, len(to_fetch))
 
-    total = store.replace(results) if full else store.upsert(results)
-    logger.info("Corpus now holds %d reviews", total)
+def parse_saved_reviews(
+    pages: PageStore,
+    store: ReviewStore,
+    *,
+    full: bool = False,
+    limit: int | None = None,
+) -> ParseResult:
+    """Parse saved pages into the review store.
+
+    By default only pages the store has not yet parsed are read: those it has
+    no row for, or whose saved copy was fetched after the row was written.
+    ``full`` re-parses every saved page, which is what a parser change needs.
+    ``limit`` caps how many pages are parsed.
+
+    Rows are added or replaced by URL, never removed.
+    """
+    saved = pages.manifest()
+    if full:
+        todo = list(saved.values())
+    else:
+        parsed_from = store.parsed_from()
+        todo = [
+            page
+            for page in saved.values()
+            if parsed_from.get(page.url) != page.fetched_at
+        ]
+    todo.sort(key=lambda page: page.url)
+    if limit is not None:
+        todo = todo[:limit]
+    logger.info("%d saved pages; parsing %d", len(saved), len(todo))
+
+    result = ParseResult()
+    records = []
+    for page in tqdm(todo):
+        try:
+            fields = parse_html(pages.read(page))
+        except Exception:
+            # One malformed page must not cost the rest of the run. Its old
+            # row, if any, stays as it was.
+            logger.exception("Failed to parse %s", page.url)
+            result.failed.append(page.url)
+            continue
+        records.append(
+            {
+                **fields,
+                "url": page.url,
+                "sitemap_lastmod": page.sitemap_lastmod,
+                "scraped_at": page.fetched_at,
+            }
+        )
+
+    result.parsed = len(records)
+    result.total = store.upsert(records)
+    return result
