@@ -30,7 +30,7 @@ from requests.adapters import HTTPAdapter
 from tqdm import tqdm
 from urllib3.util.retry import Retry
 
-from coffee.fetch import HEADERS
+from coffee.http_client import HEADERS
 
 __all__ = [
     "DEFAULT_CHECKPOINT_EVERY",

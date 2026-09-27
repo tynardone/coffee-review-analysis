@@ -8,7 +8,7 @@ been fetched again reads as out of date.
 import pandas as pd
 import pytest
 
-from coffee.storage import CsvReviewStore, ReviewStore
+from coffee.review_store import CsvReviewStore, ReviewStore
 
 
 @pytest.fixture

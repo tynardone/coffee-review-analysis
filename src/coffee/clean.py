@@ -27,8 +27,8 @@ import pandas as pd
 import pycountry
 from unidecode import unidecode
 
-from coffee.parser import normalize_field_name
 from coffee.prices import DEFAULT_BASELINE_DATE, add_comparable_prices
+from coffee.review_page import normalize_field_name
 
 __all__ = [
     "CURRENCY_MAP",
@@ -179,7 +179,7 @@ def check_raw_schema(df: pd.DataFrame) -> pd.DataFrame:
     """Reject raw data whose column names were never normalized.
 
     Field names are fixed at the scrape boundary by
-    :func:`coffee.parser.normalize_field_name`, so the cleaning layer operates
+    :func:`coffee.review_page.normalize_field_name`, so the cleaning layer operates
     on data rather than on labels. A file predating that, carrying
     ``"est. price"`` where ``est_price`` belongs, would otherwise fail several
     steps later with a ``KeyError`` naming a column the caller never wrote.
@@ -190,7 +190,7 @@ def check_raw_schema(df: pd.DataFrame) -> pd.DataFrame:
             f"{len(stale)} column(s) are not normalized: {sorted(stale)[:5]}. "
             "This file predates field-name normalization at parse time; "
             "re-scrape it, or rename the columns with "
-            "coffee.parser.normalize_field_name first."
+            "coffee.review_page.normalize_field_name first."
         )
     return df
 

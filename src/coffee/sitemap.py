@@ -17,7 +17,7 @@ from urllib.parse import urlparse
 import aiohttp
 from lxml import etree
 
-from coffee.fetch import fetch
+from coffee.http_client import fetch
 
 __all__ = [
     "MAX_SITEMAP_DEPTH",

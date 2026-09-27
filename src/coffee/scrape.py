@@ -1,17 +1,13 @@
-"""The two halves of collecting reviews: scrape, then parse.
+"""Step 1, ``scrape-reviews``: download new and changed review pages.
 
-:func:`scrape_all_reviews` downloads review pages and saves them to the bronze
-layer (:mod:`coffee.bronze`). It never parses. Discovery returns every review
-URL with its sitemap ``<lastmod>`` in about 17 requests, so a run compares that
-with what bronze holds and fetches only what is new or changed.
+:func:`scrape_all_reviews` saves each page to the bronze layer
+(:mod:`coffee.page_store`) and never parses; that is :mod:`coffee.parse`.
+Discovery returns every review URL with its sitemap ``<lastmod>`` in about 17
+requests, so a run compares that with what is already saved and fetches only
+what is new or changed.
 
-:func:`parse_saved_reviews` turns saved pages into rows of ``reviews.csv``. It
-never touches the network. After a parser change, re-parse everything with
-``full=True`` instead of downloading the site again.
-
-Both steps survive a bad page. A page that cannot be fetched is not saved and
-is tried again next run; a page that cannot be parsed keeps its previous row.
-Either way the rest of the run carries on and the failure is reported.
+A page that cannot be fetched is not saved and is tried again next run. The
+rest of the run carries on, and the failure is reported.
 """
 
 import asyncio
@@ -22,20 +18,15 @@ from dataclasses import dataclass, field
 from datetime import UTC, date, datetime
 
 import aiohttp
-from tqdm import tqdm
-from tqdm.asyncio import tqdm as async_tqdm
+from tqdm.asyncio import tqdm
 
-from coffee.bronze import PageStore
-from coffee.fetch import HEADERS, fetch
-from coffee.parser import parse_html
+from coffee.http_client import HEADERS, fetch
+from coffee.page_store import PageStore
 from coffee.sitemap import get_review_urls
-from coffee.storage import ReviewStore
 
 __all__ = [
     "DEFAULT_CONCURRENCY",
-    "ParseResult",
     "ScrapeResult",
-    "parse_saved_reviews",
     "plan_fetch",
     "scrape_all_reviews",
 ]
@@ -50,13 +41,6 @@ class ScrapeResult:
     saved: int = 0
     failed: list[str] = field(default_factory=list)
     retired: int = 0
-
-
-@dataclass
-class ParseResult:
-    parsed: int = 0
-    failed: list[str] = field(default_factory=list)
-    total: int = 0  # reviews held afterwards
 
 
 def plan_fetch(
@@ -152,7 +136,7 @@ async def scrape_all_reviews(
 
         urls = sorted(to_fetch)[:limit] if limit is not None else sorted(to_fetch)
         tasks = [_fetch_one(url, session, semaphore) for url in urls]
-        for future in async_tqdm(asyncio.as_completed(tasks), total=len(tasks)):
+        for future in tqdm(asyncio.as_completed(tasks), total=len(tasks)):
             url, html = await future
             if html is None:
                 result.failed.append(url)
@@ -164,60 +148,4 @@ async def scrape_all_reviews(
 
     if result.failed:
         logger.warning("%d of %d pages failed to fetch", len(result.failed), len(urls))
-    return result
-
-
-def parse_saved_reviews(
-    pages: PageStore,
-    store: ReviewStore,
-    *,
-    full: bool = False,
-    limit: int | None = None,
-) -> ParseResult:
-    """Parse saved pages into the review store.
-
-    By default only pages the store has not yet parsed are read: those it has
-    no row for, or whose saved copy was fetched after the row was written.
-    ``full`` re-parses every saved page, which is what a parser change needs.
-    ``limit`` caps how many pages are parsed.
-
-    Rows are added or replaced by URL, never removed.
-    """
-    saved = pages.manifest()
-    if full:
-        todo = list(saved.values())
-    else:
-        parsed_from = store.parsed_from()
-        todo = [
-            page
-            for page in saved.values()
-            if parsed_from.get(page.url) != page.fetched_at
-        ]
-    todo.sort(key=lambda page: page.url)
-    if limit is not None:
-        todo = todo[:limit]
-    logger.info("%d saved pages; parsing %d", len(saved), len(todo))
-
-    result = ParseResult()
-    records = []
-    for page in tqdm(todo):
-        try:
-            fields = parse_html(pages.read(page))
-        except Exception:
-            # One malformed page must not cost the rest of the run. Its old
-            # row, if any, stays as it was.
-            logger.exception("Failed to parse %s", page.url)
-            result.failed.append(page.url)
-            continue
-        records.append(
-            {
-                **fields,
-                "url": page.url,
-                "sitemap_lastmod": page.sitemap_lastmod,
-                "scraped_at": page.fetched_at,
-            }
-        )
-
-    result.parsed = len(records)
-    result.total = store.upsert(records)
     return result

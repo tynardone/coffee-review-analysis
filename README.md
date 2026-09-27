@@ -112,8 +112,8 @@ HTML, gzipped, to `data/bronze/reviews/pages/`, and records it in
 without touching the network. By default it parses only pages that have no row
 yet or were fetched again since their row was written.
 
-After changing the parser (`src/coffee/parser.py`), re-parse everything from
-the saved pages. This takes about a minute and makes no requests:
+After changing the parser (`src/coffee/review_page.py`), re-parse everything
+from the saved pages. This takes about a minute and makes no requests:
 
 ```bash
 uv run parse-reviews --full
@@ -409,17 +409,30 @@ notes/        background on how CoffeeReview scores coffee
 The package lives under `src/`, so it can only be imported once installed. Tests,
 notebooks and the console commands therefore all run the same code.
 
+Each pipeline step has a module named after its command; the modules listed
+under a step are the helpers it uses.
+
+| Step | Module | Helpers |
+|---|---|---|
+| `scrape-reviews` | `scrape.py` | `sitemap.py`, `http_client.py`, `page_store.py` |
+| `parse-reviews` | `parse.py` | `review_page.py`, `review_store.py` |
+| `resolve-roasters` | `roasters/` | |
+| `fetch-exchange-rates` | `exchange_rates.py` | `http_client.py` |
+| `fetch-cpi` | `cpi.py` | `http_client.py` |
+| `clean-reviews` | `clean.py` | `prices.py` |
+
+- `scrape.py` discovers review URLs and downloads the pages that are new or
+  changed. It never parses.
 - `sitemap.py` finds every review URL with its `<lastmod>` date. It raises
   `SitemapError` instead of returning a partial list.
-- `fetch.py` is the shared asynchronous HTTP client, with bounded concurrency,
-  retries on transient errors and common request headers.
-- `parser.py` turns a review page into fields.
-- `pipeline.py` holds the two collection steps: `scrape_all_reviews`
-  (discover and download what changed) and `parse_saved_reviews` (saved pages
-  to rows).
-- `bronze.py` saves and reads the downloaded pages and their manifest.
-- `storage.py` reads and writes `reviews.csv`. The parse step depends only on
-  the `ReviewStore` interface, so a database could replace `CsvReviewStore`
+- `http_client.py` is the shared asynchronous HTTP client, with bounded
+  concurrency, retries on transient errors and common request headers.
+- `page_store.py` saves and reads the downloaded pages and their manifest.
+- `parse.py` turns saved pages into rows of `reviews.csv`. It never touches the
+  network.
+- `review_page.py` knows the layout of a review page and turns one into fields.
+- `review_store.py` reads and writes `reviews.csv`. The parse step depends only
+  on the `ReviewStore` interface, so a database could replace `CsvReviewStore`
   without changes to the parse.
 - `clean.py` builds the cleaned layer.
 - `prices.py` handles currency conversion and inflation adjustment. It is
