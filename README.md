@@ -8,7 +8,7 @@ A dataset and analysis of the roughly 9,300 blind-tasting reviews that
 [CoffeeReview.com](https://www.coffeereview.com/) has published since 1997.
 
 The project scrapes every review, cleans the results into a single table, and
-analyses how price and quality have changed over time. Two problems make this
+analyzes how price and quality have changed over time. Two problems make this
 more than a scrape. Prices are quoted in a dozen currencies across three
 decades, so comparing them requires historical exchange rates and inflation
 data. Roaster names are spelled inconsistently, so comparing roasters requires
@@ -175,10 +175,10 @@ column types that CSV would lose.
 
 ### Field names
 
-The parser normalises each label in a review's spec table as it reads the page
+The parser normalizes each label in a review's spec table as it reads the page
 (`"Est. Price:"` becomes `est_price`), so the raw layer already uses the
 project's column names. Cleaning checks this on entry and stops with an error
-naming any unnormalised columns, instead of failing several steps later.
+naming any unnormalized columns, instead of failing several steps later.
 
 ### Cleaning
 
@@ -226,7 +226,7 @@ The same roaster appears under many spellings: `Onyx Coffee Lab`,
 `Onyx Coffee Lab LLC`, `onyx coffee lab`. `resolve-roasters` groups these into
 one canonical name per roaster. Strong name matches are merged automatically
 unless the locations conflict, and the uncertain middle goes to a queue for a
-person to judge. Every judgement is recorded, so the manual work shrinks from
+person to judge. Every judgment is recorded, so the manual work shrinks from
 one run to the next. [`docs/roaster-resolution.md`](docs/roaster-resolution.md)
 explains the design.
 
@@ -235,7 +235,7 @@ explains the design.
 | File | Location | Edit? | Purpose |
 |---|---|---|---|
 | `roaster_decisions.csv` | `seeds/` | Yes | Every pair that has been judged. The only file that cannot be regenerated. |
-| `roaster_review_queue.csv` | `data/roasters/` | `verdict` column only | Pairs awaiting judgement. Regenerated on every run. |
+| `roaster_review_queue.csv` | `data/roasters/` | `verdict` column only | Pairs awaiting judgment. Regenerated on every run. |
 | `roaster_crosswalk.csv` | `data/roasters/` | No | The output, mapping `raw_name` to `canonical_name`. Regenerated on every run. |
 
 All three are committed. The crosswalk is committed so that joins against it are

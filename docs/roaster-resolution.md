@@ -25,7 +25,7 @@ that.
 | **False merge** | Black Oak + Black & White → one roaster | Silent. Downstream analysis still runs, but scores for "Black Oak" are now a blend of two companies. |
 | **False split** | "Stumptown" and "Stumptown Coffee" stay separate | Visible. Stumptown appears twice in a top-20 table. |
 
-Precision is therefore favoured over recall: an uncertain merge is left unmade.
+Precision is therefore favored over recall: an uncertain merge is left unmade.
 Recall failures surface on their own; precision failures do not.
 
 The same asymmetry makes OpenRefine's interface a poor fit here. Approving a
@@ -104,7 +104,7 @@ score <  review_threshold   leave alone
 ```
 
 The review band is the only part of this problem where a language model is
-worth applying. Asking a model to canonicalise 500 raw names produces output
+worth applying. Asking a model to canonicalize 500 raw names produces output
 that cannot be audited. Asking it to answer "same company, y/n, why?" for 30
 pre-scored ambiguous pairs is bounded and checkable, and it is exactly the set
 of cases where outside knowledge beats the string metric.
