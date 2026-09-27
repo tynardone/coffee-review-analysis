@@ -19,7 +19,7 @@ semiannual columns, so they are left as found.
 
 import logging
 from pathlib import Path
-from typing import Any
+from typing import Any, Final
 
 import pandas as pd
 import requests
@@ -41,18 +41,18 @@ __all__ = [
 logger = logging.getLogger(__name__)
 
 # CPI-U, U.S. city average, all items, not seasonally adjusted.
-BLS_SERIES_ID = "CUUR0000SA0"
-BLS_API_URL = "https://api.bls.gov/publicAPI/v1/timeseries/data/"
-BLS_TIMEOUT = 20
+BLS_SERIES_ID: Final = "CUUR0000SA0"
+BLS_API_URL: Final = "https://api.bls.gov/publicAPI/v1/timeseries/data/"
+BLS_TIMEOUT: Final = 20
 
-MONTH_COLUMNS = [
+MONTH_COLUMNS: Final = (
     "Jan", "Feb", "Mar", "Apr", "May", "Jun",
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-]  # fmt: skip
+)  # fmt: skip
 
 # The semiannual averages. Kept so the file keeps its shape, never written:
 # the API does not publish them.
-HALF_COLUMNS = ["HALF1", "HALF2"]
+HALF_COLUMNS: Final = ("HALF1", "HALF2")
 
 # (year, month number 1-12, index value exactly as BLS printed it). The value
 # stays a string: re-reading the table as floats and writing it back turns
@@ -175,7 +175,9 @@ def _coverage(table: pd.DataFrame) -> int:
     if table.empty:
         return 0
     filled = (
-        table[MONTH_COLUMNS].astype(str).map(lambda v: v.strip() not in {"", "nan"})
+        table[list(MONTH_COLUMNS)]
+        .astype(str)
+        .map(lambda v: v.strip() not in {"", "nan"})
     )
     return int(filled.to_numpy().sum())
 

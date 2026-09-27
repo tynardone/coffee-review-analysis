@@ -1,32 +1,52 @@
-"""Where things live on this machine, and how secrets are read.
+"""The pipeline's settings: one typed object, loaded and validated once.
 
-This module holds only what differs between machines: the data directory and
-the seed directory. Behavior (site URLs, timeouts, thresholds) lives in the
-module that uses it, and secrets stay in the environment.
+Values fall into three kinds, kept apart:
 
-Library code never reads ``os.environ`` itself. A :class:`Settings` is built
-once by whoever is driving the work (a CLI command, a notebook, a test) and its
-paths are passed down, so every step can be pointed at a temporary directory.
+- **Config** that you might change without editing Python: where data lives,
+  the log level, scrape concurrency, the inflation baseline, the roaster
+  thresholds. Defaults are committed in ``config/settings.toml``.
+- **Secrets**: the OpenExchangeRates app ID. Only ever in the environment or
+  ``.env``, never in a committed file.
+- **Constants** that are part of the code's logic: site URLs, timeouts, retry
+  rules, parsing tables. These live next to the code that uses them.
 
-``PROJECT_ROOT`` is resolved from this file rather than the current working
-directory, so the defaults are stable whether the package is used from a
-script, a test, or a notebook started in any directory.
+Sources, highest priority first:
+
+1. arguments passed to ``Settings(...)`` (tests)
+2. environment variables, ``COFFEE_*``
+3. ``.env`` at the project root
+4. ``config/settings.toml``
+5. the defaults below
+
+A value inside a table is set with a double underscore, so
+``COFFEE_SCRAPE__CONCURRENCY=4`` overrides ``[scrape] concurrency``.
+Command-line flags override all of these for a single run.
+
+Library code never reads the environment. Entry points (the CLI, notebooks)
+call :func:`get_settings` and pass the values they need down.
 """
 
-import os
-from collections.abc import Mapping
-from dataclasses import dataclass
+from datetime import date
+from functools import lru_cache
 from pathlib import Path
+from typing import Literal, Self
 
-from dotenv import load_dotenv
+from pydantic import AliasChoices, BaseModel, Field, SecretStr, model_validator
+from pydantic_settings import (
+    BaseSettings,
+    PydanticBaseSettingsSource,
+    SettingsConfigDict,
+    TomlConfigSettingsSource,
+)
 
-__all__ = ["PROJECT_ROOT", "Settings", "load_env", "require_env"]
+__all__ = ["PROJECT_ROOT", "Settings", "get_settings"]
 
 
 def _find_project_root(marker: str = "pyproject.toml") -> Path:
     """Walk up from this file until a directory containing ``marker`` is found.
 
-    Falls back to the directory above the package when no marker is found.
+    Resolving from this file rather than the working directory keeps the
+    defaults stable for a script, a test, or a notebook started anywhere.
     """
     start = Path(__file__).resolve()
     for parent in start.parents:
@@ -38,49 +58,76 @@ def _find_project_root(marker: str = "pyproject.toml") -> Path:
 PROJECT_ROOT: Path = _find_project_root()
 
 
-def load_env() -> None:
-    """Read ``.env`` at the project root into the environment, if present.
-
-    A variable already set in the real environment wins over the file, so a
-    scheduler or CI can override anything in it. Called by entry points, never
-    at import, so importing the package has no side effects.
-    """
-    load_dotenv(PROJECT_ROOT / ".env")
+class ScrapeSettings(BaseModel):
+    concurrency: int = Field(default=10, ge=1)
 
 
-def require_env(name: str) -> str:
-    """The value of environment variable ``name``, or an error naming it.
-
-    The message names the variable, never its value.
-    """
-    value = os.environ.get(name, "")
-    if not value:
-        raise RuntimeError(f"environment variable {name} is not set (see .env.example)")
-    return value
+class PriceSettings(BaseModel):
+    baseline_date: date = date(2026, 1, 1)
 
 
-@dataclass(frozen=True)
-class Settings:
-    """The two roots every file hangs off.
+class RoasterSettings(BaseModel):
+    auto_threshold: int = Field(default=92, ge=0, le=100)
+    review_threshold: int = Field(default=82, ge=0, le=100)
 
-    ``data_dir`` holds everything the pipeline writes or fetches, all of which
-    can be rebuilt. ``seeds_dir`` holds hand-kept reference data that nothing
-    can regenerate, such as the adjudicated roaster decisions.
-    """
+    @model_validator(mode="after")
+    def _review_band_below_auto(self) -> Self:
+        if self.review_threshold > self.auto_threshold:
+            raise ValueError(
+                f"review_threshold ({self.review_threshold}) must not exceed "
+                f"auto_threshold ({self.auto_threshold})"
+            )
+        return self
 
-    data_dir: Path
-    seeds_dir: Path
+
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_prefix="COFFEE_",
+        env_nested_delimiter="__",
+        env_file=PROJECT_ROOT / ".env",
+        env_file_encoding="utf-8",
+        # `COFFEE_DATA_DIR=` copied from .env.example means "use the default",
+        # not "use the current directory".
+        env_ignore_empty=True,
+        toml_file=PROJECT_ROOT / "config" / "settings.toml",
+        extra="ignore",
+        validate_by_name=True,
+    )
+
+    data_dir: Path = PROJECT_ROOT / "data"
+    seeds_dir: Path = PROJECT_ROOT / "seeds"
+    log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
+
+    scrape: ScrapeSettings = ScrapeSettings()
+    prices: PriceSettings = PriceSettings()
+    roasters: RoasterSettings = RoasterSettings()
+
+    # Optional here because only `fetch-exchange-rates` needs it; that command
+    # stops before doing any work when it is missing. The unprefixed name is
+    # still accepted so an existing .env keeps working.
+    openexchangerates_api_id: SecretStr | None = Field(
+        default=None,
+        validation_alias=AliasChoices(
+            "COFFEE_OPENEXCHANGERATES_API_ID", "OPENEXCHANGERATES_API_ID"
+        ),
+    )
 
     @classmethod
-    def from_env(cls, environ: Mapping[str, str] = os.environ) -> "Settings":
-        """Build from ``COFFEE_DATA_DIR`` and ``COFFEE_SEEDS_DIR``.
-
-        Either may be unset, in which case it defaults to ``data/`` or
-        ``seeds/`` at the project root.
-        """
-        return cls(
-            data_dir=Path(environ.get("COFFEE_DATA_DIR") or PROJECT_ROOT / "data"),
-            seeds_dir=Path(environ.get("COFFEE_SEEDS_DIR") or PROJECT_ROOT / "seeds"),
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        # The documented order: arguments, environment, .env, the TOML file,
+        # then the field defaults.
+        return (
+            init_settings,
+            env_settings,
+            dotenv_settings,
+            TomlConfigSettingsSource(settings_cls),
         )
 
     # -- data/ -------------------------------------------------------------
@@ -122,3 +169,9 @@ class Settings:
     @property
     def roaster_decisions(self) -> Path:
         return self.seeds_dir / "roaster_decisions.csv"
+
+
+@lru_cache
+def get_settings() -> Settings:
+    """The settings, loaded and validated on first call and reused after."""
+    return Settings()

@@ -17,7 +17,12 @@ from tqdm import tqdm
 
 from coffee.page_store import PageStore
 from coffee.review_page import parse_html
-from coffee.review_store import ReviewStore
+from coffee.review_store import (
+    SCRAPED_AT_COLUMN,
+    SITEMAP_LASTMOD_COLUMN,
+    URL_COLUMN,
+    ReviewStore,
+)
 
 __all__ = ["ParseResult", "parse_saved_reviews"]
 
@@ -76,9 +81,9 @@ def parse_saved_reviews(
         records.append(
             {
                 **fields,
-                "url": page.url,
-                "sitemap_lastmod": page.sitemap_lastmod,
-                "scraped_at": page.fetched_at,
+                URL_COLUMN: page.url,
+                SITEMAP_LASTMOD_COLUMN: page.sitemap_lastmod,
+                SCRAPED_AT_COLUMN: page.fetched_at,
             }
         )
 

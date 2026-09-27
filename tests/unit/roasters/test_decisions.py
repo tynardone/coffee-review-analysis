@@ -4,6 +4,8 @@ The queue is filled in by hand, so the cases that matter are the ones where a
 session of answers could be silently discarded.
 """
 
+from functools import partial
+
 import pandas as pd
 import pytest
 
@@ -13,10 +15,14 @@ from coffee.roasters import (
     load_decisions,
     parse_verdict,
     promote_reviewed,
-    resolve,
     save_decisions,
     unpromoted_verdicts,
 )
+from coffee.roasters import resolve as _resolve
+
+# resolve() takes its thresholds from the settings in real runs. These tests
+# pin the tuned values so they exercise the algorithm, not the config file.
+resolve = partial(_resolve, auto_threshold=92, review_threshold=82)
 
 # --------------------------------------------------------------------------
 # Decisions — durable human judgment

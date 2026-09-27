@@ -7,6 +7,8 @@ on an exact lookup rather than on a threshold. See docs/roaster-resolution.md.
 
 import re
 import unicodedata
+from collections.abc import Mapping
+from typing import Final
 
 __all__ = [
     "ABBREV",
@@ -28,18 +30,18 @@ __all__ = [
 # fmt: off
 # Grouped by kind; the grouping is what each line documents. Keep the formatter
 # from flattening it to one word per line.
-STOPWORDS = {
+STOPWORDS: Final = frozenset({
     "coffee", "coffees", "coffe", "cofee",
     "roaster", "roasters", "roasting", "roastery", "roasterie",
     "cafe", "caffe", "kaffee", "espresso", "bean", "beans",
     "co", "company", "inc", "incorporated", "llc", "ltd", "limited", "corp",
     "the", "and",
-}
+})
 # fmt: on
 
 # Applied BEFORE stopword removal, so that whatever an abbreviation expands to
 # can itself be stopworded if it belongs on the list above.
-ABBREV = {
+ABBREV: Final[Mapping[str, str]] = {
     "bros": "brothers",
     "bro": "brothers",
     "mfg": "manufacturing",

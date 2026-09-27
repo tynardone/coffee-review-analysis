@@ -7,11 +7,12 @@ keeping it separate is what lets manual effort accumulate across runs.
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
 from pathlib import Path
+from typing import Final
 
 import pandas as pd
 
@@ -43,7 +44,7 @@ class Verdict(StrEnum):
 # filled in by hand, often in a spreadsheet, where "y" and "n" are the natural
 # responses to "are these the same company?". Accepting only the two canonical
 # spellings would discard those rows.
-VERDICT_SYNONYMS: dict[str, Verdict] = {
+VERDICT_SYNONYMS: Final[Mapping[str, Verdict]] = {
     "merge": Verdict.MERGE,
     "m": Verdict.MERGE,
     "yes": Verdict.MERGE,
@@ -106,12 +107,19 @@ class Decision:
         return tuple(sorted((self.name_a, self.name_b)))  # type: ignore[return-value]
 
 
-DECISION_COLUMNS = ["name_a", "name_b", "verdict", "decided_by", "decided_on", "note"]
+DECISION_COLUMNS: Final = (
+    "name_a",
+    "name_b",
+    "verdict",
+    "decided_by",
+    "decided_on",
+    "note",
+)
 
 # Columns of the review queue. `verdict` is the one to fill in; the location
 # columns carry the evidence so that adjudicating a pair needs no second
 # lookup.
-REVIEW_COLUMNS = [
+REVIEW_COLUMNS: Final = (
     "name_a",
     "name_b",
     "core_a",
@@ -121,7 +129,7 @@ REVIEW_COLUMNS = [
     "location_b",
     "location_evidence",
     "verdict",
-]
+)
 
 
 def load_decisions(path: Path) -> list[Decision]:

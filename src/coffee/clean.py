@@ -20,19 +20,20 @@ public because they are useful one at a time when exploring in a notebook.
 """
 
 import re
+from collections.abc import Mapping
 from functools import cache
+from typing import Final
 
 import numpy as np
 import pandas as pd
 import pycountry
 from unidecode import unidecode
 
-from coffee.prices import DEFAULT_BASELINE_DATE, add_comparable_prices
+from coffee.prices import add_comparable_prices
 from coffee.review_page import normalize_field_name
 
 __all__ = [
     "CURRENCY_MAP",
-    "DEFAULT_BASELINE_DATE",
     "DEFAULT_MAX_AGTRON",
     "NON_WHOLE_BEAN_TERMS",
     "US_PRICE_UNITS",
@@ -48,11 +49,11 @@ __all__ = [
 ]
 
 # Agtron readings above this are website typos, not measurements.
-DEFAULT_MAX_AGTRON = 100
+DEFAULT_MAX_AGTRON: Final = 100
 
 # Formats that are not whole-bean coffee sold by weight. Their prices are not
 # comparable per pound, so the quantity is left unparsed rather than guessed.
-NON_WHOLE_BEAN_TERMS: list[str] = [
+NON_WHOLE_BEAN_TERMS: Final[tuple[str, ...]] = (
     "can",
     "box",
     "capsules",
@@ -72,12 +73,12 @@ NON_WHOLE_BEAN_TERMS: list[str] = [
     "single-serve",
     "fluid",
     "capsultes",
-]
+)
 
 # Currency symbols and aliases the site uses, mapped to ISO 4217. Matched
 # against the whole value after stripping "$", since exact matching avoids the
 # fragility of substring replacement.
-CURRENCY_MAP: dict[str, str] = {
+CURRENCY_MAP: Final[Mapping[str, str]] = {
     "": "USD",
     "US": "USD",
     "PRICE:": "USD",
@@ -96,7 +97,7 @@ CURRENCY_MAP: dict[str, str] = {
     "HK": "HKD",
 }
 
-US_PRICE_UNITS: dict[str, float] = {
+US_PRICE_UNITS: Final[Mapping[str, float]] = {
     "ounces": 1 / 16,
     "pounds": 1,
     "kilograms": 2.20462,
@@ -104,7 +105,7 @@ US_PRICE_UNITS: dict[str, float] = {
 }
 
 # Country names the site uses that pycountry does not match on its own.
-COUNTRY_ALIASES: dict[str, str] = {
+COUNTRY_ALIASES: Final[Mapping[str, str]] = {
     "south korea": "korea, republic of",
     "north korea": "korea, democratic people's republic of",
     "england": "united kingdom",
@@ -120,7 +121,7 @@ COUNTRY_ALIASES: dict[str, str] = {
     "british columbia": "canada",
 }
 
-_NUMERIC_COLUMNS = [
+_NUMERIC_COLUMNS: Final = (
     "agtron_external",
     "agtron_ground",
     "acidity",
@@ -129,7 +130,7 @@ _NUMERIC_COLUMNS = [
     "body",
     "flavor",
     "aftertaste",
-]
+)
 
 
 # ==========================================================================
@@ -432,15 +433,17 @@ def clean_reviews(
     exchange_rates: pd.DataFrame | None = None,
     cpi: pd.DataFrame | None = None,
     crosswalk: pd.DataFrame | None = None,
-    baseline_date: str = DEFAULT_BASELINE_DATE,
+    baseline_date: str | None = None,
     max_agtron: int = DEFAULT_MAX_AGTRON,
 ) -> pd.DataFrame:
     """Raw scraped reviews in, cleaned layer out.
 
     The field-level work needs nothing but the raw scrape. Putting prices in
     comparable money needs exchange rates and CPI, which :mod:`coffee.prices`
-    applies; pass both and the result carries ``price_usd``, ``price_usd_adj``
-    and ``price_usd_adj_per_lb`` as well.
+    applies; pass both, with ``baseline_date``, and the result carries
+    ``price_usd``, ``price_usd_adj`` and ``price_usd_adj_per_lb`` as well. The
+    baseline has no default here, so the CLI and a notebook cannot disagree
+    about it; both take it from the settings.
 
     Omitting them returns the field-level layer alone, which is what makes this
     runnable before any reference data has been fetched.
@@ -457,6 +460,11 @@ def clean_reviews(
     if crosswalk is not None:
         cleaned = cleaned.pipe(apply_roaster_crosswalk, crosswalk)
     if exchange_rates is not None and cpi is not None:
+        if baseline_date is None:
+            raise ValueError(
+                "baseline_date is required to adjust prices; pass "
+                "get_settings().prices.baseline_date"
+            )
         cleaned = add_comparable_prices(
             cleaned,
             exchange_rates=exchange_rates,

@@ -6,8 +6,11 @@ Each function here is registered in ``pyproject.toml`` under
 installed. Argument parsing and logging setup live here; the work itself lives
 in the modules these import, so it stays importable from notebooks and tests.
 
-Each command builds one :class:`~coffee.settings.Settings` and takes its
-default paths from it. That, and reading ``.env``, happen here and nowhere else.
+Each command loads the settings once, through
+:func:`~coffee.settings.get_settings`, and takes its defaults from them: file
+paths, the log level, concurrency, the baseline month, the roaster thresholds.
+Command-line flags override those for a single run. Nothing below this layer
+reads the environment.
 """
 
 import argparse
@@ -19,8 +22,9 @@ from pathlib import Path
 
 import pandas as pd
 import requests
+from pydantic import ValidationError
 
-from coffee.clean import DEFAULT_BASELINE_DATE, clean_reviews
+from coffee.clean import clean_reviews
 from coffee.cpi import MONTH_COLUMNS, fetch_cpi
 from coffee.exchange_rates import (
     fetch_rates,
@@ -40,8 +44,8 @@ from coffee.roasters import (
     resolve,
     unpromoted_verdicts,
 )
-from coffee.scrape import DEFAULT_CONCURRENCY, scrape_all_reviews
-from coffee.settings import Settings, load_env, require_env
+from coffee.scrape import scrape_all_reviews
+from coffee.settings import Settings, get_settings
 
 __all__ = [
     "clean_reviews_command",
@@ -57,14 +61,26 @@ logger = logging.getLogger(__name__)
 
 
 def _settings() -> Settings:
-    """Read ``.env``, then build the settings every default path comes from."""
-    load_env()
-    return Settings.from_env()
+    """Load and validate the settings, or stop with a readable error.
+
+    Input values are left out of the message: one of them could be the API key.
+    """
+    try:
+        return get_settings()
+    except ValidationError as exc:
+        problems = "\n".join(
+            f"  {'.'.join(str(part) for part in error['loc'])}: {error['msg']}"
+            for error in exc.errors(include_input=False)
+        )
+        raise SystemExit(
+            "Invalid settings (config/settings.toml, .env or COFFEE_* "
+            f"variables):\n{problems}"
+        ) from exc
 
 
-def _configure_logging() -> None:
+def _configure_logging(settings: Settings) -> None:
     logging.basicConfig(
-        level=logging.INFO,
+        level=settings.log_level,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
 
@@ -96,12 +112,13 @@ def scrape_reviews(argv: list[str] | None = None) -> None:
         "-c",
         "--concurrency",
         type=_positive_int,
-        default=DEFAULT_CONCURRENCY,
-        help="maximum number of concurrent requests",
+        default=settings.scrape.concurrency,
+        help="maximum number of concurrent requests (default from settings: "
+        "%(default)s)",
     )
     args = parser.parse_args(argv)
 
-    _configure_logging()
+    _configure_logging(settings)
     pages = PageStore(settings.bronze_reviews)
     result = asyncio.run(
         scrape_all_reviews(pages, args.concurrency, full=args.full, limit=args.limit)
@@ -130,7 +147,7 @@ def parse_reviews(argv: list[str] | None = None) -> None:
     )
     args = parser.parse_args(argv)
 
-    _configure_logging()
+    _configure_logging(settings)
     store = CsvReviewStore(settings.raw_reviews)
     result = parse_saved_reviews(
         PageStore(settings.bronze_reviews), store, full=args.full, limit=args.limit
@@ -171,11 +188,13 @@ def fetch_exchange_rates(argv: list[str] | None = None) -> None:
     )
     args = parser.parse_args(argv)
 
-    _configure_logging()
-    try:
-        app_id = require_env("OPENEXCHANGERATES_API_ID")
-    except RuntimeError as exc:
-        raise SystemExit(str(exc)) from exc
+    _configure_logging(settings)
+    if settings.openexchangerates_api_id is None:
+        raise SystemExit(
+            "COFFEE_OPENEXCHANGERATES_API_ID is not set; add it to .env "
+            "(see .env.example)."
+        )
+    app_id = settings.openexchangerates_api_id.get_secret_value()
 
     try:
         dates = load_review_dates(args.input)
@@ -234,15 +253,17 @@ def resolve_roasters(argv: list[str] | None = None) -> None:
     parser.add_argument(
         "--auto",
         type=int,
-        default=92,
-        help="score >= this: merge automatically (raise if you see false merges)",
+        default=settings.roasters.auto_threshold,
+        help="score >= this: merge automatically (raise if you see false "
+        "merges; default from settings: %(default)s)",
     )
     parser.add_argument(
         "--review",
         type=int,
-        default=82,
-        help="score in [review, auto): send to the review queue "
-        "(lower it if true matches are being missed entirely)",
+        default=settings.roasters.review_threshold,
+        help="score in [review, auto): send to the review queue (lower it if "
+        "true matches are being missed entirely; default from settings: "
+        "%(default)s)",
     )
     parser.add_argument(
         "--location-review",
@@ -360,14 +381,14 @@ def clean_reviews_command(argv: list[str] | None = None) -> None:
     )
     parser.add_argument(
         "--baseline-date",
-        default=DEFAULT_BASELINE_DATE,
+        default=settings.prices.baseline_date.isoformat(),
         help="the month whose dollars adjusted prices are expressed in "
-        f"(default {DEFAULT_BASELINE_DATE}). Must be a month the CPI table "
+        "(default from settings: %(default)s). Must be a month the CPI table "
         "covers.",
     )
     args = parser.parse_args(argv)
 
-    _configure_logging()
+    _configure_logging(settings)
     raw = pd.read_csv(args.input)
     crosswalk = pd.read_csv(args.crosswalk) if args.crosswalk.exists() else None
     if crosswalk is None:
@@ -428,7 +449,7 @@ def fetch_cpi_command(argv: list[str] | None = None) -> None:
     parser.add_argument("--end-year", type=int)
     args = parser.parse_args(argv)
 
-    _configure_logging()
+    _configure_logging(settings)
     if (args.start_year is None) != (args.end_year is None):
         raise SystemExit("--start-year and --end-year must be given together.")
 
@@ -439,7 +460,7 @@ def fetch_cpi_command(argv: list[str] | None = None) -> None:
     except (requests.RequestException, RuntimeError, ValueError) as exc:
         raise SystemExit(f"Could not update the CPI table: {exc}") from exc
 
-    months = table[MONTH_COLUMNS].map(lambda v: str(v).strip() not in {"", "nan"})
+    months = table[list(MONTH_COLUMNS)].map(lambda v: str(v).strip() not in {"", "nan"})
     print(
         f"{int(months.to_numpy().sum())} monthly CPI values across "
         f"{len(table)} years -> {args.output}"
@@ -470,9 +491,9 @@ def refresh_data(argv: list[str] | None = None) -> None:
     )
     parser.add_argument(
         "--baseline-date",
-        default=DEFAULT_BASELINE_DATE,
-        help=f"month whose dollars adjusted prices use (default "
-        f"{DEFAULT_BASELINE_DATE})",
+        default=settings.prices.baseline_date.isoformat(),
+        help="month whose dollars adjusted prices use (default from settings: "
+        "%(default)s)",
     )
     parser.add_argument(
         "--skip-scrape",

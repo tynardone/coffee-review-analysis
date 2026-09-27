@@ -11,16 +11,25 @@ from the site has no saved page to re-parse, so its row is the only copy left.
 import logging
 from collections.abc import Iterable, Mapping
 from pathlib import Path
-from typing import Any, Protocol, runtime_checkable
+from typing import Any, Final, Protocol, runtime_checkable
 
 import pandas as pd
 
-__all__ = ["CsvReviewStore", "ReviewStore"]
+__all__ = [
+    "SCRAPED_AT_COLUMN",
+    "SITEMAP_LASTMOD_COLUMN",
+    "URL_COLUMN",
+    "CsvReviewStore",
+    "ReviewStore",
+]
 
 logger = logging.getLogger(__name__)
 
-URL_COLUMN = "url"
-SCRAPED_AT_COLUMN = "scraped_at"
+# Columns every row carries, whatever the page it came from. The parse step
+# writes them; this store reads them back.
+URL_COLUMN: Final = "url"
+SITEMAP_LASTMOD_COLUMN: Final = "sitemap_lastmod"
+SCRAPED_AT_COLUMN: Final = "scraped_at"
 
 
 @runtime_checkable
