@@ -128,7 +128,7 @@ the page it came from was fetched. Reviews that drop out of the sitemap are
 reported but kept: they can no longer be fetched, so the stored copy is the only
 one left.
 
-The saved pages take about 100 MB and are not committed; back them up with the
+The saved pages take about 240 MB and are not committed; back them up with the
 rest of the disk. The first scrape into an empty `data/bronze/` downloads every
 page once, which takes about half an hour.
 

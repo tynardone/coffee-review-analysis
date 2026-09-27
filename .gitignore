@@ -165,6 +165,6 @@ credentials.json
 # derivation is build output.
 data/clean/reviews.parquet
 
-# Saved review pages: about 100 MB of gzipped HTML, rewritten whenever a page
+# Saved review pages: about 240 MB of gzipped HTML, rewritten whenever a page
 # changes. Git is the wrong home for it; back it up with the rest of the disk.
 data/bronze/
