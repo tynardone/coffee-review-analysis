@@ -4,14 +4,13 @@ Run this ONLY after reviewing a real parser change, and read the resulting diff
 line by line — the whole value of the golden file is that it fails when parsing
 changes, so regenerating it without reading the diff silently discards the test.
 
-    uv run python tests/generate_golden.py
+    uv run python -m tests.generate_golden
 """
 
 import json
 
-from conftest import GOLDEN, review_pages
-
 from coffee.parser import parse_html
+from tests.paths import GOLDEN, review_pages
 
 
 def main() -> None:

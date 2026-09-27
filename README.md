@@ -39,11 +39,16 @@ environment with only the scraping and pipeline dependencies.
 Fetching exchange rates needs an
 [OpenExchangeRates](https://openexchangerates.org/signup/free) key (free tier:
 1000 requests/month). It is the only credential the pipeline uses. Put it in the
-environment or in a `.env` file at the project root:
+environment or in a `.env` file at the project root; `.env.example` lists every
+variable:
 
-```plaintext
-OPENEXCHANGERATES_API_ID=
+```bash
+cp .env.example .env
 ```
+
+A variable set in the real environment wins over `.env`. Two optional variables
+move the pipeline's files: `COFFEE_DATA_DIR` (default `data/`) and
+`COFFEE_SEEDS_DIR` (default `seeds/`).
 
 ## Data sources
 
@@ -69,10 +74,12 @@ resolving roaster and origin locations to coordinates. Nothing calls it yet.
 
 ## Code layout
 
-Everything importable lives in the `coffee/` package; the pipeline steps are
-installed as console commands that wrap it.
+Everything importable lives in the `coffee` package under `src/`; the pipeline
+steps are installed as console commands that wrap it. The src layout means the
+package is only importable once installed, so tests, notebooks and the commands
+all import the same code.
 
-**`coffee/`**
+**`src/coffee/`**
 
 - `sitemap.py` — discovers every review URL from the site's XML sitemaps with
   each one's `<lastmod>`. Raises `SitemapError` rather than returning a partial
@@ -106,12 +113,19 @@ installed as console commands that wrap it.
   says about itself. See
   [Resolving roaster names](#resolving-roaster-names) for the workflow and
   [`docs/roaster-resolution.md`](docs/roaster-resolution.md) for the design.
-- `config.py` — paths and credentials, read from the environment or `.env`.
+- `settings.py` — `Settings`, the data and seed directories every path hangs
+  off, built once by each command or notebook and passed down; `require_env`
+  for secrets. Library code never reads the environment itself.
 - `cli.py` — argument parsing for the console commands.
 
-**`tests/`** — `fixtures/html/` holds ten real review pages and
+**`tests/`** — `unit/` mirrors the package and runs on fixtures and temporary
+files; `integration/` runs the console commands against an empty data
+directory. `fixtures/html/` holds ten real review pages and
 `fixtures/parsed_reviews.json` pins their expected parse; `generate_golden.py`
 regenerates that file after a deliberate parser change.
+
+**`seeds/`** — hand-kept reference data that nothing can regenerate. Today that
+is `roaster_decisions.csv`.
 
 **`docs/`** — [`data-flow.md`](docs/data-flow.md), a diagram of every file under
 `data/` with what writes and reads it; [`roaster-resolution.md`](docs/roaster-resolution.md),
@@ -168,7 +182,7 @@ again, so the held copy is the only one.
 uv run scrape-reviews --full
 ```
 
-Use `--full` after changing `coffee/parser.py`. An incremental run re-parses
+Use `--full` after changing `src/coffee/parser.py`. An incremental run re-parses
 only the pages it re-fetches, so without it a parser fix reaches new rows only
 and the corpus becomes a mixture of two parser versions. `scraped_at` is what
 makes such a mixture visible.
@@ -230,7 +244,7 @@ only by code, so it is Parquet: about a third the size, and it keeps the types
 the writer already knew. Read back from CSV, `review_date` returns as a string
 and every consumer has to re-parse it.
 
-**Field names are settled at the raw boundary.** `coffee/parser.py` normalises
+**Field names are settled at the raw boundary.** `src/coffee/parser.py` normalises
 each scraped table label (`"Est. Price:"` → `est_price`) as it parses, so the
 raw layer lands with the names the rest of the project uses. Cleaning therefore
 concerns data only: `clean_reviews` asserts the names are already correct rather
@@ -238,7 +252,7 @@ than fixing them, so a file predating this fails at the boundary naming the
 offending columns instead of failing inside a merge several steps later.
 
 `uv run clean-reviews` builds the cleaned layer. The transformation lives in
-`coffee/clean.py` rather than in a notebook, so it is tested and runs in CI.
+`src/coffee/clean.py` rather than in a notebook, so it is tested and runs in CI.
 Cleaning:
 
 - parses `est_price` into a value, an ISO 4217 currency and a quantity
@@ -251,7 +265,7 @@ is reported on every run. Formats that are not whole-bean coffee (capsules,
 pods) keep their review but get no quantity, since a price per pound would not
 mean anything.
 
-**Prices are made comparable as part of cleaning**, by `coffee/prices.py`.
+**Prices are made comparable as part of cleaning**, by `src/coffee/prices.py`.
 `clean_reviews` applies it when given exchange rates and CPI, adding:
 
 - `price_usd`, converted at the review month's rate
@@ -292,7 +306,8 @@ explains why.
 
 ### The three files
 
-They live in `data/roasters/`.
+The decisions live in `seeds/`, since nothing can regenerate them; the other two
+are derived and live in `data/roasters/`.
 
 | file | edit it? | role |
 |---|---|---|
@@ -359,7 +374,7 @@ only one that cannot be rebuilt.
 
 Run step 1 against the new file. The queue holds only pairs not yet judged;
 everything already decided stays decided. An answered pair reappearing means
-`roaster_decisions.csv` is missing from `--outdir`.
+`seeds/roaster_decisions.csv` is missing, or `--decisions` points elsewhere.
 
 ### Occasional extras
 
@@ -448,7 +463,7 @@ regression fails a test rather than emptying a column unnoticed. After a
 deliberate parser change, regenerate the golden file and read the diff:
 
 ```bash
-uv run python tests/generate_golden.py
+uv run python -m tests.generate_golden
 ```
 
 Linting (ruff), formatting (ruff-format) and type checking (mypy) run through
@@ -459,7 +474,8 @@ uv run pre-commit install
 ```
 
 GitHub Actions runs the same checks on every pull request, plus the tests on
-Python 3.12 and 3.13. The tests make no network requests.
+Python 3.12 and 3.13. The tests make no network requests; a test that must is
+marked `network`, and CI runs `pytest -m "not network"`.
 
 ## References
 

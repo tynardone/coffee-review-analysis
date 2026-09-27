@@ -23,24 +23,19 @@ from typing import Any
 import aiohttp
 from tqdm.asyncio import tqdm
 
-from coffee.config import DATA_DIR, HEADERS
-from coffee.fetch import fetch
+from coffee.fetch import HEADERS, fetch
 from coffee.parser import parse_html
 from coffee.sitemap import get_review_urls
 from coffee.storage import ReviewStore
 
 __all__ = [
     "DEFAULT_CONCURRENCY",
-    "DEFAULT_OUTPUT_DIR",
     "plan_fetch",
     "scrape_all_reviews",
     "scrape_review",
 ]
 
 logger = logging.getLogger(__name__)
-
-DEFAULT_OUTPUT_DIR = DATA_DIR / "raw"
-
 
 DEFAULT_CONCURRENCY = 10
 

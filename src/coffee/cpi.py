@@ -1,9 +1,10 @@
 """Fetch the BLS consumer price index used to put prices in constant dollars.
 
-Reads the CPI-U series from the BLS public API and merges it into the table at
-``data/external/consumer_price_index.csv``. The series is ``CUUR0000SA0``: all
-urban consumers, U.S. city average, all items, not seasonally adjusted, which
-is what :func:`coffee.prices.cpi_adjust_price` expects.
+Reads the CPI-U series from the BLS public API and merges it into the CPI
+table, ``data/external/consumer_price_index.csv`` by default. The series is
+``CUUR0000SA0``: all urban consumers, U.S. city average, all items, not
+seasonally adjusted, which is what :func:`coffee.prices.cpi_adjust_price`
+expects.
 
 Runs incrementally, like :mod:`coffee.exchange_rates`. A published CPI figure
 for a past month does not change, so only the recent window is requested and
@@ -23,12 +24,11 @@ from typing import Any
 import pandas as pd
 import requests
 
-from coffee.config import DATA_DIR, HEADERS
+from coffee.fetch import HEADERS
 
 __all__ = [
     "BLS_API_URL",
     "BLS_SERIES_ID",
-    "DEFAULT_CPI_PATH",
     "MONTH_COLUMNS",
     "Observation",
     "fetch_cpi",
@@ -39,8 +39,6 @@ __all__ = [
 ]
 
 logger = logging.getLogger(__name__)
-
-DEFAULT_CPI_PATH = DATA_DIR / "external" / "consumer_price_index.csv"
 
 # CPI-U, U.S. city average, all items, not seasonally adjusted.
 BLS_SERIES_ID = "CUUR0000SA0"
@@ -183,7 +181,7 @@ def _coverage(table: pd.DataFrame) -> int:
 
 
 def fetch_cpi(
-    path: Path = DEFAULT_CPI_PATH,
+    path: Path,
     *,
     start_year: int | None = None,
     end_year: int | None = None,

@@ -5,6 +5,9 @@ Each function here is registered in ``pyproject.toml`` under
 ``fetch-exchange-rates`` and ``resolve-roasters`` once the package is
 installed. Argument parsing and logging setup live here; the work itself lives
 in the modules these import, so it stays importable from notebooks and tests.
+
+Each command builds one :class:`~coffee.settings.Settings` and takes its
+default paths from it. That, and reading ``.env``, happen here and nowhere else.
 """
 
 import argparse
@@ -17,20 +20,14 @@ import pandas as pd
 import requests
 
 from coffee.clean import DEFAULT_BASELINE_DATE, clean_reviews
-from coffee.config import DATA_DIR, openexchangerates_api_id
-from coffee.cpi import DEFAULT_CPI_PATH, MONTH_COLUMNS, fetch_cpi
+from coffee.cpi import MONTH_COLUMNS, fetch_cpi
 from coffee.exchange_rates import (
-    DEFAULT_OUTPUT,
     fetch_rates,
     load_rates,
     load_review_dates,
     unfetched_dates,
 )
-from coffee.pipeline import (
-    DEFAULT_CONCURRENCY,
-    DEFAULT_OUTPUT_DIR,
-    scrape_all_reviews,
-)
+from coffee.pipeline import DEFAULT_CONCURRENCY, scrape_all_reviews
 from coffee.prices import load_cpi, load_exchange_rates
 from coffee.roasters import (
     format_resolution_report,
@@ -40,6 +37,7 @@ from coffee.roasters import (
     resolve,
     unpromoted_verdicts,
 )
+from coffee.settings import Settings, load_env, require_env
 from coffee.storage import CsvReviewStore
 
 __all__ = [
@@ -52,6 +50,12 @@ __all__ = [
 ]
 
 logger = logging.getLogger(__name__)
+
+
+def _settings() -> Settings:
+    """Read ``.env``, then build the settings every default path comes from."""
+    load_env()
+    return Settings.from_env()
 
 
 def _configure_logging() -> None:
@@ -71,12 +75,13 @@ def _positive_int(value: str) -> int:
 
 def scrape_reviews(argv: list[str] | None = None) -> None:
     """Update the review corpus, fetching only what changed since last run."""
+    settings = _settings()
     parser = argparse.ArgumentParser(description=scrape_reviews.__doc__)
     parser.add_argument(
         "-o",
         "--output-dir",
         type=Path,
-        default=DEFAULT_OUTPUT_DIR,
+        default=settings.raw_dir,
         help="Directory holding reviews.csv.",
     )
     parser.add_argument(
@@ -102,12 +107,13 @@ def scrape_reviews(argv: list[str] | None = None) -> None:
 
 def fetch_exchange_rates(argv: list[str] | None = None) -> None:
     """Fetch historical exchange rates for the dates in a scraped reviews file."""
+    settings = _settings()
     parser = argparse.ArgumentParser(description=fetch_exchange_rates.__doc__)
     parser.add_argument(
         "-i",
         "--input",
         type=Path,
-        default=DATA_DIR / "raw" / "reviews.csv",
+        default=settings.raw_reviews,
         help="Reviews file whose review months need rates. Defaults to the raw "
         "scrape, which is what keeps this independent of the cleaning step it "
         "feeds; the cleaned layer is also accepted.",
@@ -116,7 +122,7 @@ def fetch_exchange_rates(argv: list[str] | None = None) -> None:
         "-o",
         "--output",
         type=Path,
-        default=DEFAULT_OUTPUT,
+        default=settings.exchange_rates,
         help="Destination JSON file for exchange rates.",
     )
     parser.add_argument(
@@ -128,9 +134,10 @@ def fetch_exchange_rates(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
 
     _configure_logging()
-    app_id = openexchangerates_api_id()
-    if not app_id:
-        raise SystemExit("OPENEXCHANGERATES_API_ID is not set (add it to your .env).")
+    try:
+        app_id = require_env("OPENEXCHANGERATES_API_ID")
+    except RuntimeError as exc:
+        raise SystemExit(str(exc)) from exc
 
     try:
         dates = load_review_dates(args.input)
@@ -163,6 +170,7 @@ def fetch_exchange_rates(argv: list[str] | None = None) -> None:
 
 def resolve_roasters(argv: list[str] | None = None) -> None:
     """Cluster messy roaster-name spellings into canonical entities."""
+    settings = _settings()
     parser = argparse.ArgumentParser(description=resolve_roasters.__doc__)
     parser.add_argument("infile", type=Path, help="CSV containing the names")
     parser.add_argument("--column", default="roaster", help="column holding the names")
@@ -171,13 +179,19 @@ def resolve_roasters(argv: list[str] | None = None) -> None:
         default="roaster_location",
         help="column holding each roaster's location; '' disables the signal",
     )
-    parser.add_argument("--outdir", type=Path, default=DATA_DIR / "roasters")
+    parser.add_argument(
+        "--outdir",
+        type=Path,
+        default=settings.roasters_dir,
+        help="where the crosswalk and the review queue are written",
+    )
     parser.add_argument(
         "--decisions",
         type=Path,
-        default=None,
-        help="CSV of adjudicated pairs (default: <outdir>/roaster_decisions.csv). "
-        "Missing is fine; it is created as you record verdicts.",
+        default=settings.roaster_decisions,
+        help="CSV of adjudicated pairs, kept with the other seed files rather "
+        "than under --outdir. Missing is fine; it is created as you record "
+        "verdicts.",
     )
     parser.add_argument(
         "--auto",
@@ -231,7 +245,7 @@ def resolve_roasters(argv: list[str] | None = None) -> None:
             args.infile,
         )
 
-    decisions_path = args.decisions or args.outdir / "roaster_decisions.csv"
+    decisions_path = args.decisions
     review_path = args.outdir / "roaster_review_queue.csv"
 
     if args.accept_reviewed:
@@ -284,32 +298,26 @@ def resolve_roasters(argv: list[str] | None = None) -> None:
 
 def clean_reviews_command(argv: list[str] | None = None) -> None:
     """Build the cleaned layer from the raw scrape."""
+    settings = _settings()
     parser = argparse.ArgumentParser(description=clean_reviews_command.__doc__)
-    parser.add_argument(
-        "-i", "--input", type=Path, default=DATA_DIR / "raw" / "reviews.csv"
-    )
-    parser.add_argument(
-        "-o",
-        "--output",
-        type=Path,
-        default=DATA_DIR / "clean" / "reviews.parquet",
-    )
+    parser.add_argument("-i", "--input", type=Path, default=settings.raw_reviews)
+    parser.add_argument("-o", "--output", type=Path, default=settings.clean_reviews)
     parser.add_argument(
         "--crosswalk",
         type=Path,
-        default=DATA_DIR / "roasters" / "roaster_crosswalk.csv",
+        default=settings.roaster_crosswalk,
         help="roaster crosswalk; skipped if absent",
     )
     parser.add_argument(
         "--rates",
         type=Path,
-        default=DATA_DIR / "external" / "openex_exchange_rates.json",
+        default=settings.exchange_rates,
         help="historical exchange rates; price conversion is skipped if absent",
     )
     parser.add_argument(
         "--cpi",
         type=Path,
-        default=DATA_DIR / "external" / "consumer_price_index.csv",
+        default=settings.cpi,
         help="BLS CPI-U table; inflation adjustment is skipped if absent",
     )
     parser.add_argument(
@@ -364,12 +372,13 @@ def clean_reviews_command(argv: list[str] | None = None) -> None:
 
 def fetch_cpi_command(argv: list[str] | None = None) -> None:
     """Update the BLS consumer price index table."""
+    settings = _settings()
     parser = argparse.ArgumentParser(description=fetch_cpi_command.__doc__)
     parser.add_argument(
         "-o",
         "--output",
         type=Path,
-        default=DEFAULT_CPI_PATH,
+        default=settings.cpi,
         help="CPI table to update in place.",
     )
     parser.add_argument(
@@ -409,6 +418,7 @@ def refresh_data(argv: list[str] | None = None) -> None:
 
     Everything downstream of this is analysis, which belongs in a notebook.
     """
+    settings = _settings()
     parser = argparse.ArgumentParser(description=refresh_data.__doc__)
     parser.add_argument(
         "--full",
@@ -428,7 +438,7 @@ def refresh_data(argv: list[str] | None = None) -> None:
     )
     args = parser.parse_args(argv)
 
-    raw = DEFAULT_OUTPUT_DIR / "reviews.csv"
+    raw = settings.raw_reviews
     steps: list[tuple[str, Callable[[], None]]] = []
     if not args.skip_scrape:
         steps.append(
@@ -448,4 +458,4 @@ def refresh_data(argv: list[str] | None = None) -> None:
         print(f"\n=== {number}/{len(steps)}  {name} " + "=" * (40 - len(name)))
         run()
 
-    print(f"\nDone. The cleaned layer is at {DATA_DIR / 'clean' / 'reviews.parquet'}.")
+    print(f"\nDone. The cleaned layer is at {settings.clean_reviews}.")

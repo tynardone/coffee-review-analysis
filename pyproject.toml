@@ -69,7 +69,10 @@ dev = [
 default-groups = ["dev", "analysis"]
 
 [tool.setuptools]
-# Flat layout: only the `coffee` package ships; notebooks/ and tests/ do not.
+# src layout: the package is importable only once installed (`uv sync` installs
+# it editable), so tests, notebooks and the CLI all import the same `coffee`,
+# never a copy that happens to sit in the working directory.
+package-dir = { "" = "src" }
 packages = ["coffee", "coffee.roasters"]
 
 [tool.setuptools.package-data]
@@ -78,11 +81,22 @@ coffee = ["py.typed"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-# Keep the golden-parse diff readable when a fixture's parse changes.
-addopts = "-q"
+# The repo root is on the path so tests share helpers as `tests.paths`;
+# importlib mode lets test files in different folders share a basename.
+pythonpath = ["."]
+# -q keeps the golden-parse diff readable when a fixture's parse changes.
+addopts = "-q --import-mode=importlib --strict-markers"
+markers = [
+    "network: hits a real site or API; excluded from CI",
+    "slow: full replays or large data",
+]
 
 [tool.mypy]
 disable_error_code = "import-untyped"
+# Module names come from paths relative to these roots: src/coffee/x.py is
+# `coffee.x` and tests/paths.py is `tests.paths`, matching how both import.
+mypy_path = ["src", "."]
+explicit_package_bases = true
 exclude = "venv/"
 ignore_missing_imports = true
 
@@ -98,3 +112,7 @@ lint.select = [
 ]
 lint.ignore = ["E402"]
 line-length = 88
+# The package sits under src/, where import sorting would not look for it by
+# default, and would file `coffee` with the third-party imports.
+src = ["src", "."]
+lint.isort.known-first-party = ["coffee", "tests"]
