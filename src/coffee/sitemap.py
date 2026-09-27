@@ -12,6 +12,7 @@ rows.
 import asyncio
 import logging
 from datetime import date, datetime
+from typing import Final
 from urllib.parse import urlparse
 
 import aiohttp
@@ -30,14 +31,14 @@ __all__ = [
 
 logger = logging.getLogger(__name__)
 
-SITEMAP_URL = "https://www.coffeereview.com/sitemap_index.xml"
+SITEMAP_URL: Final = "https://www.coffeereview.com/sitemap_index.xml"
 
 # Sitemaps are third-party XML, so entity resolution and network access are
 # both disabled.
 _PARSER = etree.XMLParser(resolve_entities=False, no_network=True)
 
 # Guards against a malformed index that points at itself, directly or in a loop.
-MAX_SITEMAP_DEPTH = 5
+MAX_SITEMAP_DEPTH: Final = 5
 
 
 class SitemapError(RuntimeError):

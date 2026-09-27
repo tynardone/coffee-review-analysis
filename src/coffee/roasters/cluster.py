@@ -60,8 +60,9 @@ def resolve(
     raw_names: list[str],
     locations: Mapping[str, Iterable[str]] | None = None,
     decisions: Iterable[Decision] | None = None,
-    auto_threshold: int = 92,
-    review_threshold: int = 82,
+    *,
+    auto_threshold: int,
+    review_threshold: int,
     location_review_threshold: int | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Cluster raw names; return (crosswalk, review_queue).

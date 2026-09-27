@@ -119,8 +119,10 @@ celerybeat.pid
 # SageMath parsed files
 *.sage.py
 
-# Environments
+# Environments. Local secrets never leave the machine; the template does.
 .env
+.env.*
+!.env.example
 .venv
 env/
 venv/

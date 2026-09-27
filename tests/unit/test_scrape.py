@@ -116,7 +116,7 @@ def site(monkeypatch):
 
 
 def scrape(pages, **kwargs):
-    return asyncio.run(scrape_all_reviews(pages, **kwargs))
+    return asyncio.run(scrape_all_reviews(pages, concurrency=2, **kwargs))
 
 
 def test_scrape_saves_each_page_with_its_lastmod(pages, site):

@@ -10,13 +10,15 @@ concurrency slot idle. Permanent errors such as 404 return ``None`` at once.
 import asyncio
 import logging
 import random
+from collections.abc import Mapping
+from typing import Final
 
 import aiohttp
 
 __all__ = ["HEADERS", "fetch"]  # the other constants are tuning knobs, not API
 
 # Sent with every request, by the scraper and by both reference-data fetchers.
-HEADERS = {
+HEADERS: Final[Mapping[str, str]] = {
     "user-agent": (
         "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 "
         "(KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36"
@@ -25,11 +27,11 @@ HEADERS = {
 
 # Only transient failures are retried. Other 4xx responses, such as a 404 for a
 # removed review, are permanent and fail fast rather than consuming retries.
-RETRY_STATUSES: frozenset[int] = frozenset({429, 500, 502, 503, 504})
-REQUEST_TIMEOUT = aiohttp.ClientTimeout(total=20)
-BASE_DELAY = 1.0  # seconds; exponential backoff base
-MAX_DELAY = 30.0
-JITTER = 1.0
+RETRY_STATUSES: Final = frozenset({429, 500, 502, 503, 504})
+REQUEST_TIMEOUT: Final = aiohttp.ClientTimeout(total=20)
+BASE_DELAY: Final = 1.0  # seconds; exponential backoff base
+MAX_DELAY: Final = 30.0
+JITTER: Final = 1.0
 
 
 def _retry_delay(attempt: int, retry_after: str | None) -> float:

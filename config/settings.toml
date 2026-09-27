@@ -1,0 +1,30 @@
+# Committed defaults for the pipeline. No secrets here: those go in .env.
+#
+# Any value can be overridden without editing this file, with an environment
+# variable or a line in .env named COFFEE_<KEY>, using a double underscore for a
+# value inside a table. For example:
+#
+#     COFFEE_LOG_LEVEL=DEBUG
+#     COFFEE_SCRAPE__CONCURRENCY=4
+#
+# Command-line flags override everything, for that one run.
+
+# DEBUG, INFO, WARNING or ERROR.
+log_level = "INFO"
+
+[scrape]
+# How many review pages to download at once. Lower is politer to the site.
+concurrency = 10
+
+[prices]
+# Adjusted prices are expressed in this month's dollars. It must be a month the
+# CPI table covers.
+baseline_date = 2026-01-01
+
+[roasters]
+# Name-similarity scores (0-100). At or above auto_threshold, two spellings are
+# merged automatically; from review_threshold up to it, the pair is queued for
+# you to judge. Raise auto_threshold if you see false merges; lower
+# review_threshold if true matches are being missed entirely.
+auto_threshold = 92
+review_threshold = 82

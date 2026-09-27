@@ -5,6 +5,8 @@ Merging on a matching location was tried and is unsafe -- the score does not
 separate a true match at 82.1 from unrelated companies sharing a city at 82.9.
 """
 
+from functools import partial
+
 import pytest
 
 from coffee.roasters import (
@@ -12,8 +14,12 @@ from coffee.roasters import (
     compare_locations,
     core_key,
     normalize_location,
-    resolve,
 )
+from coffee.roasters import resolve as _resolve
+
+# resolve() takes its thresholds from the settings in real runs. These tests
+# pin the tuned values so they exercise the algorithm, not the config file.
+resolve = partial(_resolve, auto_threshold=92, review_threshold=82)
 
 # --------------------------------------------------------------------------
 # Location — the second signal

@@ -16,7 +16,6 @@ import numpy as np
 import pandas as pd
 
 __all__ = [
-    "DEFAULT_BASELINE_DATE",
     "add_comparable_prices",
     "convert_currency",
     "cpi_adjust_price",
@@ -24,12 +23,6 @@ __all__ = [
     "load_exchange_rates",
     "price_per_lb",
 ]
-
-# The month whose dollars every adjusted price is expressed in. Changing it
-# changes every price_usd_adj, so it is recorded on the output rather than left
-# implicit.
-DEFAULT_BASELINE_DATE = "2026-01-01"
-
 
 # ==========================================================================
 # Reference data
@@ -95,7 +88,7 @@ def convert_currency(df: pd.DataFrame, exchange_rates: pd.DataFrame) -> pd.DataF
 
 
 def cpi_adjust_price(
-    df: pd.DataFrame, cpi: pd.DataFrame, baseline_date: str = DEFAULT_BASELINE_DATE
+    df: pd.DataFrame, cpi: pd.DataFrame, baseline_date: str
 ) -> pd.DataFrame:
     """Express prices in `baseline_date` dollars using CPI-U.
 
@@ -163,7 +156,7 @@ def add_comparable_prices(
     *,
     exchange_rates: pd.DataFrame,
     cpi: pd.DataFrame,
-    baseline_date: str = DEFAULT_BASELINE_DATE,
+    baseline_date: str,
 ) -> pd.DataFrame:
     """Cleaned reviews in, comparable prices out.
 

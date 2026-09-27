@@ -6,6 +6,7 @@ generic key cannot match everything containing it.
 
 from collections import Counter
 from collections.abc import Iterable, Mapping
+from typing import Final
 
 from rapidfuzz import fuzz
 
@@ -18,7 +19,7 @@ __all__ = [
 
 # A one-token core key is trusted as a subset match only when that token is
 # rare across the corpus. See the subset guard in score().
-MAX_SUBSET_TOKEN_DF = 2
+MAX_SUBSET_TOKEN_DF: Final = 2
 
 
 def token_document_frequency(keys: Iterable[str]) -> Counter[str]:

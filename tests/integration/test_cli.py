@@ -13,6 +13,7 @@ import pytest
 
 from coffee import cli
 from coffee.page_store import PageStore
+from coffee.settings import Settings
 from tests.paths import GOLDEN, review_pages
 
 
@@ -22,8 +23,9 @@ def dirs(tmp_path, monkeypatch):
     data, seeds = tmp_path / "data", tmp_path / "seeds"
     monkeypatch.setenv("COFFEE_DATA_DIR", str(data))
     monkeypatch.setenv("COFFEE_SEEDS_DIR", str(seeds))
-    # A developer's .env could supply the API key or redirect the data dir.
-    monkeypatch.setattr(cli, "load_env", lambda: None)
+    # A developer's .env could supply the API key or redirect the data dir,
+    # and the real get_settings() caches its first result across tests.
+    monkeypatch.setattr(cli, "get_settings", lambda: Settings(_env_file=None))
     return data, seeds
 
 
@@ -73,8 +75,9 @@ def test_resolve_roasters_reads_decisions_from_the_seeds_dir(dirs, raw_reviews, 
 def test_fetch_exchange_rates_without_a_key_exits_naming_the_variable(
     dirs, raw_reviews, monkeypatch
 ):
+    monkeypatch.delenv("COFFEE_OPENEXCHANGERATES_API_ID", raising=False)
     monkeypatch.delenv("OPENEXCHANGERATES_API_ID", raising=False)
-    with pytest.raises(SystemExit, match="OPENEXCHANGERATES_API_ID is not set"):
+    with pytest.raises(SystemExit, match="COFFEE_OPENEXCHANGERATES_API_ID is not set"):
         cli.fetch_exchange_rates([])
 
 

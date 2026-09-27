@@ -25,15 +25,12 @@ from coffee.page_store import PageStore
 from coffee.sitemap import get_review_urls
 
 __all__ = [
-    "DEFAULT_CONCURRENCY",
     "ScrapeResult",
     "plan_fetch",
     "scrape_all_reviews",
 ]
 
 logger = logging.getLogger(__name__)
-
-DEFAULT_CONCURRENCY = 10
 
 
 @dataclass
@@ -91,7 +88,7 @@ async def _fetch_one(
 
 async def scrape_all_reviews(
     pages: PageStore,
-    concurrency: int = DEFAULT_CONCURRENCY,
+    concurrency: int,
     *,
     full: bool = False,
     limit: int | None = None,

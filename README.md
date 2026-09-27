@@ -41,17 +41,33 @@ default. For the pipeline alone, use `uv sync --no-default-groups`.
 
 ### Configuration
 
-The only credential is an [OpenExchangeRates](https://openexchangerates.org/signup/free)
+Settings come from three places, each overriding the one before:
+
+1. `config/settings.toml`, committed: the defaults for the log level, scrape
+   concurrency, the inflation baseline month and the roaster-matching
+   thresholds, with a comment on each.
+2. `.env` at the project root, not committed: your secrets and local overrides.
+3. Environment variables, which win over both.
+
+Command-line flags override all three for a single run.
+
+The only secret is an [OpenExchangeRates](https://openexchangerates.org/signup/free)
 app ID, used to fetch exchange rates. The free tier allows 1,000 requests a
-month. Copy the example file and fill it in:
+month. Copy the template and fill it in:
 
 ```bash
 cp .env.example .env
 ```
 
-Variables already set in the environment take precedence over `.env`. Two
-optional variables relocate the project's files: `COFFEE_DATA_DIR` (default
-`data/`) and `COFFEE_SEEDS_DIR` (default `seeds/`).
+Every variable is named `COFFEE_` plus the setting's name, with a double
+underscore for a value inside a TOML table: `COFFEE_OPENEXCHANGERATES_API_ID`,
+`COFFEE_DATA_DIR` (default `data/`), `COFFEE_SEEDS_DIR` (default `seeds/`),
+`COFFEE_SCRAPE__CONCURRENCY`. Settings are checked when a command starts, so a
+bad value stops it immediately with a message naming the setting.
+
+Values that are part of the code's logic rather than a choice, such as site
+URLs, timeouts and parsing rules, are constants next to the code that uses
+them, not settings.
 
 ## Usage
 
@@ -225,8 +241,9 @@ When exchange rates and CPI data are available, cleaning also applies
 
 The original `price_value`, `price_currency` and `quantity_in_lbs` are kept.
 
-The baseline defaults to January 2026 and is set with `--baseline-date`. It must
-be a month the CPI table covers; any other month is refused. The baseline is
+The baseline is January 2026 by default. Change it for good with `baseline_date`
+in `config/settings.toml`, or for one run with `--baseline-date`. It must be a
+month the CPI table covers; any other month is refused. The baseline is
 stored on every row because it is the unit of the adjusted price: the same coffee
 costs $77.64 in January 2026 dollars and $61.58 in January 2020 dollars. Rows
 from a month the CPI does not cover keep their unadjusted USD price and have no
@@ -398,6 +415,7 @@ and git sees no change.
 
 ```
 src/coffee/   the package
+config/       settings.toml, the committed default settings
 tests/        unit and integration tests, with saved review pages as fixtures
 data/         pipeline inputs and outputs; committed except bronze/ and clean/
 seeds/        hand-kept reference data that nothing can regenerate
@@ -443,9 +461,9 @@ under a step are the helpers it uses.
 - `roasters/` resolves roaster names, one module per stage: `normalize`,
   `similarity`, `location`, `cluster`, `decisions` (the only one that touches
   disk) and `report`.
-- `settings.py` defines `Settings`, which holds the data and seed directories.
-  Each command or notebook builds one and passes paths down; library code never
-  reads the environment directly.
+- `settings.py` defines `Settings`, the typed schema for every setting, and
+  `get_settings()`, which loads and validates them once. Commands and notebooks
+  call it and pass the values down; library code never reads the environment.
 - `cli.py` defines the console commands.
 
 ## Development

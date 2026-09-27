@@ -4,7 +4,14 @@ Single-linkage can fuse A and C through B, and can rejoin a split pair through
 a third name that resembles both. Neither is prevented; both are flagged.
 """
 
-from coffee.roasters import Decision, Verdict, resolve
+from functools import partial
+
+from coffee.roasters import Decision, Verdict
+from coffee.roasters import resolve as _resolve
+
+# resolve() takes its thresholds from the settings in real runs. These tests
+# pin the tuned values so they exercise the algorithm, not the config file.
+resolve = partial(_resolve, auto_threshold=92, review_threshold=82)
 
 # --------------------------------------------------------------------------
 # End-to-end clustering

@@ -23,6 +23,7 @@ import logging
 from collections.abc import Iterable, Mapping
 from datetime import date
 from pathlib import Path
+from typing import Final
 
 import pandas as pd
 import requests
@@ -47,16 +48,16 @@ __all__ = [
 
 logger = logging.getLogger(__name__)
 
-OPENEX_API_URL = "https://openexchangerates.org/api/historical/"
-OPENEX_TIMEOUT = 10
+OPENEX_API_URL: Final = "https://openexchangerates.org/api/historical/"
+OPENEX_TIMEOUT: Final = 10
 
 # OpenExchangeRates' historical data begins in 1999.
-EARLIEST_DATE = "1999-01-01"
+EARLIEST_DATE: Final = "1999-01-01"
 
 # How many fetches to accumulate before writing. Every date would mean hundreds
 # of writes of a file approaching a megabyte; the end of the run would mean
 # losing everything on a crash.
-DEFAULT_CHECKPOINT_EVERY = 25
+DEFAULT_CHECKPOINT_EVERY: Final = 25
 
 # ISO date string -> currency code -> rate against USD.
 RateMapping = dict[str, dict[str, float]]
