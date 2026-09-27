@@ -18,24 +18,24 @@ from coffee.clean import (
     clean_reviews,
     clean_roaster_location,
     convert_to_lbs,
-    normalise_types,
+    normalize_types,
     split_price_and_quantity,
 )
 
 # --------------------------------------------------------------------------
-# Column and type normalisation
+# Column and type normalization
 # --------------------------------------------------------------------------
 
 
-def test_check_raw_schema_passes_normalised_columns_through():
+def test_check_raw_schema_passes_normalized_columns_through():
     df = pd.DataFrame(columns=["roaster_location", "est_price", "acidity/structure"])
     assert check_raw_schema(df) is df
 
 
-def test_check_raw_schema_rejects_unnormalised_columns():
+def test_check_raw_schema_rejects_unnormalized_columns():
     """Data that predates parse-time naming must fail here, not deep in a merge."""
     df = pd.DataFrame(columns=["roaster_location", "Est. Price", "review_date"])
-    with pytest.raises(ValueError, match="not normalised"):
+    with pytest.raises(ValueError, match="not normalized"):
         check_raw_schema(df)
 
 
@@ -58,14 +58,14 @@ def base_frame(**overrides):
 
 
 def test_agtron_splits_into_two_readings():
-    out = normalise_types(base_frame())
+    out = normalize_types(base_frame())
     assert out["agtron_external"].iloc[0] == 57
     assert out["agtron_ground"].iloc[0] == 80
     assert "agtron" not in out.columns
 
 
 def test_a_single_agtron_reading_leaves_ground_missing():
-    out = normalise_types(base_frame(agtron="57"))
+    out = normalize_types(base_frame(agtron="57"))
     assert out["agtron_external"].iloc[0] == 57
     assert pd.isna(out["agtron_ground"].iloc[0])
 
@@ -73,25 +73,25 @@ def test_a_single_agtron_reading_leaves_ground_missing():
 def test_acidity_falls_back_to_the_renamed_column():
     """The site renamed `acidity` to `acidity/structure` across 2017-18; the
     cleaned layer carries one column holding whichever was present."""
-    out = normalise_types(base_frame(acidity=np.nan, **{"acidity/structure": "7"}))
+    out = normalize_types(base_frame(acidity=np.nan, **{"acidity/structure": "7"}))
     assert out["acidity"].iloc[0] == 7
 
 
 def test_agtron_typos_are_dropped():
     """Readings above 100 are website typos, not measurements."""
     df = pd.concat([base_frame(agtron="57/80"), base_frame(agtron="571/80")])
-    assert len(normalise_types(df)) == 1
+    assert len(normalize_types(df)) == 1
 
 
 def test_espresso_is_flagged_from_title_or_milk_score():
-    assert normalise_types(base_frame(title="Espresso Blend"))["is_espresso"].iloc[0]
-    assert normalise_types(base_frame(with_milk="9"))["is_espresso"].iloc[0]
-    assert not normalise_types(base_frame())["is_espresso"].iloc[0]
+    assert normalize_types(base_frame(title="Espresso Blend"))["is_espresso"].iloc[0]
+    assert normalize_types(base_frame(with_milk="9"))["is_espresso"].iloc[0]
+    assert not normalize_types(base_frame())["is_espresso"].iloc[0]
 
 
 def test_qualitative_scores_become_missing_not_an_error():
     """A few rows carry text like 'Very Low' where a number belongs."""
-    out = normalise_types(base_frame(acidity="Very Low"))
+    out = normalize_types(base_frame(acidity="Very Low"))
     assert pd.isna(out["acidity"].iloc[0])
 
 

@@ -37,7 +37,7 @@ resolve-roasters = "coffee.cli:resolve_roasters"
 Repository = "https://github.com/tynardone/coffee-review-analysis"
 
 # PEP 735 dependency groups, managed by uv.
-# `analysis` holds the notebook / modelling stack; `dev` holds tooling.
+# `analysis` holds the notebook / modeling stack; `dev` holds tooling.
 # Both are installed by default via [tool.uv] default-groups below.
 [dependency-groups]
 analysis = [

@@ -10,8 +10,8 @@ modules follow it:
     normalize -> similarity -> location -> cluster
                                     decisions feeds every stage
 
-Precision is favoured over recall throughout, since a false merge is silent
-while a false split is visible. That accounts for the conservative behaviour: a
+Precision is favored over recall throughout, since a false merge is silent
+while a false split is visible. That accounts for the conservative behavior: a
 location conflict vetoes a merge but a location match never causes one, the
 uncertain band is queued for review rather than decided, and the two known
 clustering failure modes are reported rather than prevented.

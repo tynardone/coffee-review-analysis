@@ -14,7 +14,7 @@ change, and read the diff.
 import pytest
 from bs4 import BeautifulSoup
 
-from coffee.parser import _parse_tables, normalise_field_name, parse_html
+from coffee.parser import _parse_tables, normalize_field_name, parse_html
 from tests.paths import review_pages
 
 
@@ -59,17 +59,17 @@ def test_parse_html_on_unrecognized_markup_returns_nulls_not_errors():
         # Kept as-is: the cleaning layer coalesces this field BY THIS NAME, so
         # prettifying the slash here would only move the translation elsewhere.
         ("Acidity/Structure:", "acidity/structure"),
-        # Already normalised: the rule has to be idempotent, because
+        # Already normalized: the rule has to be idempotent, because
         # check_raw_schema uses it to decide whether a file needs migrating.
         ("est_price", "est_price"),
     ],
 )
-def test_normalise_field_name(label, expected):
-    assert normalise_field_name(label) == expected
-    assert normalise_field_name(expected) == expected
+def test_normalize_field_name(label, expected):
+    assert normalize_field_name(label) == expected
+    assert normalize_field_name(expected) == expected
 
 
-def test_table_keys_are_normalised_to_field_names():
+def test_table_keys_are_normalized_to_field_names():
     html = """
     <table><tr><td>Roast Level:</td><td>Medium-Light</td></tr>
            <tr><td>Agtron:</td><td>57/80</td></tr></table>

@@ -27,7 +27,7 @@ import pandas as pd
 import pycountry
 from unidecode import unidecode
 
-from coffee.parser import normalise_field_name
+from coffee.parser import normalize_field_name
 from coffee.prices import DEFAULT_BASELINE_DATE, add_comparable_prices
 
 __all__ = [
@@ -43,7 +43,7 @@ __all__ = [
     "clean_reviews",
     "clean_roaster_location",
     "convert_to_lbs",
-    "normalise_types",
+    "normalize_types",
     "split_price_and_quantity",
 ]
 
@@ -176,21 +176,21 @@ def _us_states() -> frozenset[str]:
 
 
 def check_raw_schema(df: pd.DataFrame) -> pd.DataFrame:
-    """Reject raw data whose column names were never normalised.
+    """Reject raw data whose column names were never normalized.
 
     Field names are fixed at the scrape boundary by
-    :func:`coffee.parser.normalise_field_name`, so the cleaning layer operates
+    :func:`coffee.parser.normalize_field_name`, so the cleaning layer operates
     on data rather than on labels. A file predating that, carrying
     ``"est. price"`` where ``est_price`` belongs, would otherwise fail several
     steps later with a ``KeyError`` naming a column the caller never wrote.
     """
-    stale = [c for c in df.columns if c != normalise_field_name(str(c))]
+    stale = [c for c in df.columns if c != normalize_field_name(str(c))]
     if stale:
         raise ValueError(
-            f"{len(stale)} column(s) are not normalised: {sorted(stale)[:5]}. "
-            "This file predates field-name normalisation at parse time; "
+            f"{len(stale)} column(s) are not normalized: {sorted(stale)[:5]}. "
+            "This file predates field-name normalization at parse time; "
             "re-scrape it, or rename the columns with "
-            "coffee.parser.normalise_field_name first."
+            "coffee.parser.normalize_field_name first."
         )
     return df
 
@@ -207,7 +207,7 @@ def _agtron_parts(df: pd.DataFrame) -> pd.DataFrame:
     )
 
 
-def normalise_types(
+def normalize_types(
     df: pd.DataFrame, max_agtron: int = DEFAULT_MAX_AGTRON
 ) -> pd.DataFrame:
     """Parse dates, split agtron, coalesce acidity, coerce scores to numbers.
@@ -341,7 +341,7 @@ def convert_to_lbs(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def clean_currency(df: pd.DataFrame) -> pd.DataFrame:
-    """Standardise the currency column to ISO 4217 codes."""
+    """Standardize the currency column to ISO 4217 codes."""
     return df.assign(
         price_currency=lambda d: (
             d["price_currency"]
@@ -447,7 +447,7 @@ def clean_reviews(
     """
     cleaned = (
         raw.pipe(check_raw_schema)
-        .pipe(normalise_types, max_agtron=max_agtron)
+        .pipe(normalize_types, max_agtron=max_agtron)
         .pipe(split_price_and_quantity)
         .pipe(convert_to_lbs)
         .pipe(clean_currency)

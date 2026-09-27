@@ -1,7 +1,7 @@
 """Where things live on this machine, and how secrets are read.
 
 This module holds only what differs between machines: the data directory and
-the seed directory. Behaviour (site URLs, timeouts, thresholds) lives in the
+the seed directory. Behavior (site URLs, timeouts, thresholds) lives in the
 module that uses it, and secrets stay in the environment.
 
 Library code never reads ``os.environ`` itself. A :class:`Settings` is built

@@ -40,7 +40,7 @@ def load_exchange_rates(path: Path) -> pd.DataFrame:
     """Flatten ``{date: {currency: rate}}`` into a (date, currency, rate) table.
 
     A lookup table rather than the nested mapping, so that conversion is a
-    vectorised merge rather than a row-wise apply.
+    vectorized merge rather than a row-wise apply.
     """
     import json
 
