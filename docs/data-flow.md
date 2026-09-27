@@ -1,7 +1,7 @@
 # Data flow
 
 Every file under `data/` and `seeds/`, what writes it, and what reads it. `uv run refresh-data`
-runs the four commands top to bottom; the notebooks pick up where it stops.
+runs the five commands top to bottom; the notebooks pick up where it stops.
 
 ```mermaid
 flowchart TD
@@ -79,7 +79,7 @@ code, so it is Parquet and gitignored.
 
 ## Ordering
 
-The four commands are not interchangeable:
+The commands are not interchangeable:
 
 - `resolve-roasters` needs `raw/reviews.csv` to exist
 - `fetch-exchange-rates` reads its months from the **raw** layer, not the cleaned

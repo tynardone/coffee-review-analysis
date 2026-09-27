@@ -1,24 +1,27 @@
 # Coffee Review Scraper and Analysis
 
-[![Python Version](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://www.python.org/downloads/)
+[![Python](https://img.shields.io/badge/python-3.12%20%7C%203.13-blue.svg)](https://www.python.org/downloads/)
 [![Code style: Ruff](https://img.shields.io/badge/code%20style-Ruff-000000.svg)](https://github.com/astral-sh/ruff)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-Scrapes the ~9,300 blind-tasting reviews published by
-[CoffeeReview.com](https://www.coffeereview.com/) since 1997, cleans them into a
-tabular dataset, and analyses price and quality trends. Prices are spread across
-a dozen currencies and three decades, so comparing them takes historical
-exchange rates and CPI; roaster names are spelled inconsistently, so comparing
-roasters takes entity resolution.
+A dataset and analysis of the roughly 9,300 blind-tasting reviews that
+[CoffeeReview.com](https://www.coffeereview.com/) has published since 1997.
+
+The project scrapes every review, cleans the results into a single table, and
+analyses how price and quality have changed over time. Two problems make this
+more than a scrape. Prices are quoted in a dozen currencies across three
+decades, so comparing them requires historical exchange rates and inflation
+data. Roaster names are spelled inconsistently, so comparing roasters requires
+entity resolution.
 
 - [Installation](#installation)
-- [Data sources](#data-sources)
-- [Code layout](#code-layout)
 - [Usage](#usage)
+- [Data sources](#data-sources)
 - [Data layers](#data-layers)
 - [Resolving roaster names](#resolving-roaster-names)
 - [Notebooks](#notebooks)
-- [Tests](#tests)
+- [Project layout](#project-layout)
+- [Development](#development)
 - [References](#references)
 
 ## Installation
@@ -31,291 +34,214 @@ cd coffee-review-analysis
 uv sync
 ```
 
-`uv sync` creates `.venv`, installs the pinned dependencies from `uv.lock`, and
-installs the `coffee` package in editable mode. It includes the `analysis` and
-`dev` dependency groups by default; `uv sync --no-default-groups` gives a lean
-environment with only the scraping and pipeline dependencies.
+`uv sync` creates a virtual environment in `.venv`, installs the locked
+dependencies from `uv.lock`, and installs the `coffee` package in editable mode.
+The `analysis` (notebooks) and `dev` (tooling) dependency groups are included by
+default. For the pipeline alone, use `uv sync --no-default-groups`.
 
-Fetching exchange rates needs an
-[OpenExchangeRates](https://openexchangerates.org/signup/free) key (free tier:
-1000 requests/month). It is the only credential the pipeline uses. Put it in the
-environment or in a `.env` file at the project root; `.env.example` lists every
-variable:
+### Configuration
+
+The only credential is an [OpenExchangeRates](https://openexchangerates.org/signup/free)
+app ID, used to fetch exchange rates. The free tier allows 1,000 requests a
+month. Copy the example file and fill it in:
 
 ```bash
 cp .env.example .env
 ```
 
-A variable set in the real environment wins over `.env`. Two optional variables
-move the pipeline's files: `COFFEE_DATA_DIR` (default `data/`) and
-`COFFEE_SEEDS_DIR` (default `seeds/`).
-
-## Data sources
-
-**CoffeeReview.com** — the reviews themselves, published since 1997. The raw
-scrape needs substantial cleanup.
-
-Review URLs come from `sitemap_index.xml` rather than from crawling the
-paginated listings. The sitemap is a strict superset (9,333 review URLs against
-the 9,054 pagination found, with none going the other way) and costs ~17
-requests instead of hundreds. Each entry carries a `<lastmod>` date, recorded as
-`sitemap_lastmod`, which is what lets a later run re-fetch only what changed.
-
-**OpenExchangeRates** — historical daily rates, used to put every price in USD
-at the rate for the month a review was published.
-
-**US Consumer Price Index** (`data/external/consumer_price_index.csv`) — CPI-U,
-US city average, all items, not seasonally adjusted. Fetched from the BLS public
-API (series `CUUR0000SA0`), which needs no key. Used to express historical
-prices in constant dollars.
-
-**Geocoding** (planned) — a free API from [Map Maker](https://maps.co/), for
-resolving roaster and origin locations to coordinates. Nothing calls it yet.
-
-## Code layout
-
-Everything importable lives in the `coffee` package under `src/`; the pipeline
-steps are installed as console commands that wrap it. The src layout means the
-package is only importable once installed, so tests, notebooks and the commands
-all import the same code.
-
-**`src/coffee/`**
-
-- `sitemap.py` — discovers every review URL from the site's XML sitemaps with
-  each one's `<lastmod>`. Raises `SitemapError` rather than returning a partial
-  list.
-- `fetch.py` — shared async HTTP GET with bounded concurrency and retry, used by
-  both discovery and scraping.
-- `parser.py` — turns one review's HTML into structured fields.
-- `pipeline.py` — the full run: discovers every review URL, fetches only those
-  that are new or have changed, and parses each one.
-- `storage.py` — where reviews live. `CsvReviewStore` keeps
-  `data/raw/reviews.csv`; the pipeline talks to the protocol, so a database
-  backend can replace it without touching the scrape.
-- `clean.py` — the cleaned layer: types, price/currency/quantity parsing,
-  origin and roaster locations, the roaster crosswalk, and the price
-  conversions from `prices.py`.
-- `prices.py` — USD conversion and inflation adjustment, applied by
-  `clean_reviews` when reference data is available. A separate module because
-  it is the only part of cleaning that needs data the reviews do not carry.
-  Every step in both modules is a pure `DataFrame -> DataFrame` function taking
-  its reference data as an argument.
-- `exchange_rates.py` — fetches historical rates for the review months in the
-  raw scrape.
-- `cpi.py` — fetches the BLS consumer price index. Merges into the stored table
-  rather than replacing it, so a three-year API window cannot shrink a series
-  going back to 1990.
-- `roasters/` — entity resolution for messy roaster names, split along the
-  cascade it runs: `normalize` reduces a name to a comparable key,
-  `similarity` scores two keys, `location` supplies the second signal,
-  `cluster` assembles the crosswalk, `decisions` holds the adjudicated pairs —
-  the only module here that touches disk — and `report` formats what a run
-  says about itself. See
-  [Resolving roaster names](#resolving-roaster-names) for the workflow and
-  [`docs/roaster-resolution.md`](docs/roaster-resolution.md) for the design.
-- `settings.py` — `Settings`, the data and seed directories every path hangs
-  off, built once by each command or notebook and passed down; `require_env`
-  for secrets. Library code never reads the environment itself.
-- `cli.py` — argument parsing for the console commands.
-
-**`tests/`** — `unit/` mirrors the package and runs on fixtures and temporary
-files; `integration/` runs the console commands against an empty data
-directory. `fixtures/html/` holds ten real review pages and
-`fixtures/parsed_reviews.json` pins their expected parse; `generate_golden.py`
-regenerates that file after a deliberate parser change.
-
-**`seeds/`** — hand-kept reference data that nothing can regenerate. Today that
-is `roaster_decisions.csv`.
-
-**`docs/`** — [`data-flow.md`](docs/data-flow.md), a diagram of every file under
-`data/` with what writes and reads it; [`roaster-resolution.md`](docs/roaster-resolution.md),
-the design behind roaster entity resolution.
+Variables already set in the environment take precedence over `.env`. Two
+optional variables relocate the project's files: `COFFEE_DATA_DIR` (default
+`data/`) and `COFFEE_SEEDS_DIR` (default `seeds/`).
 
 ## Usage
 
-Run from the repository root. `uv run` executes inside the project's virtual
+Run commands from the repository root. `uv run` executes them in the project's
 environment without activating it.
 
-Collection and cleaning are automated end to end:
+To bring the data up to date and open the notebooks:
 
 ```bash
 uv run refresh-data
 uv run jupyter lab
 ```
 
-`refresh-data` runs the five steps in dependency order and prints what each did:
+`refresh-data` runs five steps in dependency order and reports on each. Every
+step is also a command in its own right:
 
-```bash
-uv run scrape-reviews                            # 1. data/raw/reviews.csv
-uv run resolve-roasters data/raw/reviews.csv     # 2. the roaster crosswalk
-uv run fetch-exchange-rates                      # 3. rates for the review months
-uv run fetch-cpi                                 # 4. the CPI table
-uv run clean-reviews                             # 5. data/clean/reviews.parquet
-```
+| Step | Command | Writes |
+|---|---|---|
+| 1 | `uv run scrape-reviews` | `data/raw/reviews.csv` |
+| 2 | `uv run resolve-roasters data/raw/reviews.csv` | `data/roasters/roaster_crosswalk.csv` |
+| 3 | `uv run fetch-exchange-rates` | `data/external/openex_exchange_rates.json` |
+| 4 | `uv run fetch-cpi` | `data/external/consumer_price_index.csv` |
+| 5 | `uv run clean-reviews` | `data/clean/reviews.parquet` |
 
-Each is also a command in its own right, and `--help` lists the options. Useful
-flags on `refresh-data`:
+Each command documents its options under `--help`. The most useful options on
+`refresh-data` are:
 
-- `--full` re-fetches and re-parses every review, not only what changed
-- `--skip-scrape` rebuilds from reviews already held, making no review requests
-- `--baseline-date` sets the month whose dollars adjusted prices use
+- `--full` re-fetches and re-parses every review, not only those that changed.
+- `--skip-scrape` rebuilds from the reviews already on disk without contacting
+  the site.
+- `--baseline-date` sets the month whose dollars adjusted prices are expressed in.
 
-Analysis stops there. The notebooks read `data/clean/reviews.parquet`; the pipeline
-does not produce charts or aggregates.
+The pipeline ends at the cleaned dataset; charts and aggregates live in the
+notebooks. [`docs/data-flow.md`](docs/data-flow.md) maps every file the pipeline
+reads and writes.
 
-### Scraping is incremental
+## Data sources
 
-`data/raw/reviews.csv` is the single source of truth, updated in place. Git
-holds the history, so the filename carries no date.
+### CoffeeReview.com
 
-Discovery reads `sitemap_index.xml` in ~17 requests and returns every review URL
-with its `<lastmod>`. A run fetches only URLs that are new, that changed since
-the last run, or whose freshness cannot be proven — on the current corpus, a
-handful of pages in about a second, against ~9,300 pages and half an hour for a
-full pass.
+Review URLs come from the site's `sitemap_index.xml`, not its paginated
+listings. The sitemap is more complete (9,333 review URLs against 9,054 from
+pagination, with nothing found only in the listings) and takes about 17 requests
+instead of several hundred.
 
-Every fetched row records `scraped_at`, giving the age of any given row. Reviews
-that disappear from the sitemap are reported and kept: they cannot be fetched
-again, so the held copy is the only one.
+Each sitemap entry carries a `<lastmod>` date, stored as `sitemap_lastmod`. A run
+compares these dates with what is already held and fetches only reviews that are
+new, have changed, or have no date to compare. That is usually a handful of
+pages and about a second of work; a full pass is some 9,300 pages and half an
+hour.
+
+`data/raw/reviews.csv` is updated in place, and git keeps its history. Each row
+records when it was fetched in `scraped_at`. Reviews that drop out of the sitemap
+are reported but kept: they can no longer be fetched, so the stored copy is the
+only one left.
+
+After changing the parser (`src/coffee/parser.py`), run a full scrape:
 
 ```bash
 uv run scrape-reviews --full
 ```
 
-Use `--full` after changing `src/coffee/parser.py`. An incremental run re-parses
-only the pages it re-fetches, so without it a parser fix reaches new rows only
-and the corpus becomes a mixture of two parser versions. `scraped_at` is what
-makes such a mixture visible.
+An incremental run re-parses only the pages it re-fetches, so without `--full` a
+parser fix reaches new rows only and the corpus ends up mixing two parser
+versions. `scraped_at` shows where such a mix exists.
 
-### The CPI table
+### Exchange rates
 
-`fetch-cpi` reads series `CUUR0000SA0` from the BLS public API — CPI-U, US city
-average, all items, not seasonally adjusted — and merges it into
-`data/external/consumer_price_index.csv`, keeping the BLS's own wide layout.
+Historical daily rates from OpenExchangeRates convert each price to US dollars
+at the rate for the month the review was published. `fetch-exchange-rates` reads
+the review months from the raw scrape and requests only those missing from
+`data/external/openex_exchange_rates.json`. It reads the raw layer rather than
+the cleaned one because cleaning depends on these rates.
 
-No API key. The unkeyed v1 tier returns the last three years, which is all an
-incremental update needs, and allows 25 requests a day. `--start-year` and
-`--end-year` switch to the POST form for rebuilding a specific range, up to ten
-years per request.
+A past month's rate never changes, so each month is fetched once. The corpus
+spans 323 months, about a third of the free tier's monthly allowance, and
+re-running against an up-to-date file costs nothing. The file is protected in
+two ways:
 
-A published CPI figure for a past month does not change, so months already held
-are never overwritten with anything and the response's narrow window cannot
-shrink a table going back to 1990. Two details the series carries:
+- A failed request is never written, so a rate-limited run cannot blank out
+  months already held. Failed months are retried on the next run.
+- Progress is saved during the run, so an interrupted run keeps what it has
+  already fetched.
 
-- period `M13` is the **annual average**, not a month, and is discarded
-- a month BLS never published reads as `-` and is left blank. October 2025 is
-  one: the index was not produced during that year's lapse in appropriations.
-  `cpi_adjust_price` leaves such a month's prices unadjusted rather than
-  dropping them.
+`--refetch` requests every month again and is only needed to repair a corrupt
+file.
 
-### Exchange rates are incremental too
+### Consumer Price Index
 
-`fetch-exchange-rates` reads the review months from the raw scrape and requests
-only the ones missing from `data/external/openex_exchange_rates.json`. Reading
-from the raw layer keeps the pipeline acyclic: cleaning consumes these rates, so
-it cannot also be what produces the list of months to fetch.
+Inflation adjustment uses CPI-U (US city average, all items, not seasonally
+adjusted): series `CUUR0000SA0` from the Bureau of Labor Statistics public API,
+which needs no key. `fetch-cpi` merges the series into
+`data/external/consumer_price_index.csv`, keeping the BLS layout of one row per
+year and one column per month.
 
-Rates for a past date do not change, so a month once held is never requested
-again. Re-running against a current file costs zero requests, which matters
-against 1000 per month and a corpus spanning 323 distinct months.
+The keyless API returns the last three years and allows 25 requests a day, which
+covers routine updates. To rebuild an older range, pass `--start-year` and
+`--end-year`, up to ten years per request. Published figures do not change, so
+months already in the table are never overwritten, and the three-year window
+cannot shrink a table that goes back to 1990.
 
-Two properties protect the stored file, which is the only copy of that data:
+Two quirks of the series are handled explicitly:
 
-- a failed request is never written, so a rate-limited run cannot replace
-  populated months with blanks
-- results are checkpointed during the run, so an interrupted one keeps the
-  requests it already spent
-
-A month whose request failed is left unheld and retried next run. `--refetch`
-re-requests everything and exists only for repairing a corrupt file.
+- Period `M13` is the annual average, not a month, and is discarded.
+- A month the BLS never published appears as `-` and is left blank. October 2025
+  is one: the index was not produced during that year's lapse in federal
+  appropriations. Prices from such a month are left unadjusted, not dropped.
 
 ## Data layers
 
-```
-data/raw/reviews.csv       RAW      as scraped, never edited
-data/clean/reviews.parquet CLEANED  typed, parsed, roasters resolved
-```
+| Layer | File | Contents |
+|---|---|---|
+| Raw | `data/raw/reviews.csv` | Reviews as scraped. Never edited by hand. |
+| Cleaned | `data/clean/reviews.parquet` | Typed and parsed, with roasters resolved and prices made comparable. |
 
-The two layers use different formats on purpose. Raw is the irreplaceable one —
-a review that disappears from the sitemap can never be fetched again, so the
-held copy is the only one in existence — and plain text needs no library to read
-in ten years. The cleaned layer is regenerated from it by one command and read
-only by code, so it is Parquet: about a third the size, and it keeps the types
-the writer already knew. Read back from CSV, `review_date` returns as a string
-and every consumer has to re-parse it.
+The two formats are deliberate. The raw layer is irreplaceable, since a review
+removed from the site cannot be scraped again, so it is kept as plain text that
+any tool can read. The cleaned layer is rebuilt by a single command and read
+only by code, so it is Parquet: about a third of the size, and it preserves
+column types that CSV would lose.
 
-**Field names are settled at the raw boundary.** `src/coffee/parser.py` normalises
-each scraped table label (`"Est. Price:"` → `est_price`) as it parses, so the
-raw layer lands with the names the rest of the project uses. Cleaning therefore
-concerns data only: `clean_reviews` asserts the names are already correct rather
-than fixing them, so a file predating this fails at the boundary naming the
-offending columns instead of failing inside a merge several steps later.
+### Field names
 
-`uv run clean-reviews` builds the cleaned layer. The transformation lives in
-`src/coffee/clean.py` rather than in a notebook, so it is tested and runs in CI.
-Cleaning:
+The parser normalises each label in a review's spec table as it reads the page
+(`"Est. Price:"` becomes `est_price`), so the raw layer already uses the
+project's column names. Cleaning checks this on entry and stops with an error
+naming any unnormalised columns, instead of failing several steps later.
 
-- parses `est_price` into a value, an ISO 4217 currency and a quantity
-- converts quantities to pounds, so prices are comparable per unit
-- resolves origin and roaster locations to countries, and US states
-- adds `roaster_canonical` from the crosswalk, keeping the raw spelling beside it
+### Cleaning
 
-Rows whose agtron reading exceeds 100 are dropped as site typos, and the count
-is reported on every run. Formats that are not whole-bean coffee (capsules,
-pods) keep their review but get no quantity, since a price per pound would not
-mean anything.
+`uv run clean-reviews` builds the cleaned layer. The logic lives in
+`src/coffee/clean.py`, not in a notebook, so it is covered by tests. Cleaning:
 
-**Prices are made comparable as part of cleaning**, by `src/coffee/prices.py`.
-`clean_reviews` applies it when given exchange rates and CPI, adding:
+- parses `est_price` into an amount, an ISO 4217 currency and a quantity
+- converts quantities to pounds
+- resolves origins and roaster locations to countries, and US roasters to states
+- adds `roaster_canonical` from the roaster crosswalk, alongside the original
+  spelling
 
-- `price_usd`, converted at the review month's rate
-- `price_usd_adj`, in a baseline month's dollars, so a 1997 price and a 2026
-  price can be compared
-- `price_usd_adj_per_lb`
-- `price_baseline_date`, the month those adjusted dollars are in
+Reviews with an Agtron reading above 100 are typos on the site. They are dropped,
+and each run reports how many. Products that are not whole-bean coffee sold by
+weight, such as capsules and pods, keep their reviews but get no quantity, since
+a price per pound would be meaningless.
 
-The figures the field-level steps recorded — `price_value`, `price_currency`,
-`quantity_in_lbs` — are left untouched beside them.
+### Comparable prices
 
-`--baseline-date` chooses the month (default `2026-01-01`). It must be a month
-the CPI table covers; a baseline outside that range is refused rather than
-silently adjusted, since a different baseline changes every price. `fetch-cpi`
-keeps the table current.
+When exchange rates and CPI data are available, cleaning also applies
+`src/coffee/prices.py`, which adds:
 
-The chosen baseline is written to `price_baseline_date` rather than left
-implicit, because it is the unit the adjusted number is in — the same coffee
-comes out at $77.64 in 2026-01 dollars and $61.58 in 2020-01, and two files
-would otherwise look identical while disagreeing by a quarter. A review month
-the CPI does not cover keeps its unadjusted USD price and is left with no
-baseline, so those rows are visible rather than silently mixed in.
+- `price_usd`: the price in US dollars at the review month's rate
+- `price_usd_adj`: that price in a baseline month's dollars, so a 1997 price can
+  be compared with a 2026 one
+- `price_usd_adj_per_lb`: the adjusted price per pound
+- `price_baseline_date`: the baseline month
 
-Both reference files are optional. Without them `clean-reviews` still produces
-the field-level layer and warns that prices stay in their original currency,
-which is what lets it run on a fresh checkout.
+The original `price_value`, `price_currency` and `quantity_in_lbs` are kept.
+
+The baseline defaults to January 2026 and is set with `--baseline-date`. It must
+be a month the CPI table covers; any other month is refused. The baseline is
+stored on every row because it is the unit of the adjusted price: the same coffee
+costs $77.64 in January 2026 dollars and $61.58 in January 2020 dollars. Rows
+from a month the CPI does not cover keep their unadjusted USD price and have no
+baseline, which makes them easy to find.
+
+Both reference files are optional. Without them, `clean-reviews` still builds
+the cleaned layer, leaves prices in their original currencies, and prints a
+warning. This lets it run on a fresh checkout.
 
 ## Resolving roaster names
 
-The same roaster is spelled many ways: `Onyx Coffee Lab` / `Onyx Coffee Lab
-LLC` / `onyx coffee lab`. `resolve-roasters` groups the spellings and records
-which pairs have been judged, so the manual work shrinks with each run rather
-than starting over.
+The same roaster appears under many spellings: `Onyx Coffee Lab`,
+`Onyx Coffee Lab LLC`, `onyx coffee lab`. `resolve-roasters` groups these into
+one canonical name per roaster. Strong name matches are merged automatically
+unless the locations conflict, and the uncertain middle goes to a queue for a
+person to judge. Every judgement is recorded, so the manual work shrinks from
+one run to the next. [`docs/roaster-resolution.md`](docs/roaster-resolution.md)
+explains the design.
 
-Only the name and location signals decide automatically; the uncertain middle
-goes to a review queue. [`docs/roaster-resolution.md`](docs/roaster-resolution.md)
-explains why.
+### Files
 
-### The three files
+| File | Location | Edit? | Purpose |
+|---|---|---|---|
+| `roaster_decisions.csv` | `seeds/` | Yes | Every pair that has been judged. The only file that cannot be regenerated. |
+| `roaster_review_queue.csv` | `data/roasters/` | `verdict` column only | Pairs awaiting judgement. Regenerated on every run. |
+| `roaster_crosswalk.csv` | `data/roasters/` | No | The output, mapping `raw_name` to `canonical_name`. Regenerated on every run. |
 
-The decisions live in `seeds/`, since nothing can regenerate them; the other two
-are derived and live in `data/roasters/`.
+All three are committed. The crosswalk is committed so that joins against it are
+reproducible.
 
-| file | edit it? | role |
-|---|---|---|
-| `roaster_decisions.csv` | **yes** | Source of truth: pairs that have been adjudicated. The only one that cannot be regenerated. Commit it. |
-| `roaster_review_queue.csv` | **yes** — the `verdict` column only | Pairs the tool could not decide. Regenerated every run. |
-| `roaster_crosswalk.csv` | **no** | The output: `raw_name → canonical_name`. Regenerated every run; hand edits are overwritten. Commit it so downstream joins are reproducible. |
-
-### The loop
+### Workflow
 
 **1. Resolve.**
 
@@ -323,7 +249,7 @@ are derived and live in `data/roasters/`.
 uv run resolve-roasters data/raw/reviews.csv
 ```
 
-It prints four lines, which answer four questions:
+The summary answers four questions:
 
 ```
 1687 distinct spellings -> 1496 roasters (191 merged)      did it do anything?
@@ -332,72 +258,70 @@ It prints four lines, which answer four questions:
 11 rows in chain-risk clusters  <-- INSPECT THESE          did clustering misbehave?
 ```
 
-**2. Judge the queue.**
+**2. Judge the queue.** Open `data/roasters/roaster_review_queue.csv` and fill in
+the `verdict` column. Leave every other column alone.
 
-Open `data/roasters/roaster_review_queue.csv` and answer in the `verdict`
-column. That column is the only thing to change.
+- Same company: `merge`, `yes`, `y`, `m`, `same` or `1`
+- Different companies: `split`, `no`, `n`, `s`, `different` or `0`
 
-`merge` / `y` / `yes` / `m` / `same` / `1` all mean **same company**;
-`split` / `n` / `no` / `s` / `different` / `0` all mean **different**. Anything
-else is reported as an error rather than skipped, so a typo cannot silently
-discard a row. Blank rows come back next time.
+Rows left blank come back on the next run. Any other value is reported as an
+error, so a typo cannot quietly lose an answer.
 
 | name_a | name_b | score | location_evidence | verdict |
 |---|---|---|---|---|
 | Boyd Coffee | Boyds Coffee | 88.9 | `same` | `merge` |
 | Fellow Coffee | Mellow Coffee | 83.3 | `neutral` | `split` |
 
-`location_evidence` is the shortcut:
+The `location_evidence` column is a useful guide:
 
-- **`same`** — one address. Usually the same company, but not always: `Wei Chuan
-  Foods` and `Tehmag Foods` share a city and are unrelated. Read the names.
-- **`neutral`** — same region, different city. Usually different companies.
-- **`unknown`** — no location on one side. Judge on the names alone.
+- `same`: both names share an address. Usually one company, but not always;
+  `Wei Chuan Foods` and `Tehmag Foods` share a city and are unrelated.
+- `neutral`: same region, different city. Usually different companies.
+- `unknown`: at least one name has no location. Judge on the names alone.
 
-**3. Record the verdicts and re-resolve.**
+**3. Record the verdicts and resolve again.**
 
 ```bash
 uv run resolve-roasters data/raw/reviews.csv --accept-reviewed --decided-by "$USER"
 ```
 
-This folds the answers into `roaster_decisions.csv`, then re-resolves with them
-applied. The queue returns holding only the rows left blank.
+This adds your answers to `seeds/roaster_decisions.csv` and resolves again with
+them applied. The new queue holds only the rows you left blank.
 
-Step 1 regenerates the queue, so a run without `--accept-reviewed` would
-overwrite unrecorded answers. The command refuses to do that and names the flag
-to use, but filling in the queue should always be followed by this step.
+Always follow step 2 with this step. A plain run regenerates the queue, which
+would discard answers not yet recorded, so the command refuses to run while the
+queue holds any and tells you to add `--accept-reviewed`.
 
-**4. Commit all three files.** `roaster_decisions.csv` matters most, being the
-only one that cannot be rebuilt.
+**4. Commit the three files.**
 
-### On the next scrape
+After the next scrape, start again at step 1. Pairs already decided stay
+decided, so the queue holds only new questions. If an answered pair reappears,
+check that `seeds/roaster_decisions.csv` exists and that `--decisions` is not
+pointing elsewhere.
 
-Run step 1 against the new file. The queue holds only pairs not yet judged;
-everything already decided stays decided. An answered pair reappearing means
-`seeds/roaster_decisions.csv` is missing, or `--decisions` points elsewhere.
+### Checking the results
 
-### Occasional extras
-
-Inspect the chain-risk clusters, which single-linkage could only have assembled
-transitively and are therefore the likeliest false merges:
+Chain-risk clusters were joined only through a chain of similar names, which
+makes them the likeliest false merges. To list them:
 
 ```bash
 uv run python -c "import pandas as pd; c=pd.read_csv('data/roasters/roaster_crosswalk.csv'); print(c[c.chain_risk][['raw_name','canonical_name','min_internal_score']].to_string(index=False))"
 ```
 
-Surface merges the name score alone misses — pairs below the normal floor that
-share an address, which is how `Starbucks` ~ `Starbucks Reserve Roastery`
-(score 72) turns up. They are queued for judgement, never merged. On the current
-data this adds 13 pairs to an otherwise empty queue:
+To find matches the name score misses, also queue lower-scoring pairs that share
+an address. This is how `Starbucks` and `Starbucks Reserve Roastery` (score 72)
+come to light. These pairs are only queued, never merged automatically. On the
+current data this adds 13 pairs:
 
 ```bash
 uv run resolve-roasters data/raw/reviews.csv --location-review 70
 ```
 
-### When a split doesn't stick
+### When a split does not hold
 
-A pair can be split and still end up together. Single-linkage can rejoin two
-names through a third name resembling both, most often a collaboration:
+Clustering links names in chains, so two names you have split can still end up
+together through a third name that resembles both. The usual culprit is a
+collaboration:
 
 ```
 RND                               -> key 'rnd'
@@ -405,8 +329,8 @@ Red Rooster Coffee Roaster        -> key 'red rooster'
 RND & Red Rooster Coffee Roaster  -> key 'red rnd rooster'   superset of both
 ```
 
-Blocking the direct union does not help, since the two rejoin through the
-collaboration. The run reports it:
+Blocking the direct link does not help, because the two names remain connected
+through the collaboration. The run warns when this happens:
 
 ```
 !! 1 cluster(s) VIOLATE a split decision -- these names were kept together
@@ -414,72 +338,110 @@ collaboration. The run reports it:
     RND  |  RND & Red Rooster Coffee Roaster  |  Red Rooster Coffee Roaster
 ```
 
-The fix is to record a split against the bridging name too: here, `RND` against
-`RND & Red Rooster Coffee Roaster`. Rows in an affected cluster are also marked
-`violates_decision` in the crosswalk.
+To fix it, also record a split against the bridging name: here, `RND` against
+`RND & Red Rooster Coffee Roaster`. Affected rows are flagged in the crosswalk's
+`violates_decision` column.
 
 ### Rules
 
-1. **Never hand-edit `roaster_crosswalk.csv`.** It is regenerated on every run.
-   To change a grouping, change the decision that produced it.
-2. **To reverse a call, edit `roaster_decisions.csv` directly.**
-   `--accept-reviewed` will not overwrite an existing verdict, so a change of
-   mind shows up as a visible diff rather than happening silently.
+1. Never edit `roaster_crosswalk.csv` by hand; it is overwritten on every run. To
+   change a grouping, change the decision behind it.
+2. To reverse a decision, edit `seeds/roaster_decisions.csv` directly.
+   `--accept-reviewed` never overwrites an existing verdict, so a change of mind
+   always shows up as a diff.
 
 ## Notebooks
 
-Run them in order; each depends on the previous one's output.
-
-| notebook | reads | writes |
+| Notebook | Reads | Produces |
 |---|---|---|
-| `01-data-cleaning` | `data/raw/reviews.csv` | `data/clean/reviews.parquet` (the same work `clean-reviews` does) |
-| `02-data-EDA` | `data/clean/reviews.parquet` | charts |
-| `03-text-features` | `data/clean/reviews.parquet` | wordclouds in `imgs/` |
+| `01-data-cleaning` | the raw scrape and reference data | `data/clean/reviews.parquet`, using the same code as `clean-reviews` |
+| `02-data-EDA` | `data/clean/reviews.parquet` | exploratory charts |
+| `03-text-features` | `data/clean/reviews.parquet` | word clouds in `imgs/` |
 
-`data/clean/reviews.parquet` is gitignored; notebook 01 regenerates it, so run that
-first on a fresh checkout. Committed data is limited to the scrape itself and to
-outputs carrying human judgement, namely the roaster crosswalk and decisions.
+The cleaned dataset is not committed. On a fresh checkout, build it with
+`uv run clean-reviews` or by running notebook 01 before opening the others.
 
-Notebook 03 needs two downloads that are not Python packages. It fetches the
-NLTK corpora itself; the spaCy model is installed once:
+Notebook 03 also needs NLTK corpora, which it downloads itself, and a spaCy
+model, installed once:
 
 ```bash
 uv run python -m spacy download en_core_web_sm
 ```
 
-Notebook outputs are cleared before committing, since they reached 13MB of
-embedded images against an already-large history. The figures worth keeping go
-to `imgs/`.
+Clear notebook outputs before committing; embedded images once pushed the
+notebooks past 13 MB. Save figures worth keeping to `imgs/`.
 
-## Tests
+## Project layout
+
+```
+src/coffee/   the package
+tests/        unit and integration tests, with saved review pages as fixtures
+data/         pipeline inputs and outputs; committed except data/clean/
+seeds/        hand-kept reference data that nothing can regenerate
+docs/         data flow and roaster resolution design
+notebooks/    analysis
+notes/        background on how CoffeeReview scores coffee
+```
+
+The package lives under `src/`, so it can only be imported once installed. Tests,
+notebooks and the console commands therefore all run the same code.
+
+- `sitemap.py` finds every review URL with its `<lastmod>` date. It raises
+  `SitemapError` instead of returning a partial list.
+- `fetch.py` is the shared asynchronous HTTP client, with bounded concurrency,
+  retries on transient errors and common request headers.
+- `parser.py` turns a review page into fields.
+- `pipeline.py` runs a scrape: discovery, fetching what changed, and parsing.
+- `storage.py` reads and writes the review store. The pipeline depends only on
+  the `ReviewStore` interface, so a database could replace `CsvReviewStore`
+  without changes to the scraper.
+- `clean.py` builds the cleaned layer.
+- `prices.py` handles currency conversion and inflation adjustment. It is
+  separate because it is the only part of cleaning that needs outside data.
+  Every step in both modules is a pure `DataFrame -> DataFrame` function that
+  takes its reference data as an argument.
+- `exchange_rates.py` and `cpi.py` fetch the reference data.
+- `roasters/` resolves roaster names, one module per stage: `normalize`,
+  `similarity`, `location`, `cluster`, `decisions` (the only one that touches
+  disk) and `report`.
+- `settings.py` defines `Settings`, which holds the data and seed directories.
+  Each command or notebook builds one and passes paths down; library code never
+  reads the environment directly.
+- `cli.py` defines the console commands.
+
+## Development
 
 ```bash
 uv run pytest
 ```
 
-`tests/fixtures/html/` holds ten real review pages and
-`tests/fixtures/parsed_reviews.json` pins their expected parse, so a parser
-regression fails a test rather than emptying a column unnoticed. After a
-deliberate parser change, regenerate the golden file and read the diff:
+Unit tests in `tests/unit/` mirror the package. Integration tests in
+`tests/integration/` run the console commands against an empty temporary data
+directory. The suite makes no network requests; a test that needs one must be
+marked `network`, and CI skips those.
+
+`tests/fixtures/html/` holds ten real review pages, and
+`tests/fixtures/parsed_reviews.json` records how each should parse, so a parser
+regression fails a test instead of quietly emptying a column. After a deliberate
+parser change, regenerate the file and review the diff:
 
 ```bash
 uv run python -m tests.generate_golden
 ```
 
-Linting (ruff), formatting (ruff-format) and type checking (mypy) run through
-pre-commit. Install the hooks once after cloning:
+Ruff (linting and formatting) and mypy run as pre-commit hooks. Install them
+once after cloning:
 
 ```bash
 uv run pre-commit install
 ```
 
-GitHub Actions runs the same checks on every pull request, plus the tests on
-Python 3.12 and 3.13. The tests make no network requests; a test that must is
-marked `network`, and CI runs `pytest -m "not network"`.
+GitHub Actions runs the hooks, and the tests on Python 3.12 and 3.13, on every
+pull request and every push to `main`.
 
 ## References
 
 - [OpenExchangeRates API](https://docs.openexchangerates.org/reference/api-introduction)
 - [BLS Consumer Price Index data](https://www.bls.gov/cpi/data.htm)
-- [How to Use t-SNE Effectively](https://distill.pub/2016/misread-tsne/) — relevant to the embedding work in `03-text-features.ipynb`
-- `notes/how_coffee_review_works.md` — how CoffeeReview scores coffees
+- [How to Use t-SNE Effectively](https://distill.pub/2016/misread-tsne/), background for the embedding work in `03-text-features.ipynb`
+- [`notes/how_coffee_review_works.md`](notes/how_coffee_review_works.md): how CoffeeReview scores coffees

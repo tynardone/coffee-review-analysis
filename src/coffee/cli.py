@@ -12,6 +12,7 @@ default paths from it. That, and reading ``.env``, happen here and nowhere else.
 
 import argparse
 import asyncio
+import inspect
 import logging
 from collections.abc import Callable
 from pathlib import Path
@@ -411,15 +412,19 @@ def fetch_cpi_command(argv: list[str] | None = None) -> None:
 def refresh_data(argv: list[str] | None = None) -> None:
     """Run the whole collection-and-cleaning pipeline in dependency order.
 
-    The four steps have to run in this order and each reads what the previous
-    one wrote, which is the kind of thing that is easy to get wrong by hand:
+    The five steps have to run in this order, since later steps read what
+    earlier ones wrote, which is easy to get wrong by hand:
 
-        scrape  ->  resolve roasters  ->  fetch rates  ->  clean
+        scrape  ->  resolve roasters  ->  fetch rates  ->  fetch CPI  ->  clean
 
     Everything downstream of this is analysis, which belongs in a notebook.
     """
     settings = _settings()
-    parser = argparse.ArgumentParser(description=refresh_data.__doc__)
+    parser = argparse.ArgumentParser(
+        # Raw, so the step diagram keeps its own line in --help.
+        description=inspect.cleandoc(refresh_data.__doc__ or ""),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     parser.add_argument(
         "--full",
         action="store_true",
