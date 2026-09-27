@@ -27,5 +27,5 @@ itself lives in the notebooks; nothing here produces charts or aggregates.
 
 :mod:`storage` sits between the pipeline and where reviews are kept, so the CSV
 corpus can be replaced by a database without changing the scrape.
-:mod:`config` holds paths and credentials; :mod:`cli` holds argument parsing.
+:mod:`settings` holds paths and reads secrets; :mod:`cli` holds argument parsing.
 """

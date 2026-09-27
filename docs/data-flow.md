@@ -1,6 +1,6 @@
 # Data flow
 
-Every file under `data/`, what writes it, and what reads it. `uv run refresh-data`
+Every file under `data/` and `seeds/`, what writes it, and what reads it. `uv run refresh-data`
 runs the four commands top to bottom; the notebooks pick up where it stops.
 
 ```mermaid
@@ -23,7 +23,7 @@ flowchart TD
     CLEAN(["5 · clean-reviews"]):::cmd
 
     RAW["data/raw/reviews.csv<br/><i>9.7 MB · committed</i>"]:::raw
-    DEC["roasters/roaster_decisions.csv<br/><i>hand-edited · irreplaceable</i>"]:::human
+    DEC["seeds/roaster_decisions.csv<br/><i>hand-edited · irreplaceable</i>"]:::human
     QUEUE["roasters/roaster_review_queue.csv<br/><i>you fill the verdict column</i>"]:::human
     XWALK["roasters/roaster_crosswalk.csv<br/><i>derived every run</i>"]:::ref
     FX["external/openex_exchange_rates.json"]:::ref
@@ -65,7 +65,7 @@ and the review queue feeds back into the decisions file when you pass
 | file | if you lost it | cost |
 | --- | --- | --- |
 | `raw/reviews.csv` | re-scrape | ~30 min, ~9,300 requests — and any review since removed from the site is gone |
-| `roasters/roaster_decisions.csv` | **nothing rebuilds it** | every pair re-adjudicated by hand |
+| `seeds/roaster_decisions.csv` | **nothing rebuilds it** | every pair re-adjudicated by hand |
 | `roasters/roaster_crosswalk.csv` | `resolve-roasters` | seconds |
 | `roasters/roaster_review_queue.csv` | `resolve-roasters` | seconds |
 | `external/openex_exchange_rates.json` | `fetch-exchange-rates --refetch` | 323 calls — a third of the monthly free tier |

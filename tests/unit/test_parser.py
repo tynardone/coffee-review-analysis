@@ -7,15 +7,15 @@ indistinguishable from real schema evolution, which this corpus has —
 `acidity/structure` across 2017-18. Pinning the full parse of ten real pages
 turns that silence into a failing test.
 
-Regenerate with `python tests/generate_golden.py` after a deliberate parser
+Regenerate with `uv run python -m tests.generate_golden` after a deliberate parser
 change, and read the diff.
 """
 
 import pytest
 from bs4 import BeautifulSoup
-from conftest import review_pages
 
 from coffee.parser import _parse_tables, normalise_field_name, parse_html
+from tests.paths import review_pages
 
 
 @pytest.mark.parametrize("path", review_pages(), ids=lambda p: p.stem)

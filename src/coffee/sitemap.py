@@ -17,11 +17,11 @@ from urllib.parse import urlparse
 import aiohttp
 from lxml import etree
 
-from coffee.config import SITEMAP_URL
 from coffee.fetch import fetch
 
 __all__ = [
     "MAX_SITEMAP_DEPTH",
+    "SITEMAP_URL",
     "SitemapError",
     "get_review_urls",
     "is_review_url",
@@ -29,6 +29,8 @@ __all__ = [
 ]
 
 logger = logging.getLogger(__name__)
+
+SITEMAP_URL = "https://www.coffeereview.com/sitemap_index.xml"
 
 # Sitemaps are third-party XML, so entity resolution and network access are
 # both disabled.

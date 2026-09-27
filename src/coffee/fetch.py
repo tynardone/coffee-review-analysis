@@ -1,4 +1,4 @@
-"""Shared async HTTP GET with bounded concurrency and retry.
+"""Shared async HTTP GET with bounded concurrency and retry, and shared headers.
 
 :func:`fetch` gives URL discovery and review scraping one common request path:
 a per-request timeout, retries limited to transient failures (429/5xx) with
@@ -13,7 +13,15 @@ import random
 
 import aiohttp
 
-__all__ = ["fetch"]  # the module-level constants are tuning knobs, not API
+__all__ = ["HEADERS", "fetch"]  # the other constants are tuning knobs, not API
+
+# Sent with every request, by the scraper and by both reference-data fetchers.
+HEADERS = {
+    "user-agent": (
+        "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36"
+    )
+}
 
 # Only transient failures are retried. Other 4xx responses, such as a 404 for a
 # removed review, are permanent and fail fast rather than consuming retries.

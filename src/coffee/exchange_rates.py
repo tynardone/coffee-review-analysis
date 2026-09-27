@@ -30,11 +30,11 @@ from requests.adapters import HTTPAdapter
 from tqdm import tqdm
 from urllib3.util.retry import Retry
 
-from coffee.config import DATA_DIR, HEADERS, OPENEX_API_URL, OPENEX_TIMEOUT
+from coffee.fetch import HEADERS
 
 __all__ = [
     "DEFAULT_CHECKPOINT_EVERY",
-    "DEFAULT_OUTPUT",
+    "OPENEX_API_URL",
     "RateMapping",
     "fetch_rate",
     "fetch_rates",
@@ -47,7 +47,8 @@ __all__ = [
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_OUTPUT = DATA_DIR / "external" / "openex_exchange_rates.json"
+OPENEX_API_URL = "https://openexchangerates.org/api/historical/"
+OPENEX_TIMEOUT = 10
 
 # OpenExchangeRates' historical data begins in 1999.
 EARLIEST_DATE = "1999-01-01"

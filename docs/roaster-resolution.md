@@ -1,6 +1,6 @@
 # Roaster name resolution: the design
 
-The design behind [`coffee/roasters/`](../coffee/roasters/).
+The design behind [`src/coffee/roasters/`](../src/coffee/roasters/).
 For the workflow — which commands to run, in what order, and what to do with the
 review queue — see [Resolving roaster names](../README.md#resolving-roaster-names)
 in the README.
@@ -121,7 +121,7 @@ entirely is the `review` floor.
 
 | File | Status |
 | --- | --- |
-| `roaster_decisions.csv` | Source of truth. Adjudicated pairs, with who decided and when. Hand-edited and committed to git. The only file here that cannot be regenerated. |
+| `roaster_decisions.csv` | Source of truth. Adjudicated pairs, with who decided and when. Hand-edited and committed to git, in `seeds/` rather than `data/roasters/` beside the other two. The only file here that cannot be regenerated. |
 | `roaster_crosswalk.csv` | Derived. `raw_name` → `canonical_name`, regenerated on every run, so hand edits are overwritten. Committed so that downstream joins are reproducible. |
 | `roaster_review_queue.csv` | Derived. Pairs with no decision yet, with a blank `verdict` column and each side's location, so that adjudicating a pair needs no second lookup. |
 
