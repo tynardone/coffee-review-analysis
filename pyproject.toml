@@ -28,6 +28,7 @@ dependencies = [
 [project.scripts]
 refresh-data = "coffee.cli:refresh_data"
 scrape-reviews = "coffee.cli:scrape_reviews"
+parse-reviews = "coffee.cli:parse_reviews"
 clean-reviews = "coffee.cli:clean_reviews_command"
 fetch-exchange-rates = "coffee.cli:fetch_exchange_rates"
 fetch-cpi = "coffee.cli:fetch_cpi_command"

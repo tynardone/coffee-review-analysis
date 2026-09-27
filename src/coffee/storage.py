@@ -1,15 +1,15 @@
-"""Where scraped reviews are read from and written to.
+"""Where parsed reviews are read from and written to.
 
-The corpus is a single ``reviews.csv``, updated in place.
+The corpus is a single ``reviews.csv``, updated in place. The parse step talks
+to a :class:`ReviewStore` rather than to the file, so a database could replace
+the CSV without changing the parse.
 
-The pipeline talks to a :class:`ReviewStore` rather than to files. Incremental
-scraping needs to know what is already held and how fresh it is, and that
-question is answered differently by a CSV than by a database.
+Rows are only ever added or updated, never removed. A review that disappears
+from the site has no saved page to re-parse, so its row is the only copy left.
 """
 
 import logging
 from collections.abc import Iterable, Mapping
-from datetime import date
 from pathlib import Path
 from typing import Any, Protocol, runtime_checkable
 
@@ -20,19 +20,19 @@ __all__ = ["CsvReviewStore", "ReviewStore"]
 logger = logging.getLogger(__name__)
 
 URL_COLUMN = "url"
-LASTMOD_COLUMN = "sitemap_lastmod"
+SCRAPED_AT_COLUMN = "scraped_at"
 
 
 @runtime_checkable
 class ReviewStore(Protocol):
-    """What the pipeline needs of a place to keep reviews."""
+    """What the parse step needs of a place to keep reviews."""
 
-    def known_lastmods(self) -> dict[str, date | None]:
-        """Every review already held, mapped to its recorded ``sitemap_lastmod``.
+    def parsed_from(self) -> dict[str, str]:
+        """Every review held, mapped to the ``scraped_at`` it was parsed from.
 
-        A URL mapped to ``None`` is held but of unknown freshness, and should
-        be treated as stale. A URL absent from the mapping has never been
-        scraped.
+        ``scraped_at`` is the fetch time of the saved page a row came from, so
+        comparing it with the bronze manifest shows which rows are out of date.
+        A row with no ``scraped_at`` maps to an empty string.
         """
         ...
 
@@ -44,42 +44,30 @@ class ReviewStore(Protocol):
         """
         ...
 
-    def replace(self, records: Iterable[Mapping[str, Any]]) -> int:
-        """Discard what is held and keep exactly `records`. Used by ``--full``."""
-        ...
-
 
 class CsvReviewStore:
     """A single ``reviews.csv``, updated in place."""
 
-    def __init__(self, directory: Path, stem: str = "reviews") -> None:
-        self.directory = directory
-        self.csv_path = directory / f"{stem}.csv"
+    def __init__(self, csv_path: Path) -> None:
+        self.csv_path = csv_path
 
     # -- reading -----------------------------------------------------------
 
-    def known_lastmods(self) -> dict[str, date | None]:
+    def parsed_from(self) -> dict[str, str]:
         if not self.csv_path.exists():
             return {}
 
         frame = pd.read_csv(
             self.csv_path,
-            usecols=lambda column: column in {URL_COLUMN, LASTMOD_COLUMN},
+            usecols=lambda column: column in {URL_COLUMN, SCRAPED_AT_COLUMN},
+            dtype=str,
+            keep_default_na=False,
         )
         if URL_COLUMN not in frame.columns:
             raise ValueError(f"{self.csv_path} has no {URL_COLUMN!r} column.")
-        if LASTMOD_COLUMN not in frame.columns:
-            # Data predating sitemap discovery has no freshness to report.
-            logger.info(
-                "%s predates %s; treating all as stale", self.csv_path, LASTMOD_COLUMN
-            )
-            return dict.fromkeys(frame[URL_COLUMN].astype(str), None)
-
-        stamps = pd.to_datetime(frame[LASTMOD_COLUMN], errors="coerce")
-        return {
-            str(url): (None if pd.isna(stamp) else stamp.date())
-            for url, stamp in zip(frame[URL_COLUMN], stamps, strict=True)
-        }
+        if SCRAPED_AT_COLUMN not in frame.columns:
+            return dict.fromkeys(frame[URL_COLUMN], "")
+        return dict(zip(frame[URL_COLUMN], frame[SCRAPED_AT_COLUMN], strict=True))
 
     def _load(self) -> pd.DataFrame:
         return pd.read_csv(self.csv_path) if self.csv_path.exists() else pd.DataFrame()
@@ -90,7 +78,7 @@ class CsvReviewStore:
         incoming = pd.DataFrame(list(records))
         if incoming.empty:
             held = self._load()
-            logger.info("Nothing fetched; %d reviews unchanged", len(held))
+            logger.info("Nothing to write; %d reviews unchanged", len(held))
             return len(held)
 
         existing = self._load()
@@ -105,15 +93,8 @@ class CsvReviewStore:
             merged = incoming
         return self._write(merged)
 
-    def replace(self, records: Iterable[Mapping[str, Any]]) -> int:
-        frame = pd.DataFrame(list(records))
-        if frame.empty:
-            logger.warning("Refusing to replace the corpus with nothing.")
-            return len(self._load())
-        return self._write(frame)
-
     def _write(self, frame: pd.DataFrame) -> int:
-        self.directory.mkdir(parents=True, exist_ok=True)
+        self.csv_path.parent.mkdir(parents=True, exist_ok=True)
         frame = frame.sort_values(URL_COLUMN).reset_index(drop=True)
         frame.to_csv(self.csv_path, index=False)
         logger.info("Wrote %d reviews to %s", len(frame), self.csv_path)

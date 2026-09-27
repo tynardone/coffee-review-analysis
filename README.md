@@ -65,23 +65,25 @@ uv run refresh-data
 uv run jupyter lab
 ```
 
-`refresh-data` runs five steps in dependency order and reports on each. Every
+`refresh-data` runs six steps in dependency order and reports on each. Every
 step is also a command in its own right:
 
 | Step | Command | Writes |
 |---|---|---|
-| 1 | `uv run scrape-reviews` | `data/raw/reviews.csv` |
-| 2 | `uv run resolve-roasters data/raw/reviews.csv` | `data/roasters/roaster_crosswalk.csv` |
-| 3 | `uv run fetch-exchange-rates` | `data/external/openex_exchange_rates.json` |
-| 4 | `uv run fetch-cpi` | `data/external/consumer_price_index.csv` |
-| 5 | `uv run clean-reviews` | `data/clean/reviews.parquet` |
+| 1 | `uv run scrape-reviews` | `data/bronze/reviews/` (saved HTML pages) |
+| 2 | `uv run parse-reviews` | `data/raw/reviews.csv` |
+| 3 | `uv run resolve-roasters data/raw/reviews.csv` | `data/roasters/roaster_crosswalk.csv` |
+| 4 | `uv run fetch-exchange-rates` | `data/external/openex_exchange_rates.json` |
+| 5 | `uv run fetch-cpi` | `data/external/consumer_price_index.csv` |
+| 6 | `uv run clean-reviews` | `data/clean/reviews.parquet` |
 
 Each command documents its options under `--help`. The most useful options on
 `refresh-data` are:
 
-- `--full` re-fetches and re-parses every review, not only those that changed.
-- `--skip-scrape` rebuilds from the reviews already on disk without contacting
-  the site.
+- `--full` re-downloads and re-parses every review, not only those that changed.
+  Exchange rates and CPI stay incremental.
+- `--skip-scrape` makes no requests to the review site; it parses and rebuilds
+  from the pages already saved.
 - `--baseline-date` sets the month whose dollars adjusted prices are expressed in.
 
 The pipeline ends at the cleaned dataset; charts and aggregates live in the
@@ -103,20 +105,32 @@ new, have changed, or have no date to compare. That is usually a handful of
 pages and about a second of work; a full pass is some 9,300 pages and half an
 hour.
 
-`data/raw/reviews.csv` is updated in place, and git keeps its history. Each row
-records when it was fetched in `scraped_at`. Reviews that drop out of the sitemap
-are reported but kept: they can no longer be fetched, so the stored copy is the
-only one left.
+Scraping and parsing are separate steps. `scrape-reviews` saves each page's
+HTML, gzipped, to `data/bronze/reviews/pages/`, and records it in
+`data/bronze/reviews/manifest.jsonl` with its sitemap date and fetch time.
+`parse-reviews` reads the saved pages and updates `data/raw/reviews.csv`,
+without touching the network. By default it parses only pages that have no row
+yet or were fetched again since their row was written.
 
-After changing the parser (`src/coffee/parser.py`), run a full scrape:
+After changing the parser (`src/coffee/parser.py`), re-parse everything from
+the saved pages. This takes about a minute and makes no requests:
 
 ```bash
-uv run scrape-reviews --full
+uv run parse-reviews --full
 ```
 
-An incremental run re-parses only the pages it re-fetches, so without `--full` a
-parser fix reaches new rows only and the corpus ends up mixing two parser
-versions. `scraped_at` shows where such a mix exists.
+Both commands take `--limit N` for a quick trial: `parse-reviews --full
+--limit 20` checks a parser change on 20 pages before running it on all of them.
+
+`data/raw/reviews.csv` is updated in place, and git keeps its history. Rows are
+only ever added or updated, never removed. Each row records in `scraped_at` when
+the page it came from was fetched. Reviews that drop out of the sitemap are
+reported but kept: they can no longer be fetched, so the stored copy is the only
+one left.
+
+The saved pages take about 100 MB and are not committed; back them up with the
+rest of the disk. The first scrape into an empty `data/bronze/` downloads every
+page once, which takes about half an hour.
 
 ### Exchange rates
 
@@ -164,14 +178,16 @@ Two quirks of the series are handled explicitly:
 
 | Layer | File | Contents |
 |---|---|---|
-| Raw | `data/raw/reviews.csv` | Reviews as scraped. Never edited by hand. |
+| Bronze | `data/bronze/reviews/` | Every review page exactly as the site served it. Not committed. |
+| Raw | `data/raw/reviews.csv` | One row per review, as parsed from its page. Never edited by hand. |
 | Cleaned | `data/clean/reviews.parquet` | Typed and parsed, with roasters resolved and prices made comparable. |
 
-The two formats are deliberate. The raw layer is irreplaceable, since a review
-removed from the site cannot be scraped again, so it is kept as plain text that
-any tool can read. The cleaned layer is rebuilt by a single command and read
-only by code, so it is Parquet: about a third of the size, and it preserves
-column types that CSV would lose.
+The formats are deliberate. Bronze keeps the HTML so that parsing can be redone
+without downloading anything. The raw CSV is committed and kept as plain text
+that any tool can read, because a review removed from the site survives only
+there. The cleaned layer is rebuilt by a single command and read only by code,
+so it is Parquet: about a third of the size, and it preserves column types that
+CSV would lose.
 
 ### Field names
 
@@ -294,7 +310,7 @@ queue holds any and tells you to add `--accept-reviewed`.
 
 **4. Commit the three files.**
 
-After the next scrape, start again at step 1. Pairs already decided stay
+After the next scrape and parse, start again at step 1. Pairs already decided stay
 decided, so the queue holds only new questions. If an answered pair reappears,
 check that `seeds/roaster_decisions.csv` exists and that `--decisions` is not
 pointing elsewhere.
@@ -376,7 +392,7 @@ notebooks past 13 MB. Save figures worth keeping to `imgs/`.
 ```
 src/coffee/   the package
 tests/        unit and integration tests, with saved review pages as fixtures
-data/         pipeline inputs and outputs; committed except data/clean/
+data/         pipeline inputs and outputs; committed except bronze/ and clean/
 seeds/        hand-kept reference data that nothing can regenerate
 docs/         data flow and roaster resolution design
 notebooks/    analysis
@@ -391,10 +407,13 @@ notebooks and the console commands therefore all run the same code.
 - `fetch.py` is the shared asynchronous HTTP client, with bounded concurrency,
   retries on transient errors and common request headers.
 - `parser.py` turns a review page into fields.
-- `pipeline.py` runs a scrape: discovery, fetching what changed, and parsing.
-- `storage.py` reads and writes the review store. The pipeline depends only on
+- `pipeline.py` holds the two collection steps: `scrape_all_reviews`
+  (discover and download what changed) and `parse_saved_reviews` (saved pages
+  to rows).
+- `bronze.py` saves and reads the downloaded pages and their manifest.
+- `storage.py` reads and writes `reviews.csv`. The parse step depends only on
   the `ReviewStore` interface, so a database could replace `CsvReviewStore`
-  without changes to the scraper.
+  without changes to the parse.
 - `clean.py` builds the cleaned layer.
 - `prices.py` handles currency conversion and inflation adjustment. It is
   separate because it is the only part of cleaning that needs outside data.

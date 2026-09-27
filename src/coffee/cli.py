@@ -20,6 +20,7 @@ from pathlib import Path
 import pandas as pd
 import requests
 
+from coffee.bronze import PageStore
 from coffee.clean import DEFAULT_BASELINE_DATE, clean_reviews
 from coffee.cpi import MONTH_COLUMNS, fetch_cpi
 from coffee.exchange_rates import (
@@ -28,7 +29,11 @@ from coffee.exchange_rates import (
     load_review_dates,
     unfetched_dates,
 )
-from coffee.pipeline import DEFAULT_CONCURRENCY, scrape_all_reviews
+from coffee.pipeline import (
+    DEFAULT_CONCURRENCY,
+    parse_saved_reviews,
+    scrape_all_reviews,
+)
 from coffee.prices import load_cpi, load_exchange_rates
 from coffee.roasters import (
     format_resolution_report,
@@ -46,6 +51,7 @@ __all__ = [
     "fetch_cpi_command",
     "refresh_data",
     "fetch_exchange_rates",
+    "parse_reviews",
     "resolve_roasters",
     "scrape_reviews",
 ]
@@ -75,35 +81,69 @@ def _positive_int(value: str) -> int:
 
 
 def scrape_reviews(argv: list[str] | None = None) -> None:
-    """Update the review corpus, fetching only what changed since last run."""
+    """Download new and changed review pages into the bronze layer."""
     settings = _settings()
     parser = argparse.ArgumentParser(description=scrape_reviews.__doc__)
     parser.add_argument(
-        "-o",
-        "--output-dir",
-        type=Path,
-        default=settings.raw_dir,
-        help="Directory holding reviews.csv.",
+        "--full",
+        action="store_true",
+        help="re-download every review, not only new and changed ones. Rarely "
+        "needed: after a parser change, use parse-reviews --full instead.",
+    )
+    parser.add_argument(
+        "--limit",
+        type=_positive_int,
+        help="fetch at most this many pages, for a quick trial run",
     )
     parser.add_argument(
         "-c",
         "--concurrency",
         type=_positive_int,
         default=DEFAULT_CONCURRENCY,
-        help="Maximum number of concurrent review requests.",
-    )
-    parser.add_argument(
-        "--full",
-        action="store_true",
-        help="re-fetch every review instead of only what changed. Needed after "
-        "a parser change, since an incremental run re-parses only the pages it "
-        "re-fetches.",
+        help="maximum number of concurrent requests",
     )
     args = parser.parse_args(argv)
 
     _configure_logging()
-    store = CsvReviewStore(args.output_dir)
-    asyncio.run(scrape_all_reviews(store, args.concurrency, full=args.full))
+    pages = PageStore(settings.bronze_reviews)
+    result = asyncio.run(
+        scrape_all_reviews(pages, args.concurrency, full=args.full, limit=args.limit)
+    )
+    print(f"saved {result.saved} page(s) to {pages.directory}")
+    if result.failed:
+        print(f"{len(result.failed)} page(s) failed and will be retried next run")
+    if result.retired:
+        print(f"{result.retired} saved review(s) are no longer on the site; kept")
+
+
+def parse_reviews(argv: list[str] | None = None) -> None:
+    """Parse saved review pages into data/raw/reviews.csv. No network."""
+    settings = _settings()
+    parser = argparse.ArgumentParser(description=parse_reviews.__doc__)
+    parser.add_argument(
+        "--full",
+        action="store_true",
+        help="re-parse every saved page, not only those not yet parsed. Use "
+        "after changing the parser.",
+    )
+    parser.add_argument(
+        "--limit",
+        type=_positive_int,
+        help="parse at most this many pages, for a quick check of a parser change",
+    )
+    args = parser.parse_args(argv)
+
+    _configure_logging()
+    store = CsvReviewStore(settings.raw_reviews)
+    result = parse_saved_reviews(
+        PageStore(settings.bronze_reviews), store, full=args.full, limit=args.limit
+    )
+    print(f"parsed {result.parsed} page(s); {store.csv_path} holds {result.total}")
+    if result.failed:
+        print(
+            f"{len(result.failed)} page(s) failed to parse and kept their previous "
+            f"row, starting with {result.failed[0]}"
+        )
 
 
 def fetch_exchange_rates(argv: list[str] | None = None) -> None:
@@ -412,10 +452,10 @@ def fetch_cpi_command(argv: list[str] | None = None) -> None:
 def refresh_data(argv: list[str] | None = None) -> None:
     """Run the whole collection-and-cleaning pipeline in dependency order.
 
-    The five steps have to run in this order, since later steps read what
+    The six steps have to run in this order, since later steps read what
     earlier ones wrote, which is easy to get wrong by hand:
 
-        scrape  ->  resolve roasters  ->  fetch rates  ->  fetch CPI  ->  clean
+        scrape -> parse -> resolve roasters -> fetch rates -> fetch CPI -> clean
 
     Everything downstream of this is analysis, which belongs in a notebook.
     """
@@ -428,7 +468,8 @@ def refresh_data(argv: list[str] | None = None) -> None:
     parser.add_argument(
         "--full",
         action="store_true",
-        help="re-fetch and re-parse every review, not only what changed",
+        help="re-download and re-parse every review, not only what changed. "
+        "Exchange rates and CPI stay incremental.",
     )
     parser.add_argument(
         "--baseline-date",
@@ -439,17 +480,17 @@ def refresh_data(argv: list[str] | None = None) -> None:
     parser.add_argument(
         "--skip-scrape",
         action="store_true",
-        help="rebuild from the reviews already held, making no review requests",
+        help="make no review requests; parse and rebuild from saved pages",
     )
     args = parser.parse_args(argv)
 
     raw = settings.raw_reviews
+    full = ["--full"] if args.full else []
     steps: list[tuple[str, Callable[[], None]]] = []
     if not args.skip_scrape:
-        steps.append(
-            ("scrape", lambda: scrape_reviews(["--full"] if args.full else []))
-        )
+        steps.append(("scrape", lambda: scrape_reviews(full)))
     steps += [
+        ("parse", lambda: parse_reviews(full)),
         ("resolve roasters", lambda: resolve_roasters([str(raw)])),
         ("fetch exchange rates", lambda: fetch_exchange_rates([])),
         ("fetch CPI", lambda: fetch_cpi_command([])),

@@ -1,7 +1,7 @@
 # Data flow
 
 Every file under `data/` and `seeds/`, what writes it, and what reads it. `uv run refresh-data`
-runs the five commands top to bottom; the notebooks pick up where it stops.
+runs the six commands top to bottom; the notebooks pick up where it stops.
 
 ```mermaid
 flowchart TD
@@ -17,11 +17,13 @@ flowchart TD
     BLSAPI["BLS API<br/>series CUUR0000SA0"]:::ext
 
     SCRAPE(["1 · scrape-reviews"]):::cmd
-    RESOLVE(["2 · resolve-roasters"]):::cmd
-    FXCMD(["3 · fetch-exchange-rates"]):::cmd
-    CPICMD(["4 · fetch-cpi"]):::cmd
-    CLEAN(["5 · clean-reviews"]):::cmd
+    PARSE(["2 · parse-reviews"]):::cmd
+    RESOLVE(["3 · resolve-roasters"]):::cmd
+    FXCMD(["4 · fetch-exchange-rates"]):::cmd
+    CPICMD(["5 · fetch-cpi"]):::cmd
+    CLEAN(["6 · clean-reviews"]):::cmd
 
+    BRONZE["data/bronze/reviews/<br/><i>saved HTML + manifest · ~100 MB · gitignored</i>"]:::raw
     RAW["data/raw/reviews.csv<br/><i>9.7 MB · committed</i>"]:::raw
     DEC["seeds/roaster_decisions.csv<br/><i>hand-edited · irreplaceable</i>"]:::human
     QUEUE["roasters/roaster_review_queue.csv<br/><i>you fill the verdict column</i>"]:::human
@@ -31,7 +33,10 @@ flowchart TD
     CLEANED["data/clean/reviews.parquet<br/><i>3.6 MB · gitignored</i>"]:::out
     NB["notebooks 01 · 02 · 03"]:::out
 
-    SITE --> SCRAPE --> RAW
+    SITE --> SCRAPE --> BRONZE
+    BRONZE -. "what is already saved" .-> SCRAPE
+    BRONZE --> PARSE --> RAW
+    RAW -. "rows only added or updated" .-> PARSE
 
     RAW -- "names + locations" --> RESOLVE
     DEC -- "verdicts already recorded" --> RESOLVE
@@ -64,7 +69,8 @@ and the review queue feeds back into the decisions file when you pass
 
 | file | if you lost it | cost |
 | --- | --- | --- |
-| `raw/reviews.csv` | re-scrape | ~30 min, ~9,300 requests — and any review since removed from the site is gone |
+| `bronze/reviews/` | `scrape-reviews` into an empty folder | ~30 min, ~9,300 requests; pages since removed from the site are gone |
+| `raw/reviews.csv` | `parse-reviews --full` from bronze | about a minute, no requests; reviews removed from the site before bronze held them are gone |
 | `seeds/roaster_decisions.csv` | **nothing rebuilds it** | every pair re-adjudicated by hand |
 | `roasters/roaster_crosswalk.csv` | `resolve-roasters` | seconds |
 | `roasters/roaster_review_queue.csv` | `resolve-roasters` | seconds |
@@ -81,6 +87,7 @@ code, so it is Parquet and gitignored.
 
 The commands are not interchangeable:
 
+- `parse-reviews` reads only what `scrape-reviews` saved
 - `resolve-roasters` needs `raw/reviews.csv` to exist
 - `fetch-exchange-rates` reads its months from the **raw** layer, not the cleaned
   one — cleaning consumes the rates, so it cannot also be what produces the list
