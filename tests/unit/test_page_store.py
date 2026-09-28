@@ -1,4 +1,4 @@
-"""Tests for the bronze page store: save, read back, and the manifest."""
+"""Tests for the downloaded-page store: save, read back, and the manifest."""
 
 import gzip
 from datetime import date

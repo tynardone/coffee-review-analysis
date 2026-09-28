@@ -7,11 +7,11 @@
 # blind_assessment value in data/raw/2026-07-12_reviews.csv. The saved review
 # pages under tests/fixtures/ are golden-test inputs and equally must not be
 # touched, or the parse they pin stops matching what the site actually served.
-# seeds/ holds hand-kept CSVs under the same hazard as data/.
+# curated/ holds hand-kept CSVs under the same hazard as data/.
 exclude: |
   (?x)^(
     data/.*|
-    seeds/.*|
+    curated/.*|
     tests/fixtures/.*
   )$
 

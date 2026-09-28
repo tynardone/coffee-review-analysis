@@ -25,7 +25,7 @@ C = "https://www.coffeereview.com/review/c/"
 
 @pytest.fixture
 def pages(tmp_path):
-    return PageStore(tmp_path / "bronze")
+    return PageStore(tmp_path / "downloaded")
 
 
 PAGE = "<html><h1 class='review-title'>{}</h1></html>"
@@ -104,7 +104,7 @@ def test_a_page_that_fails_to_parse_keeps_its_old_row(pages, store, monkeypatch)
 
 
 def test_rows_without_a_saved_page_are_never_removed(pages, store):
-    """A review gone from the site before bronze existed survives a re-parse."""
+    """A review gone from the site before pages were kept survives a re-parse."""
     store.upsert([{"url": C, "title": "only copy"}])
     pages.save(A, PAGE.format("A"), JAN, fetched_at="t1")
 

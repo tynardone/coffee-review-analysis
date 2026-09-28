@@ -1,4 +1,4 @@
-"""The bronze layer: every review page exactly as the site served it.
+"""Downloaded review pages, exactly as the site served them.
 
 The scrape saves each page here, gzipped, and the parse reads it back. Keeping
 the HTML means a parser fix is a re-parse of saved pages, which takes about a
@@ -6,14 +6,14 @@ minute, rather than a re-download of the whole site, which takes half an hour.
 
 Layout::
 
-    data/bronze/reviews/
+    data/downloaded/
         pages/<slug>.html.gz    one file per review
         manifest.jsonl          one line per saved page
 
 The manifest is append-only. Each save adds a line recording the page's URL,
 file, sitemap ``<lastmod>`` and fetch time; when a URL appears more than once,
 the last line wins. A page that changes upstream overwrites its saved copy, so
-bronze holds the latest version of each review, not its history.
+the folder holds the latest version of each review, not its history.
 """
 
 import gzip

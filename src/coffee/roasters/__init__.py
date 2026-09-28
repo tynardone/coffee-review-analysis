@@ -17,7 +17,7 @@ uncertain band is queued for review rather than decided, and the two known
 clustering failure modes are reported rather than prevented.
 
 :mod:`decisions` is the only module here that touches disk. Adjudicated pairs
-live in ``seeds/roaster_decisions.csv``, the only state that cannot be regenerated;
+live in ``curated/roaster_decisions.csv``, the only state that cannot be regenerated;
 the crosswalk and the review queue are derived on every run.
 
 ``docs/roaster-resolution.md`` covers the design in full. The README section

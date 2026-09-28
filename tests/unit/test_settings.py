@@ -54,10 +54,10 @@ def test_the_committed_config_file_matches_the_code_defaults():
 def test_paths_default_to_the_project_root():
     settings = settings_from()
     assert settings.data_dir == PROJECT_ROOT / "data"
-    assert settings.seeds_dir == PROJECT_ROOT / "seeds"
-    assert settings.raw_reviews == PROJECT_ROOT / "data" / "raw" / "reviews.csv"
+    assert settings.curated_dir == PROJECT_ROOT / "curated"
+    assert settings.parsed_reviews == PROJECT_ROOT / "data" / "parsed" / "reviews.csv"
     assert (
-        settings.roaster_decisions == PROJECT_ROOT / "seeds" / "roaster_decisions.csv"
+        settings.roaster_decisions == PROJECT_ROOT / "curated" / "roaster_decisions.csv"
     )
 
 
@@ -104,10 +104,10 @@ def test_an_empty_variable_means_the_default(monkeypatch):
 
 def test_paths_can_be_moved(tmp_path, monkeypatch):
     monkeypatch.setenv("COFFEE_DATA_DIR", str(tmp_path / "d"))
-    monkeypatch.setenv("COFFEE_SEEDS_DIR", str(tmp_path / "s"))
+    monkeypatch.setenv("COFFEE_CURATED_DIR", str(tmp_path / "c"))
     settings = settings_from()
-    assert settings.clean_reviews == tmp_path / "d" / "clean" / "reviews.parquet"
-    assert settings.roaster_decisions == tmp_path / "s" / "roaster_decisions.csv"
+    assert settings.cleaned_reviews == tmp_path / "d" / "cleaned" / "reviews.parquet"
+    assert settings.roaster_decisions == tmp_path / "c" / "roaster_decisions.csv"
 
 
 # --------------------------------------------------------------------------

@@ -77,7 +77,7 @@ def test_a_realistic_mixture():
 
 
 # --------------------------------------------------------------------------
-# Scrape: download to bronze, never parse
+# Scrape: download pages, never parse
 # --------------------------------------------------------------------------
 
 A = "https://www.coffeereview.com/review/a/"
@@ -87,7 +87,7 @@ C = "https://www.coffeereview.com/review/c/"
 
 @pytest.fixture
 def pages(tmp_path):
-    return PageStore(tmp_path / "bronze")
+    return PageStore(tmp_path / "downloaded")
 
 
 @pytest.fixture

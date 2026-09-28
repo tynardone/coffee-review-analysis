@@ -17,7 +17,7 @@ entity resolution.
 - [Installation](#installation)
 - [Usage](#usage)
 - [Data sources](#data-sources)
-- [Data layers](#data-layers)
+- [Data files](#data-files)
 - [Resolving roaster names](#resolving-roaster-names)
 - [Notebooks](#notebooks)
 - [Project layout](#project-layout)
@@ -61,7 +61,7 @@ cp .env.example .env
 
 Every variable is named `COFFEE_` plus the setting's name, with a double
 underscore for a value inside a TOML table: `COFFEE_OPENEXCHANGERATES_API_ID`,
-`COFFEE_DATA_DIR` (default `data/`), `COFFEE_SEEDS_DIR` (default `seeds/`),
+`COFFEE_DATA_DIR` (default `data/`), `COFFEE_CURATED_DIR` (default `curated/`),
 `COFFEE_SCRAPE__CONCURRENCY`. Settings are checked when a command starts, so a
 bad value stops it immediately with a message naming the setting.
 
@@ -86,12 +86,12 @@ step is also a command in its own right:
 
 | Step | Command | Writes |
 |---|---|---|
-| 1 | `uv run scrape-reviews` | `data/bronze/reviews/` (saved HTML pages) |
-| 2 | `uv run parse-reviews` | `data/raw/reviews.csv` |
-| 3 | `uv run resolve-roasters data/raw/reviews.csv` | `data/roasters/roaster_crosswalk.csv` |
-| 4 | `uv run fetch-exchange-rates` | `data/external/openex_exchange_rates.json` |
-| 5 | `uv run fetch-cpi` | `data/external/consumer_price_index.csv` |
-| 6 | `uv run clean-reviews` | `data/clean/reviews.parquet` |
+| 1 | `uv run scrape-reviews` | `data/downloaded/` (saved HTML pages) |
+| 2 | `uv run parse-reviews` | `data/parsed/reviews.csv` |
+| 3 | `uv run resolve-roasters data/parsed/reviews.csv` | `data/roasters/crosswalk.csv` |
+| 4 | `uv run fetch-exchange-rates` | `data/reference/exchange_rates.json` |
+| 5 | `uv run fetch-cpi` | `data/reference/cpi.csv` |
+| 6 | `uv run clean-reviews` | `data/cleaned/reviews.parquet` |
 
 Each command documents its options under `--help`. The most useful options on
 `refresh-data` are:
@@ -122,9 +122,9 @@ pages and about a second of work; a full pass is some 9,300 pages and half an
 hour.
 
 Scraping and parsing are separate steps. `scrape-reviews` saves each page's
-HTML, gzipped, to `data/bronze/reviews/pages/`, and records it in
-`data/bronze/reviews/manifest.jsonl` with its sitemap date and fetch time.
-`parse-reviews` reads the saved pages and updates `data/raw/reviews.csv`,
+HTML, gzipped, to `data/downloaded/pages/`, and records it in
+`data/downloaded/manifest.jsonl` with its sitemap date and fetch time.
+`parse-reviews` reads the saved pages and updates `data/parsed/reviews.csv`,
 without touching the network. By default it parses only pages that have no row
 yet or were fetched again since their row was written.
 
@@ -138,23 +138,23 @@ uv run parse-reviews --full
 Both commands take `--limit N` for a quick trial: `parse-reviews --full
 --limit 20` checks a parser change on 20 pages before running it on all of them.
 
-`data/raw/reviews.csv` is updated in place, and git keeps its history. Rows are
+`data/parsed/reviews.csv` is updated in place, and git keeps its history. Rows are
 only ever added or updated, never removed. Each row records in `scraped_at` when
 the page it came from was fetched. Reviews that drop out of the sitemap are
 reported but kept: they can no longer be fetched, so the stored copy is the only
 one left.
 
 The saved pages take about 240 MB and are not committed; back them up with the
-rest of the disk. The first scrape into an empty `data/bronze/` downloads every
+rest of the disk. The first scrape into an empty `data/downloaded/` downloads every
 page once, which takes about half an hour.
 
 ### Exchange rates
 
 Historical daily rates from OpenExchangeRates convert each price to US dollars
 at the rate for the month the review was published. `fetch-exchange-rates` reads
-the review months from the raw scrape and requests only those missing from
-`data/external/openex_exchange_rates.json`. It reads the raw layer rather than
-the cleaned one because cleaning depends on these rates.
+the review months from the parsed reviews and requests only those missing from
+`data/reference/exchange_rates.json`. It reads the parsed reviews rather than
+the cleaned ones because cleaning depends on these rates.
 
 A past month's rate never changes, so each month is fetched once. The corpus
 spans 323 months, about a third of the free tier's monthly allowance, and
@@ -174,7 +174,7 @@ file.
 Inflation adjustment uses CPI-U (US city average, all items, not seasonally
 adjusted): series `CUUR0000SA0` from the Bureau of Labor Statistics public API,
 which needs no key. `fetch-cpi` merges the series into
-`data/external/consumer_price_index.csv`, keeping the BLS layout of one row per
+`data/reference/cpi.csv`, keeping the BLS layout of one row per
 year and one column per month.
 
 The keyless API returns the last three years and allows 25 requests a day, which
@@ -190,25 +190,44 @@ Two quirks of the series are handled explicitly:
   is one: the index was not produced during that year's lapse in federal
   appropriations. Prices from such a month are left unadjusted, not dropped.
 
-## Data layers
+## Data files
 
-| Layer | File | Contents |
-|---|---|---|
-| Bronze | `data/bronze/reviews/` | Every review page exactly as the site served it. Not committed. |
-| Raw | `data/raw/reviews.csv` | One row per review, as parsed from its page. Never edited by hand. |
-| Cleaned | `data/clean/reviews.parquet` | Typed and parsed, with roasters resolved and prices made comparable. |
+The folders under `data/` are named for what has happened to the data, in
+pipeline order:
 
-The formats are deliberate. Bronze keeps the HTML so that parsing can be redone
-without downloading anything. The raw CSV is committed and kept as plain text
-that any tool can read, because a review removed from the site survives only
-there. The cleaned layer is rebuilt by a single command and read only by code,
-so it is Parquet: about a third of the size, and it preserves column types that
-CSV would lose.
+```
+data/
+  downloaded/          review pages as the site served them    not committed
+    pages/*.html.gz
+    manifest.jsonl
+  parsed/
+    reviews.csv        one row per review                      committed
+  reference/
+    exchange_rates.json                                        committed
+    cpi.csv                                                    committed
+  roasters/
+    crosswalk.csv      spelling -> canonical roaster           committed
+    review_queue.csv   pairs for you to judge                  committed
+  cleaned/
+    reviews.parquet    typed, priced, roasters resolved        not committed
+curated/
+  roaster_decisions.csv  your judgments; nothing regenerates it  committed
+```
+
+The formats are deliberate. `downloaded/` keeps the HTML so that parsing can be
+redone without downloading anything. `parsed/reviews.csv` is committed and kept
+as plain text that any tool can read, because a review removed from the site
+survives only there. `cleaned/reviews.parquet` is rebuilt by a single command
+and read only by code, so it is Parquet: about a third of the size, and it
+preserves column types that CSV would lose.
+
+Every path comes from `Settings` in `src/coffee/settings.py`, so moving a file
+means changing one line there.
 
 ### Field names
 
 The parser normalizes each label in a review's spec table as it reads the page
-(`"Est. Price:"` becomes `est_price`), so the raw layer already uses the
+(`"Est. Price:"` becomes `est_price`), so the parsed reviews already use the
 project's column names. Cleaning checks this on entry and stops with an error
 naming any unnormalized columns, instead of failing several steps later.
 
@@ -267,9 +286,9 @@ explains the design.
 
 | File | Location | Edit? | Purpose |
 |---|---|---|---|
-| `roaster_decisions.csv` | `seeds/` | Yes | Every pair that has been judged. The only file that cannot be regenerated. |
-| `roaster_review_queue.csv` | `data/roasters/` | `verdict` column only | Pairs awaiting judgment. Regenerated on every run. |
-| `roaster_crosswalk.csv` | `data/roasters/` | No | The output, mapping `raw_name` to `canonical_name`. Regenerated on every run. |
+| `roaster_decisions.csv` | `curated/` | Yes | Every pair that has been judged. The only file that cannot be regenerated. |
+| `review_queue.csv` | `data/roasters/` | `verdict` column only | Pairs awaiting judgment. Regenerated on every run. |
+| `crosswalk.csv` | `data/roasters/` | No | The output, mapping `raw_name` to `canonical_name`. Regenerated on every run. |
 
 All three are committed. The crosswalk is committed so that joins against it are
 reproducible.
@@ -279,7 +298,7 @@ reproducible.
 **1. Resolve.**
 
 ```bash
-uv run resolve-roasters data/raw/reviews.csv
+uv run resolve-roasters data/parsed/reviews.csv
 ```
 
 The summary answers four questions:
@@ -287,11 +306,11 @@ The summary answers four questions:
 ```
 1687 distinct spellings -> 1496 roasters (191 merged)      did it do anything?
 18 decisions applied from …/roaster_decisions.csv          are past calls applied?
-0 pairs queued for review -> …/roaster_review_queue.csv    how much is left to judge?
+0 pairs queued for review -> …/review_queue.csv    how much is left to judge?
 11 rows in chain-risk clusters  <-- INSPECT THESE          did clustering misbehave?
 ```
 
-**2. Judge the queue.** Open `data/roasters/roaster_review_queue.csv` and fill in
+**2. Judge the queue.** Open `data/roasters/review_queue.csv` and fill in
 the `verdict` column. Leave every other column alone.
 
 - Same company: `merge`, `yes`, `y`, `m`, `same` or `1`
@@ -315,10 +334,10 @@ The `location_evidence` column is a useful guide:
 **3. Record the verdicts and resolve again.**
 
 ```bash
-uv run resolve-roasters data/raw/reviews.csv --accept-reviewed --decided-by "$USER"
+uv run resolve-roasters data/parsed/reviews.csv --accept-reviewed --decided-by "$USER"
 ```
 
-This adds your answers to `seeds/roaster_decisions.csv` and resolves again with
+This adds your answers to `curated/roaster_decisions.csv` and resolves again with
 them applied. The new queue holds only the rows you left blank.
 
 Always follow step 2 with this step. A plain run regenerates the queue, which
@@ -329,7 +348,7 @@ queue holds any and tells you to add `--accept-reviewed`.
 
 After the next scrape and parse, start again at step 1. Pairs already decided stay
 decided, so the queue holds only new questions. If an answered pair reappears,
-check that `seeds/roaster_decisions.csv` exists and that `--decisions` is not
+check that `curated/roaster_decisions.csv` exists and that `--decisions` is not
 pointing elsewhere.
 
 ### Checking the results
@@ -338,7 +357,7 @@ Chain-risk clusters were joined only through a chain of similar names, which
 makes them the likeliest false merges. To list them:
 
 ```bash
-uv run python -c "import pandas as pd; c=pd.read_csv('data/roasters/roaster_crosswalk.csv'); print(c[c.chain_risk][['raw_name','canonical_name','min_internal_score']].to_string(index=False))"
+uv run python -c "import pandas as pd; c=pd.read_csv('data/roasters/crosswalk.csv'); print(c[c.chain_risk][['raw_name','canonical_name','min_internal_score']].to_string(index=False))"
 ```
 
 To find matches the name score misses, also queue lower-scoring pairs that share
@@ -347,7 +366,7 @@ come to light. These pairs are only queued, never merged automatically. On the
 current data this adds 13 pairs:
 
 ```bash
-uv run resolve-roasters data/raw/reviews.csv --location-review 70
+uv run resolve-roasters data/parsed/reviews.csv --location-review 70
 ```
 
 ### When a split does not hold
@@ -377,9 +396,9 @@ To fix it, also record a split against the bridging name: here, `RND` against
 
 ### Rules
 
-1. Never edit `roaster_crosswalk.csv` by hand; it is overwritten on every run. To
+1. Never edit `data/roasters/crosswalk.csv` by hand; it is overwritten on every run. To
    change a grouping, change the decision behind it.
-2. To reverse a decision, edit `seeds/roaster_decisions.csv` directly.
+2. To reverse a decision, edit `curated/roaster_decisions.csv` directly.
    `--accept-reviewed` never overwrites an existing verdict, so a change of mind
    always shows up as a diff.
 
@@ -387,9 +406,9 @@ To fix it, also record a split against the bridging name: here, `RND` against
 
 | Notebook | Reads | Produces |
 |---|---|---|
-| `01-data-cleaning` | the raw scrape and reference data | `data/clean/reviews.parquet`, using the same code as `clean-reviews` |
-| `02-data-EDA` | `data/clean/reviews.parquet` | exploratory charts |
-| `03-text-features` | `data/clean/reviews.parquet` | word clouds in `imgs/` |
+| `01-data-cleaning` | the parsed reviews and reference data | `data/cleaned/reviews.parquet`, using the same code as `clean-reviews` |
+| `02-data-EDA` | `data/cleaned/reviews.parquet` | exploratory charts |
+| `03-text-features` | `data/cleaned/reviews.parquet` | word clouds in `imgs/` |
 
 The cleaned dataset is not committed. On a fresh checkout, build it with
 `uv run clean-reviews` or by running notebook 01 before opening the others.
@@ -417,8 +436,8 @@ and git sees no change.
 src/coffee/   the package
 config/       settings.toml, the committed default settings
 tests/        unit and integration tests, with saved review pages as fixtures
-data/         pipeline inputs and outputs; committed except bronze/ and clean/
-seeds/        hand-kept reference data that nothing can regenerate
+data/         pipeline inputs and outputs; committed except downloaded/ and cleaned/
+curated/      files kept by hand that nothing can regenerate
 docs/         data flow and roaster resolution design
 notebooks/    analysis
 notes/        background on how CoffeeReview scores coffee

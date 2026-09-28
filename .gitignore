@@ -161,12 +161,13 @@ cython_debug/
 # credentials
 credentials.json
 
-# Notebook 01 regenerates this from data/raw/reviews.csv. Committed data is
-# limited to the scrape itself and to outputs carrying irreproducible human
-# judgment (the roaster crosswalk and decisions); a purely mechanical
-# derivation is build output.
-data/clean/reviews.parquet
-
-# Saved review pages: about 240 MB of gzipped HTML, rewritten whenever a page
-# changes. Git is the wrong home for it; back it up with the rest of the disk.
-data/bronze/
+# data/ is committed except these two folders:
+#
+# downloaded/ holds the review pages: about 240 MB of gzipped HTML, rewritten
+# whenever a page changes. Git is the wrong home for it; back it up with the
+# rest of the disk.
+data/downloaded/
+#
+# cleaned/ is rebuilt from the committed files in seconds by `clean-reviews`,
+# so it is build output.
+data/cleaned/

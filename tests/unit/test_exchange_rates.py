@@ -245,9 +245,9 @@ def test_review_dates_are_read_from_the_cleaned_layer(tmp_path):
     assert load_review_dates(path) == [JAN, FEB]
 
 
-def test_review_dates_are_also_read_from_the_raw_layer(tmp_path):
-    """The raw layer stores the site's own "Month Year", used when
-    bootstrapping before a cleaned layer exists."""
+def test_review_dates_are_also_read_from_the_parsed_reviews(tmp_path):
+    """The parsed reviews store the site's own "Month Year", used when
+    bootstrapping before a cleaned dataset exists."""
     path = _write_reviews(tmp_path, ["January 2000", "February 2000"])
     assert load_review_dates(path) == [JAN, FEB]
 

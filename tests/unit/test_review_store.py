@@ -71,7 +71,7 @@ def test_data_without_urls_is_an_error(csv_path):
 
 
 def test_upsert_into_an_empty_store_creates_the_file(tmp_path):
-    store = CsvReviewStore(tmp_path / "raw" / "reviews.csv")
+    store = CsvReviewStore(tmp_path / "parsed" / "reviews.csv")
     assert store.upsert([{"url": "u1", "rating": "93"}]) == 1
     assert store.csv_path.exists()
 

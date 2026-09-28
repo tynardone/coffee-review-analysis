@@ -5,7 +5,7 @@ consumes. This module owns that transition: coercing types, parsing the
 free-text price into a value, a currency and a quantity, and resolving origin
 and roaster locations to countries.
 
-The field-level work needs nothing but the raw scrape. Putting prices in
+The field-level work needs nothing but the parsed reviews. Putting prices in
 comparable money needs historical exchange rates and CPI; those steps live in
 :mod:`coffee.prices`, and :func:`clean_reviews` applies them when both are
 passed. They are optional so that this module still runs on a fresh checkout
@@ -436,9 +436,9 @@ def clean_reviews(
     baseline_date: str | None = None,
     max_agtron: int = DEFAULT_MAX_AGTRON,
 ) -> pd.DataFrame:
-    """Raw scraped reviews in, cleaned layer out.
+    """Parsed reviews in, cleaned reviews out.
 
-    The field-level work needs nothing but the raw scrape. Putting prices in
+    The field-level work needs nothing but the parsed reviews. Putting prices in
     comparable money needs exchange rates and CPI, which :mod:`coffee.prices`
     applies; pass both, with ``baseline_date``, and the result carries
     ``price_usd``, ``price_usd_adj`` and ``price_usd_adj_per_lb`` as well. The

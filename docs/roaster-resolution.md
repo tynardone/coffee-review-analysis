@@ -121,9 +121,9 @@ entirely is the `review` floor.
 
 | File | Status |
 | --- | --- |
-| `roaster_decisions.csv` | Source of truth. Adjudicated pairs, with who decided and when. Hand-edited and committed to git, in `seeds/` rather than `data/roasters/` beside the other two. The only file here that cannot be regenerated. |
-| `roaster_crosswalk.csv` | Derived. `raw_name` → `canonical_name`, regenerated on every run, so hand edits are overwritten. Committed so that downstream joins are reproducible. |
-| `roaster_review_queue.csv` | Derived. Pairs with no decision yet, with a blank `verdict` column and each side's location, so that adjudicating a pair needs no second lookup. |
+| `curated/roaster_decisions.csv` | Source of truth. Adjudicated pairs, with who decided and when. Hand-edited and committed to git, in `curated/` rather than `data/roasters/` beside the other two. The only file here that cannot be regenerated. |
+| `data/roasters/crosswalk.csv` | Derived. `raw_name` → `canonical_name`, regenerated on every run, so hand edits are overwritten. Committed so that downstream joins are reproducible. |
+| `data/roasters/review_queue.csv` | Derived. Pairs with no decision yet, with a blank `verdict` column and each side's location, so that adjudicating a pair needs no second lookup. |
 
 Separating the first from the other two is what lets manual effort accumulate.
 Re-running re-derives the clusters but never re-asks an answered question, so the

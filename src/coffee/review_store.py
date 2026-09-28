@@ -40,7 +40,7 @@ class ReviewStore(Protocol):
         """Every review held, mapped to the ``scraped_at`` it was parsed from.
 
         ``scraped_at`` is the fetch time of the saved page a row came from, so
-        comparing it with the bronze manifest shows which rows are out of date.
+        comparing it with the download manifest shows which rows are out of date.
         A row with no ``scraped_at`` maps to an empty string.
         """
         ...
