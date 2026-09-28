@@ -462,8 +462,10 @@ under a step are the helpers it uses.
   changed. It never parses.
 - `sitemap.py` finds every review URL with its `<lastmod>` date. It raises
   `SitemapError` instead of returning a partial list.
-- `http_client.py` is the shared asynchronous HTTP client, with bounded
-  concurrency, retries on transient errors and common request headers.
+- `http_client.py` is the one place that talks HTTP, built on httpx: shared
+  clients for the scrape (async) and the reference APIs (sync), one retry
+  policy for transient errors, and a User-Agent that names the project rather
+  than posing as a browser.
 - `page_store.py` saves and reads the downloaded pages and their manifest.
 - `parse.py` turns saved pages into rows of `reviews.csv`. It never touches the
   network.

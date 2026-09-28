@@ -7,12 +7,17 @@ populated entry with a blank one.
 """
 
 import json
+from contextlib import nullcontext
 from datetime import date
 
+import httpx
 import pandas as pd
 import pytest
+import respx
 
 from coffee.exchange_rates import (
+    OPENEX_API_URL,
+    fetch_rate,
     fetch_rates,
     load_rates,
     load_review_dates,
@@ -20,6 +25,7 @@ from coffee.exchange_rates import (
     save_rates,
     unfetched_dates,
 )
+from coffee.http_client import sync_client
 
 JAN = date(2000, 1, 1)
 FEB = date(2000, 2, 1)
@@ -126,12 +132,12 @@ def recording_fetch(monkeypatch):
     requested: list[date] = []
     answers: dict[date, dict[str, float] | None] = {}
 
-    def fake_fetch_rate(session, day, app_id):
+    def fake_fetch_rate(client, day, app_id):
         requested.append(day)
         return answers.get(day, USD_ONLY)
 
     monkeypatch.setattr(exchange_rates, "fetch_rate", fake_fetch_rate)
-    monkeypatch.setattr(exchange_rates, "_build_session", lambda *a, **k: None)
+    monkeypatch.setattr(exchange_rates, "sync_client", nullcontext)
     return requested, answers
 
 
@@ -201,13 +207,13 @@ def test_progress_is_checkpointed_before_the_run_ends(tmp_path, monkeypatch):
     days = [date(2000, month, 1) for month in range(1, 13)]
     boom = days[7]
 
-    def exploding_fetch(session, day, app_id):
+    def exploding_fetch(client, day, app_id):
         if day == boom:
             raise KeyboardInterrupt
         return USD_ONLY
 
     monkeypatch.setattr(exchange_rates, "fetch_rate", exploding_fetch)
-    monkeypatch.setattr(exchange_rates, "_build_session", lambda *a, **k: None)
+    monkeypatch.setattr(exchange_rates, "sync_client", nullcontext)
 
     with pytest.raises(KeyboardInterrupt):
         fetch_rates(days, "key", path, checkpoint_every=3)
@@ -281,3 +287,14 @@ def test_review_dates_are_read_from_the_parquet_cleaned_layer(tmp_path):
         {"review_date": pd.to_datetime(["2000-01-01", "2000-02-01"])}
     ).to_parquet(path)
     assert load_review_dates(path) == [JAN, FEB]
+
+
+@respx.mock
+def test_a_failed_fetch_never_logs_the_app_id(caplog):
+    """httpx puts the request URL in its error messages, and the URL carries
+    the app id, so the failure is logged by kind rather than by exception."""
+    respx.get(url__startswith=OPENEX_API_URL).mock(return_value=httpx.Response(401))
+    with sync_client() as client:
+        assert fetch_rate(client, date(2020, 1, 1), "sk-secret-app-id") is None
+    assert "HTTP 401" in caplog.text
+    assert "sk-secret-app-id" not in caplog.text

@@ -17,10 +17,10 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import UTC, date, datetime
 
-import aiohttp
+import httpx
 from tqdm.asyncio import tqdm
 
-from coffee.http_client import HEADERS, fetch
+from coffee.http_client import async_client, fetch
 from coffee.page_store import PageStore
 from coffee.sitemap import get_review_urls
 
@@ -72,7 +72,7 @@ def _now() -> str:
 
 
 async def _fetch_one(
-    url: str, session: aiohttp.ClientSession, semaphore: asyncio.Semaphore
+    url: str, client: httpx.AsyncClient, semaphore: asyncio.Semaphore
 ) -> tuple[str, str | None]:
     """Fetch one page, returning None for its HTML on any failure.
 
@@ -80,7 +80,7 @@ async def _fetch_one(
     abandon every page still in flight.
     """
     try:
-        return url, await fetch(url, session, semaphore)
+        return url, await fetch(url, client, semaphore)
     except Exception:
         logger.exception("Failed to fetch %s", url)
         return url, None
@@ -101,11 +101,11 @@ async def scrape_all_reviews(
     result = ScrapeResult()
     semaphore = asyncio.Semaphore(concurrency)
 
-    async with aiohttp.ClientSession(headers=HEADERS) as session:
+    async with async_client() as client:
         start = time.perf_counter()
         # Raises rather than returning a short list, so a partial discovery
         # cannot look like a complete one.
-        discovered = await get_review_urls(session=session, semaphore=semaphore)
+        discovered = await get_review_urls(client=client, semaphore=semaphore)
         logger.info(
             "Found %d review links in %.2f seconds",
             len(discovered),
@@ -132,7 +132,7 @@ async def scrape_all_reviews(
             )
 
         urls = sorted(to_fetch)[:limit] if limit is not None else sorted(to_fetch)
-        tasks = [_fetch_one(url, session, semaphore) for url in urls]
+        tasks = [_fetch_one(url, client, semaphore) for url in urls]
         for future in tqdm(asyncio.as_completed(tasks), total=len(tasks)):
             url, html = await future
             if html is None:

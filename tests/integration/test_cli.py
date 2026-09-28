@@ -7,11 +7,17 @@ default path comes from the settings rather than from the repository's own
 """
 
 import json
+import logging
+from datetime import date
 
+import httpx
 import pandas as pd
 import pytest
+import respx
 
 from coffee import cli
+from coffee.exchange_rates import OPENEX_API_URL, fetch_rate
+from coffee.http_client import sync_client
 from coffee.page_store import PageStore
 from coffee.settings import Settings
 from tests.paths import GOLDEN, review_pages
@@ -113,3 +119,19 @@ def test_parse_reviews_with_nothing_saved_writes_nothing(dirs, capsys):
     cli.parse_reviews([])
     assert "parsed 0 page(s)" in capsys.readouterr().out
     assert not (data / "parsed" / "reviews.csv").exists()
+
+
+@respx.mock
+def test_the_api_key_never_reaches_the_log(dirs, caplog):
+    """httpx logs each request URL at INFO, and the exchange-rate URL carries
+    the key. The CLI's logging setup must keep those lines out."""
+    respx.get(url__startswith=OPENEX_API_URL).mock(
+        return_value=httpx.Response(200, json={"rates": {"USD": 1.0}})
+    )
+    cli._configure_logging(Settings(_env_file=None))
+    caplog.set_level(logging.INFO)
+
+    with sync_client() as client:
+        assert fetch_rate(client, date(2020, 1, 1), "sk-secret-app-id")
+
+    assert "sk-secret-app-id" not in caplog.text

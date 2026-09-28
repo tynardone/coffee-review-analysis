@@ -20,8 +20,8 @@ import logging
 from collections.abc import Callable
 from pathlib import Path
 
+import httpx
 import pandas as pd
-import requests
 from pydantic import ValidationError
 
 from coffee.clean import clean_reviews
@@ -83,6 +83,11 @@ def _configure_logging(settings: Settings) -> None:
         level=settings.log_level,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
+    # httpx logs every request's full URL at INFO. The exchange-rate URL
+    # carries the API key as a query parameter, and a full scrape would add
+    # a line per page, so only its warnings and errors get through.
+    for noisy in ("httpx", "httpcore"):
+        logging.getLogger(noisy).setLevel(logging.WARNING)
 
 
 def _positive_int(value: str) -> int:
@@ -458,7 +463,7 @@ def fetch_cpi_command(argv: list[str] | None = None) -> None:
         table = fetch_cpi(
             args.output, start_year=args.start_year, end_year=args.end_year
         )
-    except (requests.RequestException, RuntimeError, ValueError) as exc:
+    except (httpx.HTTPError, RuntimeError, ValueError) as exc:
         raise SystemExit(f"Could not update the CPI table: {exc}") from exc
 
     months = table[list(MONTH_COLUMNS)].map(lambda v: str(v).strip() not in {"", "nan"})

@@ -22,9 +22,8 @@ from pathlib import Path
 from typing import Any, Final
 
 import pandas as pd
-import requests
 
-from coffee.http_client import HEADERS
+from coffee.http_client import request_json, sync_client
 
 __all__ = [
     "BLS_API_URL",
@@ -109,23 +108,24 @@ def fetch_observations(
     years, which needs no registration key. Passing a range switches to the
     POST form, which the same unkeyed tier allows for spans of up to ten years.
     """
-    if start_year is None and end_year is None:
-        response = requests.get(
-            f"{BLS_API_URL}{BLS_SERIES_ID}", headers=HEADERS, timeout=BLS_TIMEOUT
-        )
-    else:
-        response = requests.post(
-            BLS_API_URL,
-            json={
-                "seriesid": [BLS_SERIES_ID],
-                "startyear": str(start_year),
-                "endyear": str(end_year),
-            },
-            headers={**HEADERS, "Content-Type": "application/json"},
-            timeout=BLS_TIMEOUT,
-        )
-    response.raise_for_status()
-    return _observations_from_payload(response.json())
+    with sync_client() as client:
+        if start_year is None and end_year is None:
+            payload = request_json(
+                client, "GET", f"{BLS_API_URL}{BLS_SERIES_ID}", timeout=BLS_TIMEOUT
+            )
+        else:
+            payload = request_json(
+                client,
+                "POST",
+                BLS_API_URL,
+                json={
+                    "seriesid": [BLS_SERIES_ID],
+                    "startyear": str(start_year),
+                    "endyear": str(end_year),
+                },
+                timeout=BLS_TIMEOUT,
+            )
+    return _observations_from_payload(payload)
 
 
 def load_cpi_table(path: Path) -> pd.DataFrame:
