@@ -47,14 +47,14 @@ DOCS = {
 
 
 def discover(docs=DOCS, monkeypatch=None, **kwargs):
-    async def fake_fetch(url, session, semaphore, retries=5):
+    async def fake_fetch(url, client, semaphore, retries=5):
         return docs.get(url)
 
     monkeypatch.setattr(sitemap, "fetch", fake_fetch)
 
     async def run():
         return await get_review_urls(
-            session=None,
+            client=None,
             semaphore=asyncio.Semaphore(4),
             index_url="https://x.test/sitemap_index.xml",
             **kwargs,

@@ -25,13 +25,11 @@ from datetime import date
 from pathlib import Path
 from typing import Final
 
+import httpx
 import pandas as pd
-import requests
-from requests.adapters import HTTPAdapter
 from tqdm import tqdm
-from urllib3.util.retry import Retry
 
-from coffee.http_client import HEADERS
+from coffee.http_client import request_json, sync_client
 
 __all__ = [
     "DEFAULT_CHECKPOINT_EVERY",
@@ -148,23 +146,7 @@ def merge_rates(
     return merged
 
 
-def _build_session(retries: int = 3) -> requests.Session:
-    """Session that reuses connections and retries transient errors."""
-    retry = Retry(
-        total=retries,
-        backoff_factor=1,
-        status_forcelist=(429, 500, 502, 503, 504),
-        allowed_methods=("GET",),
-    )
-    session = requests.Session()
-    session.mount("https://", HTTPAdapter(max_retries=retry))
-    session.headers.update(HEADERS)
-    return session
-
-
-def fetch_rate(
-    session: requests.Session, day: date, app_id: str
-) -> dict[str, float] | None:
+def fetch_rate(client: httpx.Client, day: date, app_id: str) -> dict[str, float] | None:
     """Fetch rates for a single date, or None if the request failed.
 
     None and an empty dict are distinct: None means the request did not
@@ -173,12 +155,21 @@ def fetch_rate(
     """
     url = f"{OPENEX_API_URL}{day}.json"
     try:
-        response = session.get(url, params={"app_id": app_id}, timeout=OPENEX_TIMEOUT)
-        response.raise_for_status()
-        return response.json().get("rates", {})
-    except requests.RequestException:
-        logger.warning("Failed to fetch rates for %s", day, exc_info=True)
+        payload = request_json(
+            client, "GET", url, params={"app_id": app_id}, timeout=OPENEX_TIMEOUT
+        )
+    except httpx.HTTPError as exc:
+        # Log the kind of failure, not the exception: its message carries the
+        # request URL, and the URL carries the app id.
+        status = getattr(getattr(exc, "response", None), "status_code", None)
+        logger.warning(
+            "Failed to fetch rates for %s (%s%s)",
+            day,
+            type(exc).__name__,
+            f", HTTP {status}" if status else "",
+        )
         return None
+    return payload.get("rates", {})
 
 
 def fetch_rates(
@@ -210,21 +201,22 @@ def fetch_rates(
     if not pending:
         return held
 
-    session = _build_session()
     merged = dict(held)
     fetched: RateMapping = {}
     failures = 0
 
-    for index, day in enumerate(tqdm(pending, desc="Fetching exchange rates"), start=1):
-        rates = fetch_rate(session, day, app_id)
-        if rates is None:
-            failures += 1
-            continue
-        fetched[str(day)] = rates
-        if index % checkpoint_every == 0:
-            merged = merge_rates(merged, fetched)
-            save_rates(merged, path)
-            fetched = {}
+    with sync_client() as client:
+        progress = tqdm(pending, desc="Fetching exchange rates")
+        for index, day in enumerate(progress, start=1):
+            rates = fetch_rate(client, day, app_id)
+            if rates is None:
+                failures += 1
+                continue
+            fetched[str(day)] = rates
+            if index % checkpoint_every == 0:
+                merged = merge_rates(merged, fetched)
+                save_rates(merged, path)
+                fetched = {}
 
     merged = merge_rates(merged, fetched)
 

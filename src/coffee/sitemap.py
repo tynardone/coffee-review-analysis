@@ -15,7 +15,7 @@ from datetime import date, datetime
 from typing import Final
 from urllib.parse import urlparse
 
-import aiohttp
+import httpx
 from lxml import etree
 
 from coffee.http_client import fetch
@@ -101,7 +101,7 @@ def is_review_url(url: str, path_prefix: str = "/review/") -> bool:
 
 
 async def get_review_urls(
-    session: aiohttp.ClientSession,
+    client: httpx.AsyncClient,
     semaphore: asyncio.Semaphore,
     index_url: str = SITEMAP_URL,
     path_prefix: str = "/review/",
@@ -127,7 +127,7 @@ async def get_review_urls(
         visited.update(frontier)
 
         documents = await asyncio.gather(
-            *(fetch(url, session, semaphore) for url in frontier)
+            *(fetch(url, client, semaphore) for url in frontier)
         )
 
         failed = [

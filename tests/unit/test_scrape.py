@@ -102,10 +102,10 @@ def site(monkeypatch):
         served: dict = {}
         fetched: list = []
 
-    async def fake_discovery(session, semaphore):
+    async def fake_discovery(client, semaphore):
         return dict(Site.listed)
 
-    async def fake_fetch(url, session, semaphore, retries=5):
+    async def fake_fetch(url, client, semaphore, retries=5):
         Site.fetched.append(url)
         return Site.served.get(url)
 
@@ -143,7 +143,7 @@ def test_a_failed_fetch_is_not_saved_and_the_rest_are(pages, site):
 def test_an_exception_while_fetching_does_not_abort_the_run(pages, site, monkeypatch):
     site.listed = {A: JAN, B: JAN}
 
-    async def exploding_fetch(url, session, semaphore, retries=5):
+    async def exploding_fetch(url, client, semaphore, retries=5):
         if url == A:
             raise RuntimeError("unexpected")
         return "b"
