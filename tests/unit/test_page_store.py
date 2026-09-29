@@ -1,7 +1,7 @@
 """Tests for the downloaded-page store: save, read back, and the manifest."""
 
 import gzip
-from datetime import date
+from datetime import UTC, date, datetime
 
 from coffee.page_store import PageStore, _filename
 
@@ -38,13 +38,25 @@ def test_resaving_a_url_replaces_the_page_and_the_latest_entry_wins(tmp_path):
 
     assert pages.manifest() == {URL: latest}
     assert pages.read(latest) == "new"
-    assert pages.known_lastmods() == {URL: JUN}
+    assert pages.manifest()[URL].sitemap_lastmod == JUN
 
 
 def test_an_unknown_lastmod_round_trips_as_none(tmp_path):
     pages = PageStore(tmp_path)
     pages.save(URL, "x", None, fetched_at="t")
-    assert pages.known_lastmods() == {URL: None}
+    assert pages.manifest()[URL].sitemap_lastmod is None
+
+
+def test_fetch_times_read_back_as_aware_datetimes(tmp_path):
+    pages = PageStore(tmp_path)
+    pages.save(URL, "x", JAN, fetched_at="2026-09-27T19:20:35+00:00")
+    assert pages.fetch_times() == {URL: datetime(2026, 9, 27, 19, 20, 35, tzinfo=UTC)}
+
+
+def test_an_unreadable_fetch_time_is_unknown_not_an_error(tmp_path):
+    pages = PageStore(tmp_path)
+    pages.save(URL, "x", JAN, fetched_at="not a time")
+    assert pages.fetch_times() == {URL: None}
 
 
 def test_a_partial_last_manifest_line_is_skipped(tmp_path):

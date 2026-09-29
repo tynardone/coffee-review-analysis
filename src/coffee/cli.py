@@ -18,6 +18,7 @@ import asyncio
 import inspect
 import logging
 from collections.abc import Callable
+from datetime import timedelta
 from pathlib import Path
 
 import httpx
@@ -126,7 +127,13 @@ def scrape_reviews(argv: list[str] | None = None) -> None:
     _configure_logging(settings)
     pages = PageStore(settings.downloaded_dir)
     result = asyncio.run(
-        scrape_all_reviews(pages, args.concurrency, full=args.full, limit=args.limit)
+        scrape_all_reviews(
+            pages,
+            args.concurrency,
+            lookback=timedelta(hours=settings.scrape.lookback_hours),
+            full=args.full,
+            limit=args.limit,
+        )
     )
     print(f"saved {result.saved} page(s) to {pages.directory}")
     if result.failed:

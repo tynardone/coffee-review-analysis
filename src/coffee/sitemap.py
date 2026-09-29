@@ -1,8 +1,8 @@
 """Discover every coffee review URL from the site's XML sitemaps.
 
 :func:`get_review_urls` reads ``sitemap_index.xml``, fetches each child sitemap
-it names, and returns every review URL mapped to its ``<lastmod>`` date. That
-date lets a caller re-fetch only what changed rather than the whole corpus.
+it names, and returns every review URL mapped to its ``<lastmod>`` time. That
+time lets a caller re-fetch only what changed rather than the whole corpus.
 
 Discovery raises :class:`SitemapError` rather than returning a partial list,
 since a short URL set produces a dataset that appears complete while missing
@@ -11,7 +11,7 @@ rows.
 
 import asyncio
 import logging
-from datetime import date, datetime
+from datetime import UTC, datetime
 from typing import Final
 from urllib.parse import urlparse
 
@@ -45,18 +45,24 @@ class SitemapError(RuntimeError):
     """Discovery could not complete, so the URL set would be incomplete."""
 
 
-def _parse_lastmod(value: str | None) -> date | None:
-    """``2026-09-18T15:20:08+00:00`` -> ``date(2026, 9, 18)``; None if unusable."""
+def _parse_lastmod(value: str | None) -> datetime | None:
+    """``<lastmod>`` as a timezone-aware time; None if missing or unusable.
+
+    The site gives full UTC timestamps, and the time of day matters: it is what
+    tells an edit later on the same day as a download apart from no edit. A
+    bare date, which the sitemap format allows, is read as midnight UTC.
+    """
     if not value:
         return None
     try:
-        return datetime.fromisoformat(value).date()
+        parsed = datetime.fromisoformat(value)
     except ValueError:
         logger.warning("Unparseable <lastmod> %r", value)
         return None
+    return parsed if parsed.tzinfo else parsed.replace(tzinfo=UTC)
 
 
-def parse_sitemap(xml: bytes) -> tuple[list[str], dict[str, date | None]]:
+def parse_sitemap(xml: bytes) -> tuple[list[str], dict[str, datetime | None]]:
     """Split one sitemap document into (child sitemaps, {page URL: lastmod}).
 
     Indexes and leaf urlsets are handled in one pass, since the spec permits
@@ -78,7 +84,7 @@ def parse_sitemap(xml: bytes) -> tuple[list[str], dict[str, date | None]]:
         )
     ]
 
-    entries: dict[str, date | None] = {}
+    entries: dict[str, datetime | None] = {}
     for url_element in root.xpath("//*[local-name()='url']"):
         loc = url_element.xpath("./*[local-name()='loc']/text()")
         if not loc:
@@ -105,8 +111,8 @@ async def get_review_urls(
     semaphore: asyncio.Semaphore,
     index_url: str = SITEMAP_URL,
     path_prefix: str = "/review/",
-) -> dict[str, date | None]:
-    """Return every review URL mapped to its sitemap ``<lastmod>`` date.
+) -> dict[str, datetime | None]:
+    """Return every review URL mapped to its sitemap ``<lastmod>`` time.
 
     Fetches every sitemap the index names, including non-review ones, and
     filters the resulting URLs by path. Filtering by URL rather than guessing
@@ -117,7 +123,7 @@ async def get_review_urls(
 
     frontier = [index_url]
     visited: set[str] = set()
-    all_entries: dict[str, date | None] = {}
+    all_entries: dict[str, datetime | None] = {}
     depth = 0
 
     while frontier:

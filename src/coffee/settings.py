@@ -60,6 +60,7 @@ PROJECT_ROOT: Path = _find_project_root()
 
 class ScrapeSettings(BaseModel):
     concurrency: int = Field(default=10, ge=1)
+    lookback_hours: int = Field(default=24, ge=0)
 
 
 class PriceSettings(BaseModel):

@@ -15,7 +15,7 @@ import logging
 import time
 from collections.abc import Mapping
 from dataclasses import dataclass, field
-from datetime import UTC, date, datetime
+from datetime import UTC, datetime, timedelta
 
 import httpx
 from tqdm.asyncio import tqdm
@@ -41,30 +41,44 @@ class ScrapeResult:
 
 
 def plan_fetch(
-    discovered: Mapping[str, date | None], known: Mapping[str, date | None]
+    discovered: Mapping[str, datetime | None],
+    fetched: Mapping[str, datetime | None],
+    lookback: timedelta,
 ) -> tuple[set[str], set[str]]:
     """Split discovered URLs into (to fetch, retired).
 
-    A URL is fetched when it is new, when its sitemap date has moved on, or
-    when either date is unknown. An unprovable "unchanged" is treated as
-    changed: re-fetching costs one request, while wrongly skipping leaves a
-    page permanently stale.
+    ``discovered`` maps each listed URL to its sitemap ``<lastmod>``;
+    ``fetched`` maps each saved URL to when its page was downloaded.
 
-    Retired URLs are held but no longer listed upstream. They are reported and
+    A URL is fetched when it is new, when either time is unknown, or when the
+    site says it was modified after ``fetched - lookback``. Comparing with the
+    download time, not with the ``<lastmod>`` seen last run, is what catches an
+    edit made later on the same day as the download.
+
+    The lookback re-fetches, once, a page edited shortly before it was
+    downloaded. The site caches pages, so a download minutes after an edit can
+    still return the old version; the lookback also absorbs any difference
+    between the site's clock and ours. After that one re-fetch the download
+    time is well past the edit, so nothing is fetched repeatedly.
+
+    An unprovable "unchanged" is treated as changed: re-fetching costs one
+    request, while wrongly skipping leaves a page permanently stale.
+
+    Retired URLs are saved but no longer listed upstream. They are reported and
     never deleted, since a review that has disappeared from the site cannot be
-    fetched again and the held copy is the only one.
+    fetched again and the saved copy is the only one.
     """
 
-    def is_stale(url: str, listed: date | None) -> bool:
-        if url not in known:
+    def is_stale(url: str, modified: datetime | None) -> bool:
+        if url not in fetched:
             return True  # never fetched
-        held = known[url]
-        if listed is None or held is None:
-            return True  # freshness unprovable on one side; assume changed
-        return listed > held
+        fetched_at = fetched[url]
+        if modified is None or fetched_at is None:
+            return True  # freshness unprovable; assume changed
+        return modified > fetched_at - lookback
 
-    to_fetch = {url for url, listed in discovered.items() if is_stale(url, listed)}
-    return to_fetch, set(known) - set(discovered)
+    to_fetch = {url for url, modified in discovered.items() if is_stale(url, modified)}
+    return to_fetch, set(fetched) - set(discovered)
 
 
 def _now() -> str:
@@ -90,13 +104,15 @@ async def scrape_all_reviews(
     pages: PageStore,
     concurrency: int,
     *,
+    lookback: timedelta,
     full: bool = False,
     limit: int | None = None,
 ) -> ScrapeResult:
     """Discover review URLs and save every new or changed page.
 
-    ``full`` re-downloads every page regardless of what is saved. ``limit``
-    caps how many pages are fetched, for a quick trial run.
+    ``lookback`` is the overlap :func:`plan_fetch` allows for. ``full``
+    re-downloads every page regardless of what is saved. ``limit`` caps how
+    many pages are fetched, for a quick trial run.
     """
     result = ScrapeResult()
     semaphore = asyncio.Semaphore(concurrency)
@@ -112,8 +128,8 @@ async def scrape_all_reviews(
             time.perf_counter() - start,
         )
 
-        known = pages.known_lastmods()
-        to_fetch, retired = plan_fetch(discovered, known)
+        known = pages.fetch_times()
+        to_fetch, retired = plan_fetch(discovered, known, lookback)
         if full:
             to_fetch = set(discovered)
         result.retired = len(retired)
@@ -140,7 +156,12 @@ async def scrape_all_reviews(
                 continue
             # Stamped per page, so a page keeps the time it was actually
             # fetched even when a run takes half an hour.
-            pages.save(url, html, discovered.get(url), fetched_at=_now())
+            # The manifest keeps the date only; the time of day is needed for
+            # the comparison above, which uses the download time instead.
+            lastmod = discovered.get(url)
+            pages.save(
+                url, html, lastmod.date() if lastmod else None, fetched_at=_now()
+            )
             result.saved += 1
 
     if result.failed:
