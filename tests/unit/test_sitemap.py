@@ -6,7 +6,7 @@ partial-failure path is asserted to raise rather than return what it got.
 """
 
 import asyncio
-from datetime import date
+from datetime import UTC, datetime
 
 import pytest
 
@@ -80,12 +80,15 @@ def test_index_yields_children_and_no_entries():
 def test_urlset_yields_entries_and_no_children():
     children, entries = parse_sitemap(REVIEWS.encode())
     assert children == []
-    assert entries["https://x.test/review/alpha/"] == date(2026, 9, 18)
+    assert entries["https://x.test/review/alpha/"] == datetime(
+        2026, 9, 18, 15, 20, 8, tzinfo=UTC
+    )
 
 
 def test_lastmod_accepts_both_date_and_full_timestamp():
     _, entries = parse_sitemap(REVIEWS.encode())
-    assert entries["https://x.test/review/beta/"] == date(2014, 10, 2)
+    # A bare date is read as midnight UTC.
+    assert entries["https://x.test/review/beta/"] == datetime(2014, 10, 2, tzinfo=UTC)
 
 
 def test_missing_lastmod_is_none_not_an_error():
@@ -150,7 +153,9 @@ def test_discovery_follows_the_index_and_filters_to_reviews(monkeypatch):
         "https://x.test/review/beta/",
         "https://x.test/review/gamma/",
     }
-    assert found["https://x.test/review/alpha/"] == date(2026, 9, 18)
+    assert found["https://x.test/review/alpha/"] == datetime(
+        2026, 9, 18, 15, 20, 8, tzinfo=UTC
+    )
 
 
 def test_non_review_sitemaps_are_fetched_but_their_urls_dropped(monkeypatch):

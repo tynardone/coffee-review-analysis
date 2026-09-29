@@ -15,6 +15,9 @@ log_level = "INFO"
 [scrape]
 # How many review pages to download at once. Lower is politer to the site.
 concurrency = 10
+# A page edited within this many hours before it was downloaded is fetched
+# once more on the next run, in case the site's cache served the old version.
+lookback_hours = 24
 
 [prices]
 # Adjusted prices are expressed in this month's dollars. It must be a month the

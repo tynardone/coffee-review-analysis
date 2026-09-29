@@ -115,11 +115,14 @@ listings. The sitemap is more complete (9,333 review URLs against 9,054 from
 pagination, with nothing found only in the listings) and takes about 17 requests
 instead of several hundred.
 
-Each sitemap entry carries a `<lastmod>` date, stored as `sitemap_lastmod`. A run
-compares these dates with what is already held and fetches only reviews that are
-new, have changed, or have no date to compare. That is usually a handful of
-pages and about a second of work; a full pass is some 9,300 pages and half an
-hour.
+Each sitemap entry carries a `<lastmod>` timestamp: when the site last changed
+the review. A run fetches a review when it is new, when either time is unknown,
+or when it was changed after the saved copy was downloaded. Comparing with the
+download time rather than the date alone means an edit made later on the same
+day is still caught. A 24-hour lookback (`[scrape] lookback_hours`) also
+re-fetches, once, any page edited shortly before it was downloaded, in case the
+site's cache served the old version. That is usually a handful of pages and
+about a second of work; a full pass is some 9,300 pages and half an hour.
 
 Scraping and parsing are separate steps. `scrape-reviews` saves each page's
 HTML, gzipped, to `data/downloaded/pages/`, and records it in
@@ -460,7 +463,7 @@ under a step are the helpers it uses.
 
 - `scrape.py` discovers review URLs and downloads the pages that are new or
   changed. It never parses.
-- `sitemap.py` finds every review URL with its `<lastmod>` date. It raises
+- `sitemap.py` finds every review URL with its `<lastmod>` time. It raises
   `SitemapError` instead of returning a partial list.
 - `http_client.py` is the one place that talks HTTP, built on httpx: shared
   clients for the scrape (async) and the reference APIs (sync), one retry

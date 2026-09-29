@@ -23,7 +23,7 @@ import logging
 import os
 import re
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -91,9 +91,19 @@ class PageStore:
             )
         return pages
 
-    def known_lastmods(self) -> dict[str, date | None]:
-        """Every saved URL mapped to the sitemap date it was saved under."""
-        return {url: page.sitemap_lastmod for url, page in self.manifest().items()}
+    def fetch_times(self) -> dict[str, datetime | None]:
+        """Every saved URL mapped to when its page was downloaded.
+
+        None where the recorded time cannot be read, so the page is treated as
+        unknown and fetched again rather than trusted.
+        """
+        times: dict[str, datetime | None] = {}
+        for url, page in self.manifest().items():
+            try:
+                times[url] = datetime.fromisoformat(page.fetched_at)
+            except ValueError:
+                times[url] = None
+        return times
 
     def read(self, page: SavedPage) -> str:
         """The HTML of a saved page."""
