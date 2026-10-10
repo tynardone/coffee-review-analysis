@@ -443,7 +443,7 @@ config/       settings.toml, the committed default settings
 tests/        unit and integration tests, with saved review pages as fixtures
 data/         pipeline inputs and outputs; committed except downloaded/ and cleaned/
 curated/      files kept by hand that nothing can regenerate
-docs/         data flow and roaster resolution design
+docs/         data flow, roaster resolution design, and the roadmap
 notebooks/    analysis
 notes/        background reading: how CoffeeReview scores, clustering methods
 ```
