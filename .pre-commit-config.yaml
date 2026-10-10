@@ -4,7 +4,7 @@
 # idea what the file means. Run against a CSV whose quoted fields contain
 # newlines — which every scraped review does — they edit the DATA: an
 # `--all-files` run silently stripped a trailing space from inside a
-# blind_assessment value in data/raw/2026-07-12_reviews.csv. The saved review
+# blind_assessment value in the parsed reviews CSV. The saved review
 # pages under tests/fixtures/ are golden-test inputs and equally must not be
 # touched, or the parse they pin stops matching what the site actually served.
 # curated/ holds hand-kept CSVs under the same hazard as data/.
@@ -28,10 +28,6 @@ repos:
         exclude: \.ipynb$
     -   id: trailing-whitespace
         exclude: \.ipynb$
--   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v2.3.1
-    hooks:
-    -   id: mypy
 -   repo: https://github.com/kynan/nbstripout
     rev: 0.9.1
     hooks:
@@ -39,17 +35,32 @@ repos:
     # chart images once took the notebooks past 13 MB each, and every re-run
     # stored a fresh copy in history; clearing outputs by hand was not enough.
     -   id: nbstripout
-- repo: https://github.com/astral-sh/ruff-pre-commit
-  # Keep this rev in step with the `ruff` floor in pyproject.toml's dev group.
-  # When the hook and the local venv disagree, every commit reformats whatever
-  # the other just formatted.
-  rev: v0.16.8
-  hooks:
-    # Run the linter. (Was `ruff`; that id is now a legacy alias.)
-    - id: ruff-check
-      args: [ --fix ]
-    # Run the formatter (similar to black). Notebooks included: their code
-    # cells are held to the same style as the package. The one-time reformat
-    # is a large diff; steady-state churn is small because Jupyter writes cell
-    # source verbatim and only the cells you actually edit will move.
-    - id: ruff-format
+# ruff and mypy run from the project's own environment, at the versions locked
+# in uv.lock, rather than from copies pre-commit installs on its own. A copy
+# would drift from the venv's version, and mypy's would see none of the
+# installed packages, so every pandas, httpx and pydantic type would be Any.
+-   repo: local
+    hooks:
+    -   id: ruff-check
+        name: ruff check
+        entry: uv run --frozen ruff check --fix --force-exclude
+        language: system
+        types_or: [python, pyi, jupyter]
+        require_serial: true
+        # Notebooks included: their code cells are held to the same style as
+        # the package, and only the cells you actually edit will move.
+    -   id: ruff-format
+        name: ruff format
+        entry: uv run --frozen ruff format --force-exclude
+        language: system
+        types_or: [python, pyi, jupyter]
+        require_serial: true
+    -   id: mypy
+        name: mypy
+        # Checks `files` from pyproject.toml as a whole, since a change in one
+        # module can break the types of another.
+        entry: uv run --frozen mypy
+        language: system
+        types_or: [python, pyi]
+        pass_filenames: false
+        require_serial: true

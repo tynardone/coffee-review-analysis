@@ -179,7 +179,7 @@ def _us_states() -> frozenset[str]:
 def check_raw_schema(df: pd.DataFrame) -> pd.DataFrame:
     """Reject raw data whose column names were never normalized.
 
-    Field names are fixed at the scrape boundary by
+    Field names are fixed at the parse boundary by
     :func:`coffee.review_page.normalize_field_name`, so the cleaning layer operates
     on data rather than on labels. A file predating that, carrying
     ``"est. price"`` where ``est_price`` belongs, would otherwise fail several
@@ -190,7 +190,7 @@ def check_raw_schema(df: pd.DataFrame) -> pd.DataFrame:
         raise ValueError(
             f"{len(stale)} column(s) are not normalized: {sorted(stale)[:5]}. "
             "This file predates field-name normalization at parse time; "
-            "re-scrape it, or rename the columns with "
+            "re-parse it with `parse-reviews --full`, or rename the columns with "
             "coffee.review_page.normalize_field_name first."
         )
     return df

@@ -1,0 +1,16 @@
+# Opens pull requests when a newer version is out, so CI checks each bump
+# before it lands.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+  - package-ecosystem: uv
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      # One pull request a month for the lot, rather than one per package.
+      dependencies:
+        patterns: ["*"]

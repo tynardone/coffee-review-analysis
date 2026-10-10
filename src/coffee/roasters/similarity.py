@@ -32,7 +32,9 @@ def token_document_frequency(keys: Iterable[str]) -> Counter[str]:
     return Counter(tok for key in keys for tok in set(key.split()))
 
 
-def score(a: str, b: str, token_df: Mapping[str, int] | None = None, **kwargs) -> float:
+def score(
+    a: str, b: str, token_df: Mapping[str, int] | None = None, **kwargs: object
+) -> float:
     """Similarity of two core keys (not raw names) in [0, 100].
 
     Two kinds of variation survive normalization, and no single metric covers

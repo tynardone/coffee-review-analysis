@@ -2,9 +2,8 @@
 
 :func:`parse_html` extracts the rating, roaster, title, blind assessment,
 notes, and bottom line, then merges in the review's spec table (coffee origin,
-price, agtron, etc.). Parsing is pure CPU work with no I/O, so the functions
-are synchronous; run them in a thread (e.g. ``asyncio.to_thread``) to avoid
-blocking the event loop during a scrape.
+price, agtron, etc.). Parsing is pure CPU work on HTML already on disk, so the
+functions are synchronous; :mod:`coffee.parse` calls them, never the scrape.
 
 Field names are normalized at this boundary by :func:`normalize_field_name`, so
 the parsed reviews carry ``est_price`` rather than ``"Est. Price:"``. The scraped
@@ -22,6 +21,8 @@ __all__ = [
     "normalize_field_name",
     "parse_html",
 ]
+
+logger = logging.getLogger(__name__)
 
 
 def normalize_field_name(label: str) -> str:
@@ -83,7 +84,7 @@ def _parse_notes_section(soup: BeautifulSoup) -> str | None:
             notes_text += element.get_text().strip()
         return re.sub(r"\s+", " ", notes_text)
     else:
-        logging.warning("No notes section found.")
+        logger.warning("No notes section found.")
         return None
 
 
@@ -99,6 +100,11 @@ def _parse_tables(soup: BeautifulSoup) -> dict[str, str]:
 
 
 def parse_html(text: str) -> dict[str, str | None]:
+    """One review page's fields, keyed by normalized field name.
+
+    A field the page does not carry is None, or absent if it would have come
+    from the spec table, whose rows vary with the page's vintage.
+    """
     soup: BeautifulSoup = BeautifulSoup(text, "lxml")
     data: dict[str, str | None] = {
         "rating": _parse_element(soup, "span", "review-template-rating"),

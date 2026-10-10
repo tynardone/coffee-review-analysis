@@ -55,7 +55,8 @@ def retry_delay(attempt: int, retry_after: str | None) -> float:
     """Exponential backoff with jitter, honoring a numeric Retry-After header."""
     if retry_after and retry_after.isdigit():
         return float(retry_after)
-    return min(BASE_DELAY * 2**attempt, MAX_DELAY) + random.uniform(0, JITTER)
+    backoff: float = BASE_DELAY * 2**attempt
+    return min(backoff, MAX_DELAY) + random.uniform(0, JITTER)
 
 
 def async_client() -> httpx.AsyncClient:
