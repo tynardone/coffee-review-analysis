@@ -51,9 +51,9 @@ from coffee.settings import Settings, get_settings
 __all__ = [
     "clean_reviews_command",
     "fetch_cpi_command",
-    "refresh_data",
     "fetch_exchange_rates",
     "parse_reviews",
+    "refresh_data",
     "resolve_roasters",
     "scrape_reviews",
 ]
@@ -173,7 +173,7 @@ def parse_reviews(argv: list[str] | None = None) -> None:
 
 
 def fetch_exchange_rates(argv: list[str] | None = None) -> None:
-    """Fetch historical exchange rates for the dates in a scraped reviews file."""
+    """Fetch historical exchange rates for the review months in the parsed reviews."""
     settings = _settings()
     parser = argparse.ArgumentParser(description=fetch_exchange_rates.__doc__)
     parser.add_argument(
@@ -212,7 +212,7 @@ def fetch_exchange_rates(argv: list[str] | None = None) -> None:
         dates = load_review_dates(args.input)
     except FileNotFoundError as exc:
         raise SystemExit(
-            f"{args.input} does not exist. Run `uv run scrape-reviews` first, "
+            f"{args.input} does not exist. Run `uv run parse-reviews` first, "
             "or pass --input to point at a different reviews file."
         ) from exc
     held = load_rates(args.output)

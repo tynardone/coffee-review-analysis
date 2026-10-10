@@ -70,7 +70,7 @@ and the review queue feeds back into the decisions file when you pass
 | file | if you lost it | cost |
 | --- | --- | --- |
 | `downloaded/` | `scrape-reviews` into an empty folder | ~30 min, ~9,300 requests; pages since removed from the site are gone |
-| `parsed/reviews.csv` | `parse-reviews --full` from `downloaded/` | about a minute, no requests; reviews removed from the site before bronze held them are gone |
+| `parsed/reviews.csv` | `parse-reviews --full` from `downloaded/` | about a minute, no requests; reviews removed from the site before `downloaded/` held them are gone |
 | `curated/roaster_decisions.csv` | **nothing rebuilds it** | every pair re-adjudicated by hand |
 | `roasters/crosswalk.csv` | `resolve-roasters` | seconds |
 | `roasters/review_queue.csv` | `resolve-roasters` | seconds |

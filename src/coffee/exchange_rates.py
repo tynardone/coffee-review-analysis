@@ -92,19 +92,21 @@ def load_review_dates(path: Path) -> list[date]:
         raise FileNotFoundError(f"{path} does not exist.")
 
     review_dates = _review_dates(readers[path.suffix](path)["review_date"])
-    return (
+    months: list[date] = (
         review_dates[review_dates >= EARLIEST_DATE]
         .dt.date.drop_duplicates()
         .sort_values()
         .tolist()
     )
+    return months
 
 
 def load_rates(path: Path) -> RateMapping:
     """Read a saved rate file; a missing one means nothing is held yet."""
     if not path.exists():
         return {}
-    return json.loads(path.read_text(encoding="utf-8"))
+    rates: RateMapping = json.loads(path.read_text(encoding="utf-8"))
+    return rates
 
 
 def save_rates(rates: Mapping[str, Mapping[str, float]], path: Path) -> None:
@@ -120,7 +122,9 @@ def save_rates(rates: Mapping[str, Mapping[str, float]], path: Path) -> None:
     )
 
 
-def unfetched_dates(dates: Iterable[date], held: Mapping[str, Mapping]) -> list[date]:
+def unfetched_dates(
+    dates: Iterable[date], held: Mapping[str, Mapping[str, float]]
+) -> list[date]:
     """Which of `dates` still need fetching, in order.
 
     A date counts as held only when its entry is non-empty. An entry recorded
@@ -169,7 +173,8 @@ def fetch_rate(client: httpx.Client, day: date, app_id: str) -> dict[str, float]
             f", HTTP {status}" if status else "",
         )
         return None
-    return payload.get("rates", {})
+    rates: dict[str, float] = payload.get("rates", {})
+    return rates
 
 
 def fetch_rates(
@@ -241,6 +246,6 @@ def fetch_rates(
     return merged
 
 
-def _populated(rates: Mapping[str, Mapping]) -> int:
+def _populated(rates: Mapping[str, Mapping[str, float]]) -> int:
     """How many dates in a mapping carry actual rates."""
     return sum(1 for value in rates.values() if value)

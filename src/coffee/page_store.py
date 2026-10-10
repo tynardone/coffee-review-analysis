@@ -20,7 +20,6 @@ import gzip
 import hashlib
 import json
 import logging
-import os
 import re
 from dataclasses import dataclass
 from datetime import date, datetime
@@ -127,7 +126,7 @@ class PageStore:
         target = self.pages_dir / page.file
         partial = target.with_name(target.name + ".partial")
         partial.write_bytes(gzip.compress(html.encode("utf-8")))
-        os.replace(partial, target)
+        partial.replace(target)
 
         entry = {
             "url": url,

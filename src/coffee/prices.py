@@ -9,6 +9,7 @@ exchange rates, and the CPI.
 calls it when both tables are available.
 """
 
+import json
 from datetime import datetime
 from pathlib import Path
 
@@ -35,8 +36,6 @@ def load_exchange_rates(path: Path) -> pd.DataFrame:
     A lookup table rather than the nested mapping, so that conversion is a
     vectorized merge rather than a row-wise apply.
     """
-    import json
-
     nested = json.loads(Path(path).read_text(encoding="utf-8"))
     return (
         pd.DataFrame(nested)

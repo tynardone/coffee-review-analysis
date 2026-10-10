@@ -34,7 +34,12 @@ def table(rows):
     """Build a wide table from {year: {month_name: value}}."""
     frame = pd.DataFrame(
         [
-            {"Year": str(y), **{m: "" for m in MONTH_COLUMNS}, "HALF1": "", "HALF2": ""}
+            {
+                "Year": str(y),
+                **dict.fromkeys(MONTH_COLUMNS, ""),
+                "HALF1": "",
+                "HALF2": "",
+            }
             for y in rows
         ]
     )

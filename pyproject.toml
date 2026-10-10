@@ -1,5 +1,6 @@
 [build-system]
-requires = ["setuptools >= 61.0"]
+# 77 is the first release to read the PEP 639 `license` expression below.
+requires = ["setuptools >= 77"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -9,7 +10,8 @@ description = "Project for web scraping and analysis of data from Coffeereview.c
 readme = "README.md"
 requires-python = ">=3.12,<3.14"
 authors = [{ name = "Tyler Nardone", email = "tynardone@gmail.com" }]
-license = { file = "LICENSE" }
+license = "MIT"
+license-files = ["LICENSE"]
 dependencies = [
     "beautifulsoup4>=4.12",
     "httpx>=0.28",
@@ -56,8 +58,8 @@ analysis = [
     "umap-learn>=0.5",
     "wordcloud>=1.9",
 ]
-# Floors track the versions pinned in .pre-commit-config.yaml. When the hook
-# and the local venv disagree, each reformats what the other just formatted.
+# The pre-commit hooks for ruff and mypy run these locked versions through
+# `uv run`, so the hooks, CI and your editor all use the same tools.
 dev = [
     "mypy>=2.3",
     "pre-commit>=3.5",
@@ -74,7 +76,11 @@ default-groups = ["dev", "analysis"]
 # it editable), so tests, notebooks and the CLI all import the same `coffee`,
 # never a copy that happens to sit in the working directory.
 package-dir = { "" = "src" }
-packages = ["coffee", "coffee.roasters"]
+
+[tool.setuptools.packages.find]
+# Discovered rather than listed, so a new subpackage cannot be left out of the
+# build by forgetting to name it here.
+where = ["src"]
 
 [tool.setuptools.package-data]
 # Ship the inline type information (PEP 561) so importers get the annotations.
@@ -93,14 +99,29 @@ markers = [
 ]
 
 [tool.mypy]
-disable_error_code = "import-untyped"
+files = ["src", "tests"]
+# The package is held to --strict. Tests are not: see the override below.
+strict = true
+plugins = ["pydantic.mypy"]
 # Module names come from paths relative to these roots: src/coffee/x.py is
 # `coffee.x` and tests/paths.py is `tests.paths`, matching how both import.
 mypy_path = ["src", "."]
 explicit_package_bases = true
-exclude = "venv/"
+# pandas, bs4, lxml and pycountry ship without full type information.
 ignore_missing_imports = true
+disable_error_code = ["import-untyped"]
+untyped_calls_exclude = ["pycountry"]
 
+[[tool.mypy.overrides]]
+# Test functions and their fakes go unannotated; annotating every
+# `def test_...() -> None` and every stand-in client adds noise, not safety.
+module = "tests.*"
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+disallow_untyped_calls = false
+check_untyped_defs = false
+# Overrides replace the global list, so import-untyped is repeated here.
+disable_error_code = ["import-untyped", "annotation-unchecked"]
 
 [tool.ruff]
 lint.select = [
@@ -110,8 +131,18 @@ lint.select = [
     "W", # pycodestyle
     "B", # flake8-bugbear
     "N", # pep8-naming
+    "UP", # pyupgrade: syntax for the supported Python versions
+    "SIM", # flake8-simplify
+    "C4", # flake8-comprehensions
+    "PIE", # flake8-pie
+    "PTH", # pathlib over os.path
+    "LOG", # logging misuse, such as calls on the root logger
+    "RUF", # ruff's own rules, such as an unsorted __all__
 ]
 lint.ignore = ["E402"]
+# Fakes in tests use class-level state on purpose, and the normalizer tests
+# feed in the typographic apostrophes the site really uses.
+lint.per-file-ignores."tests/**" = ["RUF001", "RUF012", "RUF024"]
 lint.isort.known-first-party = ["coffee", "tests"]
 line-length = 88
 # The package sits under src/, where import sorting would not look for it by

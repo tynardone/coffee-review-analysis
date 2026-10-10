@@ -1,5 +1,7 @@
 # Coffee Review Scraper and Analysis
 
+![A cup of black coffee on a saucer beside a wooden scoop of roasted beans](imgs/cup-beans.jpeg)
+
 [![Python](https://img.shields.io/badge/python-3.12%20%7C%203.13-blue.svg)](https://www.python.org/downloads/)
 [![Code style: Ruff](https://img.shields.io/badge/code%20style-Ruff-000000.svg)](https://github.com/astral-sh/ruff)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
@@ -443,7 +445,7 @@ data/         pipeline inputs and outputs; committed except downloaded/ and clea
 curated/      files kept by hand that nothing can regenerate
 docs/         data flow and roaster resolution design
 notebooks/    analysis
-notes/        background on how CoffeeReview scores coffee
+notes/        background reading: how CoffeeReview scores, clustering methods
 ```
 
 The package lives under `src/`, so it can only be imported once installed. Tests,
@@ -515,6 +517,16 @@ Install them once after cloning:
 
 ```bash
 uv run pre-commit install
+```
+
+Ruff and mypy run from the project's environment, at the versions locked in
+`uv.lock`, so the hooks, CI and your editor agree. The package is checked with
+`mypy --strict`; tests are type-checked without requiring annotations. To run
+the checks by hand:
+
+```bash
+uv run ruff check .
+uv run mypy
 ```
 
 GitHub Actions runs the hooks, and the tests on Python 3.12 and 3.13, on every
