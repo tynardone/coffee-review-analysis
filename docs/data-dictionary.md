@@ -176,7 +176,7 @@ on every run of `resolve-roasters`; edit the decisions file instead.
 | `cluster_size` | How many spellings are in the cluster. |
 | `min_internal_score` | The lowest name-similarity score (0–100) between any two spellings in the cluster. 100 for a cluster of one. |
 | `chain_risk` | True when `min_internal_score` is below the auto-merge threshold (92 by default): the spellings were joined through a chain of similar names, not all directly. The likeliest false merges. |
-| `violates_decision` | True when the cluster holds two names recorded as different roasters. See "When a split does not hold" in the README. |
+| `violates_decision` | True when the cluster holds two names recorded as different roasters. See [When a split does not hold](roaster-resolution.md#when-a-split-does-not-hold). |
 
 ---
 
@@ -193,7 +193,7 @@ is meant to be edited.
 | `score` | Name similarity, 0–100. |
 | `location_a`, `location_b` | Each name's locations from the reviews, separated by `; `. |
 | `location_evidence` | `same` (a shared location), `neutral` (same region, different city) or `unknown` (a name has no location). Pairs whose locations conflict are never queued. |
-| `verdict` | Empty until judged. `merge` for the same roaster, `split` for different ones; the synonyms are listed in the README. |
+| `verdict` | Empty until judged. `merge` for the same roaster, `split` for different ones; the accepted synonyms are listed in [Steps](roaster-resolution.md#steps). |
 
 ---
 
@@ -214,7 +214,7 @@ command can rebuild it.
 
 ## `data/cleaned/reviews.parquet`
 
-The table the notebooks read: one row per review, with types converted,
+The table analysis reads: one row per review, with types converted,
 prices made comparable and roaster names resolved. It carries every column of
 the parsed reviews except `agtron` and `acidity/structure`, which it replaces,
 and adds the columns below. Reviews with an Agtron reading above 100 are

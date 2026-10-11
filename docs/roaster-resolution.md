@@ -1,11 +1,131 @@
-# Roaster name resolution: the design
+# Roaster name resolution
 
 [← README](../README.md) · [All documentation](README.md)
 
-The design behind [`src/coffee/roasters/`](../src/coffee/roasters/).
-For the workflow — which commands to run, in what order, and what to do with the
-review queue — see [Resolving roaster names](../README.md#resolving-roaster-names)
-in the README.
+How to group roaster spellings with `resolve-roasters`, and the design behind
+[`src/coffee/roasters/`](../src/coffee/roasters/).
+
+## Using the resolver
+
+### Files
+
+| File | Location | Edit? | Purpose |
+|---|---|---|---|
+| `roaster_decisions.csv` | `curated/` | Yes | Every pair that has been judged. The only file that cannot be regenerated. |
+| `review_queue.csv` | `data/roasters/` | `verdict` column only | Pairs awaiting judgment. Regenerated on every run. |
+| `crosswalk.csv` | `data/roasters/` | No | The output, mapping `raw_name` to `canonical_name`. Regenerated on every run. |
+
+All three are committed. The crosswalk is committed so that joins against it are
+reproducible.
+
+### Steps
+
+**1. Resolve.**
+
+```bash
+uv run resolve-roasters data/parsed/reviews.csv
+```
+
+The summary answers four questions:
+
+```
+1688 distinct spellings -> 1497 roasters (191 merged)    did it do anything?
+18 decisions applied from …/roaster_decisions.csv        are past calls applied?
+0 pairs queued for review -> …/review_queue.csv          how much is left to judge?
+11 rows in chain-risk clusters  <-- INSPECT THESE        did clustering misbehave?
+```
+
+**2. Judge the queue.** Open `data/roasters/review_queue.csv` and fill in
+the `verdict` column. Leave every other column alone.
+
+- Same company: `merge`, `yes`, `y`, `m`, `same` or `1`
+- Different companies: `split`, `no`, `n`, `s`, `different` or `0`
+
+Rows left blank come back on the next run. Any other value is reported as an
+error.
+
+| name_a | name_b | score | location_evidence | verdict |
+|---|---|---|---|---|
+| Boyd Coffee | Boyds Coffee | 88.9 | `same` | `merge` |
+| Fellow Coffee | Mellow Coffee | 83.3 | `neutral` | `split` |
+
+The `location_evidence` column is a useful guide:
+
+- `same`: both names share an address. Usually one company, but not always;
+  `Wei Chuan Foods` and `Tehmag Foods` share a city and are unrelated.
+- `neutral`: same region, different city. Usually different companies.
+- `unknown`: at least one name has no location. Judge on the names alone.
+
+**3. Record the verdicts and resolve again.**
+
+```bash
+uv run resolve-roasters data/parsed/reviews.csv --accept-reviewed --decided-by "$USER"
+```
+
+This adds your answers to `curated/roaster_decisions.csv` and resolves again with
+them applied. The new queue holds only the rows you left blank.
+
+Always follow step 2 with this step. A plain run regenerates the queue, which
+would discard answers not yet recorded, so the command refuses to run while the
+queue holds any and tells you to add `--accept-reviewed`.
+
+**4. Commit the three files.**
+
+After the next scrape and parse, start again at step 1. Pairs already decided stay
+decided, so the queue holds only new questions. If an answered pair reappears,
+check that `curated/roaster_decisions.csv` exists and that `--decisions` is not
+pointing elsewhere.
+
+### Checking the results
+
+Chain-risk clusters were joined only through a chain of similar names, which
+makes them the likeliest false merges. To list them:
+
+```bash
+uv run python -c "import pandas as pd; c=pd.read_csv('data/roasters/crosswalk.csv'); print(c[c.chain_risk][['raw_name','canonical_name','min_internal_score']].to_string(index=False))"
+```
+
+To find matches the name score misses, also queue lower-scoring pairs that share
+an address. This is how `Starbucks` and `Starbucks Reserve Roastery` (score 72)
+come to light. These pairs are only queued, never merged automatically. On the
+current data this adds 13 pairs:
+
+```bash
+uv run resolve-roasters data/parsed/reviews.csv --location-review 70
+```
+
+### When a split does not hold
+
+Clustering links names in chains, so two names you have split can still end up
+together through a third name that resembles both. The usual culprit is a
+collaboration:
+
+```
+RND                               -> key 'rnd'
+Red Rooster Coffee Roaster        -> key 'red rooster'
+RND & Red Rooster Coffee Roaster  -> key 'red rnd rooster'   superset of both
+```
+
+Blocking the direct link does not help, because the two names remain connected
+through the collaboration. The run warns when this happens:
+
+```
+!! 1 cluster(s) VIOLATE a split decision -- these names were kept together
+   despite your verdict:
+    RND  |  RND & Red Rooster Coffee Roaster  |  Red Rooster Coffee Roaster
+```
+
+To fix it, also record a split against the bridging name: here, `RND` against
+`RND & Red Rooster Coffee Roaster`. Affected rows are flagged in the crosswalk's
+`violates_decision` column.
+
+### Rules
+
+1. Never edit `data/roasters/crosswalk.csv` by hand; it is overwritten on every run. To
+   change a grouping, change the decision behind it.
+2. To reverse a decision, edit `curated/roaster_decisions.csv` directly.
+   `--accept-reviewed` never overwrites an existing verdict, so a change of mind
+   always shows up as a diff.
 
 ## The problem
 

@@ -3,7 +3,7 @@
 [← README](../README.md) · [All documentation](README.md)
 
 Every file under `data/` and `curated/`, what writes it, and what reads it. `uv run refresh-data`
-runs the six commands top to bottom; the notebooks pick up where it stops.
+runs the six commands top to bottom; analysis picks up where it stops.
 
 ```mermaid
 flowchart TD
@@ -33,7 +33,7 @@ flowchart TD
     FX["data/reference/exchange_rates.json"]:::ref
     CPI["data/reference/cpi.csv"]:::ref
     CLEANED["data/cleaned/reviews.parquet<br/><i>gitignored</i>"]:::out
-    NB["notebooks 01 · 02 · 03"]:::out
+    NB["analysis"]:::out
 
     SITE --> SCRAPE --> DOWNLOADED
     DOWNLOADED -. "what is already saved" .-> SCRAPE
