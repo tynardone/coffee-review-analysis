@@ -22,6 +22,7 @@ comparing roasters requires entity resolution.
 - [Resolving roaster names](#resolving-roaster-names)
 - [Notebooks](#notebooks)
 - [Project layout](#project-layout)
+- [Documentation](#documentation)
 - [Development](#development)
 - [References](#references)
 
@@ -587,6 +588,17 @@ under a step are the helpers it uses.
   `get_settings()`, which loads and validates them once. Commands and notebooks
   call it and pass the values down; library code never reads the environment.
 - `cli.py` defines the console commands.
+
+## Documentation
+
+The [`docs/`](docs/) folder holds the reference material behind this README.
+
+| Document | What it covers |
+|---|---|
+| [Data dictionary](docs/data-dictionary.md) | Every file the pipeline reads or writes, and every field in it, with its meaning. |
+| [Data flow](docs/data-flow.md) | Which command writes each file and which reads it, and what each file costs to rebuild. |
+| [Roaster name resolution](docs/roaster-resolution.md) | The design behind grouping roaster spellings: the cascade, the thresholds and the known limits. |
+| [Roadmap](docs/roadmap.md) | What could come next, for the dataset and for the analysis built on it. |
 
 ## Development
 

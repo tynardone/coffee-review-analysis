@@ -1,5 +1,7 @@
 # Roaster name resolution: the design
 
+[← README](../README.md) · [All documentation](README.md)
+
 The design behind [`src/coffee/roasters/`](../src/coffee/roasters/).
 For the workflow — which commands to run, in what order, and what to do with the
 review queue — see [Resolving roaster names](../README.md#resolving-roaster-names)

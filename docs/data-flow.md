@@ -1,5 +1,7 @@
 # Data flow
 
+[← README](../README.md) · [All documentation](README.md)
+
 Every file under `data/` and `curated/`, what writes it, and what reads it. `uv run refresh-data`
 runs the six commands top to bottom; the notebooks pick up where it stops.
 

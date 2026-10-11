@@ -1,5 +1,7 @@
 # Data dictionary
 
+[← README](../README.md) · [All documentation](README.md)
+
 Every file the pipeline reads or writes, and every field in it.
 [`data-flow.md`](data-flow.md) shows which command writes each file and which
 reads it.

@@ -1,5 +1,7 @@
 # Roadmap
 
+[← README](../README.md) · [All documentation](README.md)
+
 Where the project could go from here, in two halves. The data engineering half
 turns the pipeline's output into a dataset ready for analysis. The data
 analysis half uses that dataset: first a descriptive dashboard, then deeper
