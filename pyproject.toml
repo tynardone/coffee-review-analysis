@@ -57,7 +57,6 @@ analysis = [
     "seaborn>=0.13",
     "spacy>=3.7",
     "umap-learn>=0.5",
-    "wordcloud>=1.9",
 ]
 # The pre-commit hooks for ruff and mypy run these locked versions through
 # `uv run`, so the hooks, CI and your editor all use the same tools.
