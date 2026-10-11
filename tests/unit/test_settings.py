@@ -6,11 +6,17 @@ leaks into the result, and clears the COFFEE_ variables it could see.
 
 import os
 import tomllib
+from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
 
-from coffee.settings import PROJECT_ROOT, Settings
+from coffee.settings import (
+    PROJECT_ROOT,
+    Settings,
+    _find_project_root,
+    find_unknown_names,
+)
 
 CONFIG_FILE = PROJECT_ROOT / "config" / "settings.toml"
 
@@ -102,6 +108,18 @@ def test_an_empty_variable_means_the_default(monkeypatch):
     assert settings_from().data_dir == PROJECT_ROOT / "data"
 
 
+def test_a_relative_path_is_relative_to_the_project_not_the_cwd(tmp_path, monkeypatch):
+    """Run from another folder, "data" must still mean the repository's."""
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("COFFEE_DATA_DIR", "elsewhere/data")
+    assert settings_from().data_dir == PROJECT_ROOT / "elsewhere" / "data"
+
+
+def test_a_home_relative_path_is_expanded(monkeypatch):
+    monkeypatch.setenv("COFFEE_DATA_DIR", "~/coffee-data")
+    assert settings_from().data_dir == Path.home() / "coffee-data"
+
+
 def test_paths_can_be_moved(tmp_path, monkeypatch):
     monkeypatch.setenv("COFFEE_DATA_DIR", str(tmp_path / "d"))
     monkeypatch.setenv("COFFEE_CURATED_DIR", str(tmp_path / "c"))
@@ -146,6 +164,8 @@ def test_the_old_unprefixed_key_name_still_works(tmp_path):
         ("COFFEE_SCRAPE__CONCURRENCY", "ten"),
         ("COFFEE_LOG_LEVEL", "LOUD"),
         ("COFFEE_PRICES__BASELINE_DATE", "January"),
+        # CPI is monthly; mid-month would fail later, and misleadingly.
+        ("COFFEE_PRICES__BASELINE_DATE", "2026-01-15"),
         ("COFFEE_ROASTERS__AUTO_THRESHOLD", "101"),
     ],
 )
@@ -159,3 +179,83 @@ def test_a_review_band_above_the_auto_threshold_is_refused(monkeypatch):
     monkeypatch.setenv("COFFEE_ROASTERS__REVIEW_THRESHOLD", "95")
     with pytest.raises(ValidationError, match="must not exceed"):
         settings_from()
+
+
+# --------------------------------------------------------------------------
+# A name that sets nothing is an error, not a silent default
+# --------------------------------------------------------------------------
+
+
+def unknown(environ=None, env_file=None, toml_file=None):
+    return find_unknown_names(Settings, environ or {}, env_file, toml_file)
+
+
+def test_a_misspelled_key_inside_a_table_is_refused(tmp_path):
+    toml = tmp_path / "settings.toml"
+    toml.write_text("[scrape]\nconcurency = 3\n")
+    with pytest.raises(ValidationError, match="concurency"):
+        settings_from(toml)
+
+
+def test_a_misspelled_nested_variable_is_refused(monkeypatch):
+    monkeypatch.setenv("COFFEE_SCRAPE__CONCURENCY", "3")
+    with pytest.raises(ValidationError, match="concurency"):
+        settings_from()
+
+
+def test_a_misspelled_table_name_is_reported(tmp_path):
+    toml = tmp_path / "settings.toml"
+    toml.write_text("[roaster]\nauto_threshold = 50\n")
+    assert unknown(toml_file=toml) == ["roaster in settings.toml"]
+
+
+def test_a_misspelled_variable_is_reported():
+    assert unknown({"COFFEE_LOGLEVEL": "DEBUG"}) == [
+        "COFFEE_LOGLEVEL in the environment"
+    ]
+
+
+def test_a_misspelled_dotenv_line_is_reported(tmp_path):
+    env = tmp_path / ".env"
+    env.write_text("COFFEE_DATADIR=/tmp/x\n")
+    assert unknown(env_file=env) == ["COFFEE_DATADIR in .env"]
+
+
+def test_other_tools_variables_are_left_alone(tmp_path):
+    """.env and the environment may hold settings that are not ours."""
+    env = tmp_path / ".env"
+    env.write_text("OTHER_TOOL_TOKEN=x\n")
+    assert unknown({"PATH": "/usr/bin", "HOME": "/h"}, env_file=env) == []
+
+
+def test_every_real_name_is_known(tmp_path):
+    environ = {
+        "COFFEE_LOG_LEVEL": "DEBUG",
+        "COFFEE_DATA_DIR": "/d",
+        "COFFEE_CURATED_DIR": "/c",
+        "COFFEE_SCRAPE__CONCURRENCY": "4",
+        "COFFEE_SCRAPE__LOOKBACK_HOURS": "1",
+        "COFFEE_PRICES__BASELINE_DATE": "2026-01-01",
+        "COFFEE_ROASTERS__AUTO_THRESHOLD": "92",
+        "coffee_roasters__review_threshold": "82",  # names ignore case
+        "COFFEE_OPENEXCHANGERATES_API_ID": "k",
+        "OPENEXCHANGERATES_API_ID": "k",  # the old name
+    }
+    assert unknown(environ, toml_file=CONFIG_FILE) == []
+
+
+# --------------------------------------------------------------------------
+# The project root
+# --------------------------------------------------------------------------
+
+
+def test_the_project_root_is_found_above_a_file(tmp_path):
+    (tmp_path / "pyproject.toml").touch()
+    module = tmp_path / "src" / "pkg" / "module.py"
+    assert _find_project_root(module) == tmp_path
+
+
+def test_no_project_root_is_an_error_not_a_guess(tmp_path):
+    """A non-editable install has no repository above it to fall back on."""
+    with pytest.raises(RuntimeError, match="uv sync"):
+        _find_project_root(tmp_path / "site-packages" / "coffee" / "settings.py")
