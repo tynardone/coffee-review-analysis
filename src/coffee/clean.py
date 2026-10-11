@@ -427,17 +427,16 @@ def clean_reviews(
     exchange_rates: pd.DataFrame | None = None,
     cpi: pd.DataFrame | None = None,
     crosswalk: pd.DataFrame | None = None,
-    baseline_date: str | None = None,
     max_agtron: int = DEFAULT_MAX_AGTRON,
 ) -> pd.DataFrame:
     """Parsed reviews in, cleaned reviews out.
 
     The field-level work needs nothing but the parsed reviews. Putting prices in
     comparable money needs exchange rates and CPI, which :mod:`coffee.prices`
-    applies; pass both, with ``baseline_date``, and the result carries
-    ``price_usd``, ``price_usd_adj`` and ``price_usd_adj_per_lb`` as well. The
-    baseline has no default here, so the CLI and a notebook cannot disagree
-    about it; both take it from the settings.
+    applies; pass both, and the result also carries ``price_usd``,
+    ``price_usd_per_lb`` and the review month's ``cpi``. Expressing prices in a
+    baseline month's dollars happens where they are shown, with
+    :func:`coffee.prices.to_baseline_dollars`.
 
     Omitting them returns the field-level layer alone, which is what makes this
     runnable before any reference data has been fetched.
@@ -456,15 +455,5 @@ def clean_reviews(
     if crosswalk is not None:
         cleaned = cleaned.pipe(apply_roaster_crosswalk, crosswalk)
     if exchange_rates is not None and cpi is not None:
-        if baseline_date is None:
-            raise ValueError(
-                "baseline_date is required to adjust prices; pass "
-                "get_settings().prices.baseline_date"
-            )
-        cleaned = add_comparable_prices(
-            cleaned,
-            exchange_rates=exchange_rates,
-            cpi=cpi,
-            baseline_date=baseline_date,
-        )
+        cleaned = add_comparable_prices(cleaned, exchange_rates=exchange_rates, cpi=cpi)
     return cleaned.pipe(add_price_status)

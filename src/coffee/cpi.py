@@ -3,7 +3,7 @@
 Reads the CPI-U series from the BLS public API and merges it into the CPI
 table, ``data/reference/cpi.csv`` by default. The series is
 ``CUUR0000SA0``: all urban consumers, U.S. city average, all items, not
-seasonally adjusted, which is what :func:`coffee.prices.cpi_adjust_price`
+seasonally adjusted, which is what :func:`coffee.prices.to_baseline_dollars`
 expects.
 
 Runs incrementally, like :mod:`coffee.exchange_rates`. A published CPI figure

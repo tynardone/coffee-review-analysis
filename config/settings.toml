@@ -20,11 +20,6 @@ concurrency = 10
 # once more on the next run, in case the site's cache served the old version.
 lookback_hours = 24
 
-[prices]
-# Adjusted prices are expressed in this month's dollars. Give the first day of
-# a month the CPI table covers.
-baseline_date = 2026-01-01
-
 [roasters]
 # Name-similarity scores (0-100). At or above auto_threshold, two spellings are
 # merged automatically; from review_threshold up to it, the pair is queued for

@@ -46,8 +46,7 @@ default. For the pipeline alone, use `uv sync --no-default-groups`.
 Settings come from three places, each overriding the one before:
 
 1. `config/settings.toml`, committed: the defaults for the log level, scrape
-   concurrency, the inflation baseline month and the roaster-matching
-   thresholds, with a comment on each.
+   concurrency and the roaster-matching thresholds, with a comment on each.
 2. `.env` at the project root, not committed: your secrets and local overrides.
 3. Environment variables, which win over both.
 
@@ -76,8 +75,6 @@ Settings are checked strictly:
   another tool.
 - A relative `COFFEE_DATA_DIR` or `COFFEE_CURATED_DIR` is relative to the
   project root, not to the folder a command is run from, and `~` is expanded.
-- The baseline month is given as its first day, such as `2026-01-01`, since
-  CPI is monthly.
 
 The settings file and the data live in the repository, so the package must be
 installed from a checkout in editable mode, which `uv sync` does. Installed
@@ -118,7 +115,6 @@ Each command documents its options under `--help`. The most useful options on
   Exchange rates and CPI stay incremental.
 - `--skip-scrape` makes no requests to the review site; it parses and rebuilds
   from the pages already saved.
-- `--baseline-date` sets the month whose dollars adjusted prices are expressed in.
 
 `refresh-data` stops at the first step that fails, and the steps after it do
 not run. The usual causes:
@@ -142,17 +138,17 @@ again next time.
 
 Every path defaults to its place in [Data files](#data-files), and the other
 defaults come from the [settings](#configuration). A flag overrides them for a
-single run. `DATE` is the first day of a month, such as `2026-01-01`.
+single run.
 
 | Command | Options |
 |---|---|
-| `refresh-data` | `--full`, `--skip-scrape`, `--baseline-date DATE` |
+| `refresh-data` | `--full`, `--skip-scrape` |
 | `scrape-reviews` | `--full`, `--limit N`, `-c`/`--concurrency N` |
 | `parse-reviews` | `--full`, `--limit N` |
 | `resolve-roasters INFILE` | `--column` (default `roaster`), `--location-column` (default `roaster_location`; `''` turns locations off), `--outdir`, `--decisions`, `--auto N`, `--review N`, `--location-review N`, `--accept-reviewed`, `--decided-by NAME` (default `manual`) |
 | `fetch-exchange-rates` | `-i`/`--input`, `-o`/`--output`, `--refetch` |
 | `fetch-cpi` | `-o`/`--output`, `--start-year YEAR` with `--end-year YEAR` |
-| `clean-reviews` | `-i`/`--input`, `-o`/`--output`, `--crosswalk`, `--rates`, `--cpi`, `--baseline-date DATE` |
+| `clean-reviews` | `-i`/`--input`, `-o`/`--output`, `--crosswalk`, `--rates`, `--cpi` |
 
 `resolve-roasters` is the only command with a required argument: the reviews
 file whose roaster names it groups, normally `data/parsed/reviews.csv`.
@@ -244,8 +240,9 @@ Two quirks of the series are handled explicitly:
 - Period `M13` is the annual average, not a month, and is discarded.
 - A month the BLS never published appears as `-` and is left blank. October 2025
   is one: the index was not produced during that year's lapse in federal
-  appropriations. Prices from such a month are kept but not adjusted or
-  estimated, and are marked `no_cpi` (see [Comparable prices](#comparable-prices)).
+  appropriations. Prices from such a month are kept in dollars but cannot be
+  adjusted for inflation, and are marked `no_cpi` (see
+  [Comparable prices](#comparable-prices)).
 
 ## Data files
 
@@ -338,36 +335,55 @@ When exchange rates and CPI data are available, cleaning also applies
 `src/coffee/prices.py`, which adds:
 
 - `price_usd`: the price in US dollars at the review month's rate
-- `price_usd_adj`: that price in a baseline month's dollars, so a 2010 price can
-  be compared with a 2026 one
-- `price_usd_adj_per_lb`: the adjusted price per pound, for `weight` prices
-- `price_baseline_date`: the baseline month
-- `price_status`: why `price_usd_adj` is or is not filled
+- `price_usd_per_lb`: that price per pound, for `weight` prices
+- `cpi`: the CPI-U for the review month
+- `price_status`: whether the price can be adjusted for inflation, and if not,
+  why
 
 The original `price_value`, `price_currency` and `quantity_in_lbs` are kept.
-Every price is converted and adjusted, whatever its format.
+Every price is converted, whatever its format.
+
+The cleaned dataset is in each review month's own dollars. Adjusting for
+inflation means choosing a baseline month, and that is a choice about how to
+show prices, so it happens where they are shown. `to_baseline_dollars` adds
+`price_usd_adj`, `price_usd_adj_per_lb` and `price_baseline_date` for any month
+the CPI table covers:
+
+```python
+from datetime import date
+
+import pandas as pd
+
+from coffee.prices import load_cpi, to_baseline_dollars
+from coffee.settings import get_settings
+
+settings = get_settings()
+reviews = pd.read_parquet(settings.cleaned_reviews)
+in_2026_dollars = to_baseline_dollars(
+    reviews, load_cpi(settings.cpi), date(2026, 1, 1)
+)
+```
+
+The adjustment is `price_usd × CPI(baseline) ÷ cpi`. The baseline must be the
+first day of a month the CPI table covers; any other date is refused. It is
+stored with the adjusted price because it is that price's unit: the same coffee
+costs $77.64 in January 2026 dollars and $61.58 in January 2020 dollars.
 
 `price_status` is set on every review, with or without reference data, and
 names the first step that failed:
 
 | `price_status` | Meaning |
 |---|---|
-| `adjusted` | `price_usd_adj` holds the price in baseline dollars |
+| `comparable` | has `price_usd` and `cpi`, so it can be put in any baseline month's dollars |
 | `no_cpi` | converted to dollars, but the BLS has published no CPI for the review month |
 | `no_exchange_rate` | no exchange rate for the currency in the review month |
 | `not_converted` | cleaned without exchange rates and CPI |
 | `no_price` | the page names no price |
 
-The baseline is January 2026 by default. Change it for good with `baseline_date`
-in `config/settings.toml`, or for one run with `--baseline-date`. It must be
-the first day of a month the CPI table covers; any other date is refused. The baseline is
-stored on every row because it is the unit of the adjusted price: the same coffee
-costs $77.64 in January 2026 dollars and $61.58 in January 2020 dollars.
-
 A month the CPI does not cover is never estimated. Its prices keep `price_usd`,
-but `price_usd_adj`, `price_usd_adj_per_lb` and `price_baseline_date` stay
-empty and `price_status` is `no_cpi`. That covers October 2025, which the BLS
-never published, and the latest month or two, until the BLS releases them and
+but `cpi` is empty, so `to_baseline_dollars` leaves them unadjusted and
+`price_status` is `no_cpi`. That covers October 2025, which the BLS never
+published, and the latest month or two, until the BLS releases them and
 `fetch-cpi` picks them up.
 
 Both reference files are optional. Without them, `clean-reviews` still builds

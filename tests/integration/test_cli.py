@@ -137,13 +137,13 @@ def test_the_api_key_never_reaches_the_log(dirs, caplog):
     assert "sk-secret-app-id" not in caplog.text
 
 
-@pytest.mark.parametrize("flag", ["2026-01-15", "January"])
-def test_a_baseline_flag_must_name_the_first_of_a_month(dirs, flag, capsys):
-    """The flag is held to the same rule as the setting it overrides."""
+@pytest.mark.parametrize("command", [cli.clean_reviews_command, cli.refresh_data])
+def test_the_baseline_flag_is_gone(dirs, command, capsys):
+    """The baseline is chosen where prices are shown, not when cleaning."""
     with pytest.raises(SystemExit) as exit_info:
-        cli.clean_reviews_command(["--baseline-date", flag])
+        command(["--baseline-date", "2026-01-01"])
     assert exit_info.value.code == 2  # argparse's usage error
-    assert "--baseline-date" in capsys.readouterr().err
+    assert "unrecognized arguments" in capsys.readouterr().err
 
 
 def test_an_unknown_setting_name_stops_the_command(monkeypatch):
