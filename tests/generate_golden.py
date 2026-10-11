@@ -1,8 +1,8 @@
 """Regenerate the golden parse output from the saved review pages.
 
-Run this ONLY after reviewing a real parser change, and read the resulting diff
+Run this only after reviewing a real parser change, and read the resulting diff
 line by line — the whole value of the golden file is that it fails when parsing
-changes, so regenerating it without reading the diff silently discards the test.
+changes, so regenerating it without reading the diff discards what it checks.
 
     uv run python -m tests.generate_golden
 """

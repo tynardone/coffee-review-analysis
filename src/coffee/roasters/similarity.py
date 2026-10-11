@@ -54,9 +54,8 @@ def score(
         token_set scores any strict subset 100 regardless of how little the
         shorter key says, and stopwording produces bare generic keys that then
         match everything: "Kona Cafe" -> "kona", "Coffee Bros." -> "brothers".
-        Unguarded, each such key merges with every key containing it and
-        union-find chains the neighbourhood into a single cluster; on the
-        current corpus that placed 219 of 1,591 spellings in chained clusters.
+        Unguarded, each such key merges with every key containing it, and
+        union-find chains them into one large cluster.
 
         A subset reading is therefore trusted only when the shorter key is
         distinctive: at least 2 tokens, or a single token that is rare in the

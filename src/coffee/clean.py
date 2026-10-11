@@ -204,8 +204,7 @@ def normalize_types(
     """Parse dates, split agtron, coalesce acidity, coerce scores to numbers.
 
     Also drops rows whose agtron exceeds `max_agtron`, those readings being
-    site typos. :func:`clean_reviews` reports how many were removed, since a
-    step that changes the row count should not do so silently.
+    site typos. :func:`clean_reviews` reports how many were removed.
     """
     return (
         df.assign(

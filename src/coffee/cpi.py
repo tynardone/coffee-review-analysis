@@ -13,7 +13,7 @@ key, which covers any gap short of leaving this unrun for that long.
 
 The stored table keeps the BLS's own wide layout -- a row per year, a column
 per month, plus the semiannual averages -- so the file stays readable and
-:func:`coffee.prices.load_cpi` needs no change. The API does not publish the
+matches what :func:`coffee.prices.load_cpi` reads. The API does not publish the
 semiannual columns, so they are left as found.
 """
 
@@ -82,7 +82,7 @@ def _observations_from_payload(payload: dict[str, Any]) -> list[Observation]:
         # BLS writes "-" for a month it has not published. October 2025 is one:
         # the index was never produced during that year's lapse in
         # appropriations. Such a month is absent rather than wrong, so it is
-        # skipped quietly and simply stays blank in the table.
+        # skipped and stays blank in the table.
         if str(point.get("value", "")).strip() in {"", "-"}:
             logger.info(
                 "CPI not published for %s-%s; leaving it blank",

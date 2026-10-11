@@ -1,8 +1,8 @@
 """Put every price in the same money, so they can be compared.
 
 The site prints what a coffee cost in the currency and quantity of its day: NT$
-per 225 grams in 2015, dollars per pound in 1997. Comparing those takes two
-conversions and two reference tables the reviews do not carry -- historical
+per 225 grams, dollars per pound, Canadian dollars per 340 grams. Comparing those
+takes two conversions and two reference tables the reviews do not carry -- historical
 exchange rates, and the CPI.
 
 :func:`add_comparable_prices` composes the steps; :func:`coffee.clean.clean_reviews`
@@ -108,11 +108,9 @@ def cpi_adjust_price(
     with the number because it is the number's unit: two files can hold the
     same column in different dollars and look identical without it.
 
-    Where the review month has no published CPI, ``price_usd_adj`` is left
-    empty rather than filled with the unadjusted price or an estimate, so the
-    column holds baseline dollars and nothing else. ``price_usd`` still holds
-    the converted price, and :func:`add_price_status` records why. The
-    baseline is stamped only on rows that were adjusted.
+    Where the review month has no published CPI, ``price_usd_adj`` and
+    ``price_baseline_date`` are left empty; ``price_usd`` keeps the converted
+    price, and :func:`add_price_status` marks the row ``no_cpi``.
     """
     baseline = cpi.loc[cpi["date"] == baseline_date, "cpi"]
     if baseline.empty:

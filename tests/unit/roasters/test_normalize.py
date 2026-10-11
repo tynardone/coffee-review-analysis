@@ -65,11 +65,8 @@ def test_all_stopword_name_falls_back_to_fingerprint():
 
 
 def test_subset_match_is_refused_for_a_generic_one_token_key():
-    """THE REGRESSION.
-
-    'Kona Cafe' -> 'kona', a strict subset of every 'kona <x>' key, which
-    unguarded scored 100 and chained 20 unrelated roasters into one cluster.
-    """
+    """'Kona Cafe' -> 'kona', a strict subset of every 'kona <x>' key, which
+    would otherwise score 100 against all of them."""
     df = {"kona": 15, "luna": 1}
     assert score("kona", "kona luna", token_df=df) < 92
 

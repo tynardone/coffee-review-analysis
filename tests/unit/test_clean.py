@@ -1,8 +1,8 @@
 """Tests for the cleaning layer.
 
 The cases chosen here are the ones where a bug is invisible: a misparsed
-quantity or a silently dropped row does not raise, it quietly changes a
-conclusion drawn later.
+quantity or a dropped row raises no error but changes any conclusion drawn
+later.
 """
 
 import numpy as np
@@ -120,7 +120,7 @@ def test_price_and_quantity_are_split_out(raw, value, currency, qty_value, qty_u
 
 
 def test_prices_not_by_weight_keep_their_price_but_no_quantity():
-    """THE ROW-COUNT INVARIANT, and nothing the site printed is thrown away.
+    """No review is removed, and nothing the site printed is thrown away.
 
     Capsules are not sold by weight, so a price per pound would be meaningless.
     Their price and currency are still data, and the review is still a review.
@@ -351,7 +351,7 @@ def test_clean_reviews_prices_when_reference_data_is_given():
 
 
 def test_a_baseline_the_cpi_table_does_not_cover_is_refused():
-    """Silently adjusting to a different month would change every price."""
+    """Adjusting to a different month would change every price."""
     cpi = pd.DataFrame([(300.0, "2024-06-01")], columns=["cpi", "date"]).assign(
         date=lambda d: pd.to_datetime(d["date"])
     )

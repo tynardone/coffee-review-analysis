@@ -1,7 +1,7 @@
 """Adjudicated pairs: recording them, reading them back, applying them.
 
 The queue is filled in by hand, so the cases that matter are the ones where a
-session of answers could be silently discarded.
+session of answers could be lost without an error.
 """
 
 from functools import partial
@@ -93,7 +93,7 @@ def test_promote_reviewed_closes_the_loop(tmp_path):
 
 
 def test_promote_reviewed_does_not_overwrite_an_existing_verdict(tmp_path):
-    """Changing your mind should be an edit you can see in git, not a silent
+    """A changed verdict is an edit to the decisions file, visible in git, not an
     overwrite by a re-run."""
     review = tmp_path / "queue.csv"
     decisions = tmp_path / "decisions.csv"
@@ -133,12 +133,8 @@ def test_promote_reviewed_does_not_overwrite_an_existing_verdict(tmp_path):
     ],
 )
 def test_parse_verdict_accepts_what_a_person_would_type(cell, expected):
-    """THE REGRESSION.
-
-    Only the exact strings "merge"/"split" used to be accepted, and anything
-    else was skipped in silence — so a queue filled in with y/n recorded
-    nothing and gave no indication why.
-    """
+    """A queue is filled in by hand, so the common answers (y/n, yes/no, 1/0)
+    must all be accepted."""
     assert parse_verdict(cell) is expected
 
 
@@ -174,7 +170,7 @@ def test_unpromoted_verdicts_counts_unsaved_work(tmp_path):
 
 
 def test_synonyms_round_trip_into_canonical_decisions(tmp_path):
-    """Whatever you type, the decisions file stores one canonical spelling."""
+    """Every accepted answer is stored as one canonical spelling."""
     review, decisions = tmp_path / "q.csv", tmp_path / "d.csv"
     pd.DataFrame(
         [

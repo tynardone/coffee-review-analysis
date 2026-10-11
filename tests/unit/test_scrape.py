@@ -1,9 +1,9 @@
 """Tests for the scrape: which pages to fetch, and what a bad one costs.
 
-`plan_fetch` is the decision that turns a 29-minute run into a one-minute one,
-so the cases that matter are the ones where it could wrongly SKIP a page — a
-skipped page stays quietly stale, while a wrongly re-fetched one costs a single
-request. It must also never re-fetch the same page run after run.
+`plan_fetch` decides which pages a run downloads, so the cases that matter are
+the ones where it could wrongly skip a page: a skipped page stays stale, while
+a wrongly re-fetched one costs a single request. It must also never re-fetch
+the same page run after run.
 
 The rest pin the failure contract: one bad page is reported and skipped, never
 the end of the run.
@@ -47,7 +47,7 @@ def test_an_edit_after_the_download_is_fetched():
 
 
 def test_an_edit_later_on_the_same_day_as_the_download_is_fetched():
-    """The bug this rule fixes: comparing dates alone saw no change here."""
+    """Comparing with the download time, not the date, catches a same-day edit."""
     to_fetch, _ = plan({"u": AFTER}, {"u": FETCHED})
     assert AFTER.date() == FETCHED.date()
     assert to_fetch == {"u"}

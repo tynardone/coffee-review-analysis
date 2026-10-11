@@ -1,8 +1,8 @@
 """Tests for the price conversions.
 
 These conversions decide what every price comparison means, and a bug in them
-is invisible: a wrong rate or a missing CPI month does not raise, it quietly
-changes a conclusion.
+is invisible: a wrong rate or a missing CPI month raises no error but changes
+any conclusion drawn from the prices.
 """
 
 import pandas as pd
@@ -97,7 +97,7 @@ def test_a_month_without_cpi_is_left_unadjusted_not_estimated():
 
 
 def test_an_unknown_baseline_date_is_an_error():
-    """Silently picking a different baseline would change every price."""
+    """Picking a different baseline would change every price."""
     cpi = cpi_table([(300.0, "2024-06-01")])
     df = pd.DataFrame(
         {"review_date": pd.to_datetime(["2024-06-01"]), "price_usd": [1.0]}
@@ -173,7 +173,7 @@ def test_the_baseline_is_recorded_on_every_adjusted_row():
 
 
 def test_a_month_without_cpi_gets_no_baseline():
-    """Its price was never adjusted, so claiming a baseline would be a lie."""
+    """An unadjusted price has no baseline."""
     df = pd.DataFrame(
         {"review_date": pd.to_datetime(["2026-09-01"]), "price_usd": [25.0]}
     )
@@ -184,7 +184,8 @@ def test_a_month_without_cpi_gets_no_baseline():
 
 
 def test_a_review_without_a_price_gets_no_baseline():
-    """2,374 unpriced reviews once carried a baseline for a price they lacked."""
+    """The baseline is the unit of an adjusted price, so a review with no price
+    has none."""
     df = pd.DataFrame(
         {"review_date": pd.to_datetime(["2000-01-01"]), "price_usd": [float("nan")]}
     )

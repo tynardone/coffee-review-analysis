@@ -1,8 +1,8 @@
-"""What a resolution run tells you about itself.
+"""The summary printed after a resolution run.
 
 These lines are the only view onto whether a run did something reasonable, so
-the cases worth pinning are the ones where a misleading report would send you
-looking in the wrong place.
+the cases worth pinning are the ones where a misleading line would point at the
+wrong problem.
 """
 
 import pandas as pd

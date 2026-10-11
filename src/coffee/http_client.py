@@ -9,7 +9,7 @@ synchronously with :func:`request_json`. Both follow the same rules:
   exponential backoff and jitter, honoring a numeric ``Retry-After``
 - never retry a permanent error such as 404 or 401; it will not fix itself
 
-The requests identify the project honestly rather than posing as a browser.
+Every request sends a User-Agent naming the project and its repository.
 """
 
 import asyncio

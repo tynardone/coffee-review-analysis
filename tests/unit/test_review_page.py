@@ -1,7 +1,7 @@
 """Golden-output tests for the review parser.
 
 Parser regressions are silent: a changed class name makes `_parse_element`
-return None, so you get a column of nulls rather than an error. That is
+return None, which produces a column of nulls rather than an error. That is
 indistinguishable from real schema evolution, which this corpus has —
 `bottom_line` is absent before mid-2016, and `acidity` became
 `acidity/structure` across 2017-18. Pinning the full parse of ten real pages
@@ -30,7 +30,7 @@ def test_parse_matches_golden(path, golden):
 def test_core_fields_are_always_present(path):
     """The fields that must never be null, regardless of the page's vintage.
 
-    Distinct from the golden test: this one states the INVARIANT rather than the
+    Distinct from the golden test: this one states the invariant rather than the
     current output, so it stays meaningful when the golden file is regenerated.
     """
     data = parse_html(path.read_text(encoding="utf-8"))
@@ -41,8 +41,7 @@ def test_core_fields_are_always_present(path):
 def test_parse_html_on_unrecognized_markup_returns_nulls_not_errors():
     """An unexpected page yields empty fields rather than raising.
 
-    The scraper depends on this: a page that raises would be a scrape-wide
-    failure, whereas None fields are merely a row to drop.
+    A page from an unfamiliar template yields empty fields instead of an error.
     """
     data = parse_html("<html><body><p>nothing to see</p></body></html>")
     assert data["rating"] is None
@@ -99,7 +98,7 @@ def test_notes_section_stops_at_the_next_heading():
 
 
 def test_extracted_fields_are_stripped_but_prose_is_left_alone():
-    """Leading/trailing whitespace goes; whatever is INSIDE a value stays.
+    """Leading/trailing whitespace goes; whatever is inside a value stays.
 
     The markup indents its content, so every extracted value would otherwise
     carry the surrounding layout. Stripping the ends is lossless. Collapsing

@@ -2,8 +2,8 @@
 
 :func:`parse_html` extracts the rating, roaster, title, blind assessment,
 notes, and bottom line, then merges in the review's spec table (coffee origin,
-price, agtron, etc.). Parsing is pure CPU work on HTML already on disk, so the
-functions are synchronous; :mod:`coffee.parse` calls them, never the scrape.
+price, agtron, etc.). The functions are synchronous and do no I/O;
+:mod:`coffee.parse` calls them on saved pages.
 
 Field names are normalized at this boundary by :func:`normalize_field_name`, so
 the parsed reviews carry ``est_price`` rather than ``"Est. Price:"``. The scraped
