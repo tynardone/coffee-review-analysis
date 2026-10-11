@@ -279,6 +279,8 @@ preserves column types that CSV would lose.
 
 Every path is defined in `Settings` in `src/coffee/settings.py`, relative to
 `COFFEE_DATA_DIR` or `COFFEE_CURATED_DIR`.
+[`docs/data-dictionary.md`](docs/data-dictionary.md) lists every field in every
+file, with its meaning.
 
 ### Field names
 
@@ -536,7 +538,7 @@ config/       settings.toml, the committed default settings
 tests/        unit and integration tests, with saved review pages as fixtures
 data/         pipeline inputs and outputs; committed except downloaded/ and cleaned/
 curated/      files kept by hand that nothing can regenerate
-docs/         data flow, roaster resolution design, and the roadmap
+docs/         data dictionary, data flow, roaster resolution design, roadmap
 notebooks/    analysis
 notes/        background reading: how CoffeeReview scores, clustering methods
 ```

@@ -143,9 +143,9 @@ Considerations:
 
 ### 1.5 Documentation (Next)
 
-- **Data dictionary:** every column's type, meaning, units, completeness and
-  caveats (known issues 1–12). Generated from the schema in 1.1 where possible,
-  so it cannot drift from the code.
+- **Data dictionary:** [`data-dictionary.md`](data-dictionary.md) describes
+  every file and field. It is written by hand; generating it from the schema in
+  1.1 would keep it from drifting from the code.
 - **Dataset card:** what the dataset covers, how it was built, its known
   biases, and how to cite it.
 - **A shorter README:** the pitch, the main findings once they exist, the
