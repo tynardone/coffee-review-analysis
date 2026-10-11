@@ -20,7 +20,6 @@ comparing roasters requires entity resolution.
 - [Data sources](#data-sources)
 - [Data files](#data-files)
 - [Resolving roaster names](#resolving-roaster-names)
-- [Notebooks](#notebooks)
 - [Project layout](#project-layout)
 - [Documentation](#documentation)
 - [Development](#development)
@@ -38,8 +37,9 @@ uv sync
 
 `uv sync` creates a virtual environment in `.venv`, installs the locked
 dependencies from `uv.lock`, and installs the `coffee` package in editable mode.
-The `analysis` (notebooks) and `dev` (tooling) dependency groups are included by
-default. For the pipeline alone, use `uv sync --no-default-groups`.
+The `analysis` (Jupyter and analysis libraries) and `dev` (tooling) dependency
+groups are included by default. For the pipeline alone, use
+`uv sync --no-default-groups`.
 
 ### Configuration
 
@@ -52,9 +52,10 @@ Settings come from three places, each overriding the one before:
 
 Command-line flags override all three for a single run.
 
-The only secret is an [OpenExchangeRates](https://openexchangerates.org/signup/free)
-app ID, used to fetch exchange rates. The free tier allows 1,000 requests a
-month. Copy the template and fill it in:
+The only secret is an
+[OpenExchangeRates](https://openexchangerates.org/signup/free) app ID, used to
+fetch exchange rates. The free tier allows 1,000 requests a month. Copy the
+template and fill it in:
 
 ```bash
 cp .env.example .env
@@ -63,16 +64,16 @@ cp .env.example .env
 Every variable is named `COFFEE_` plus the setting's name, with a double
 underscore for a value inside a TOML table: `COFFEE_OPENEXCHANGERATES_API_ID`,
 `COFFEE_DATA_DIR` (default `data/`), `COFFEE_CURATED_DIR` (default `curated/`),
-`COFFEE_SCRAPE__CONCURRENCY`. Settings are checked when a command starts, so a
-bad value stops it immediately with a message naming the setting.
+`COFFEE_SCRAPE__CONCURRENCY`.
 
-Settings are checked strictly:
+Settings are checked when a command starts, and a problem stops it with a
+message naming the setting:
 
+- A bad value, such as a concurrency of 0, is an error.
 - A name that matches no setting is an error. A typo such as
   `COFFEE_SCRAPE__CONCURENCY`, or a TOML table written `[roaster]`, stops the
-  command. Lines in `.env`
-  without the `COFFEE_` prefix are left alone, since they may belong to
-  another tool.
+  command. Lines in `.env` without the `COFFEE_` prefix are left alone, since
+  they may belong to another tool.
 - A relative `COFFEE_DATA_DIR` or `COFFEE_CURATED_DIR` is relative to the
   project root, not to the folder a command is run from, and `~` is expanded.
 
@@ -89,11 +90,10 @@ them, not settings.
 Run commands from the repository root. `uv run` executes them in the project's
 environment without activating it.
 
-To bring the data up to date and open the notebooks:
+To bring the data up to date:
 
 ```bash
 uv run refresh-data
-uv run jupyter lab
 ```
 
 `refresh-data` runs six steps in dependency order, or five with `--skip-scrape`,
@@ -154,9 +154,9 @@ single run.
 file whose roaster names it groups, normally `data/parsed/reviews.csv`.
 `refresh-data` passes it for you.
 
-The pipeline ends at the cleaned dataset; charts and aggregates live in the
-notebooks. [`docs/data-flow.md`](docs/data-flow.md) maps every file the pipeline
-reads and writes.
+The pipeline ends at the cleaned dataset, which analysis builds on.
+[`docs/data-flow.md`](docs/data-flow.md) maps every file the pipeline reads and
+writes.
 
 ## Data sources
 
@@ -197,8 +197,8 @@ reported but kept: they can no longer be fetched, so the stored copy is the only
 one left.
 
 The saved pages take about 250 MB and are not committed; back them up with the
-rest of the disk. The first scrape into an empty `data/downloaded/` downloads every
-page once, which takes about half an hour.
+rest of the disk. The first scrape into an empty `data/downloaded/` downloads
+every page once, which takes about half an hour.
 
 ### Exchange rates
 
@@ -231,9 +231,9 @@ year and one column per month.
 
 The keyless API returns the last three years and allows 25 requests a day, which
 covers routine updates. To rebuild an older range, pass `--start-year` and
-`--end-year` together, up to ten years per request. Published figures do not change, so
-months already in the table are never overwritten, and the three-year window
-cannot shrink a table that goes back to 1990.
+`--end-year` together, up to ten years per request. Published figures do not
+change, so months already in the table are never overwritten, and the three-year
+window cannot shrink a table that goes back to 1990.
 
 Two quirks of the series are handled explicitly:
 
@@ -397,155 +397,21 @@ The same roaster appears under many spellings: `Onyx Coffee Lab`,
 one canonical name per roaster. Strong name matches are merged automatically
 unless the locations conflict, and the uncertain middle goes to a queue for a
 person to judge. Every judgment is recorded, so the manual work shrinks from
-one run to the next. [`docs/roaster-resolution.md`](docs/roaster-resolution.md)
-explains the design.
-
-### Files
-
-| File | Location | Edit? | Purpose |
-|---|---|---|---|
-| `roaster_decisions.csv` | `curated/` | Yes | Every pair that has been judged. The only file that cannot be regenerated. |
-| `review_queue.csv` | `data/roasters/` | `verdict` column only | Pairs awaiting judgment. Regenerated on every run. |
-| `crosswalk.csv` | `data/roasters/` | No | The output, mapping `raw_name` to `canonical_name`. Regenerated on every run. |
-
-All three are committed. The crosswalk is committed so that joins against it are
-reproducible.
-
-### Workflow
-
-**1. Resolve.**
+one run to the next.
 
 ```bash
 uv run resolve-roasters data/parsed/reviews.csv
 ```
 
-The summary answers four questions:
-
-```
-1688 distinct spellings -> 1497 roasters (191 merged)      did it do anything?
-18 decisions applied from …/roaster_decisions.csv          are past calls applied?
-0 pairs queued for review -> …/review_queue.csv    how much is left to judge?
-11 rows in chain-risk clusters  <-- INSPECT THESE          did clustering misbehave?
-```
-
-**2. Judge the queue.** Open `data/roasters/review_queue.csv` and fill in
-the `verdict` column. Leave every other column alone.
-
-- Same company: `merge`, `yes`, `y`, `m`, `same` or `1`
-- Different companies: `split`, `no`, `n`, `s`, `different` or `0`
-
-Rows left blank come back on the next run. Any other value is reported as an
-error.
-
-| name_a | name_b | score | location_evidence | verdict |
-|---|---|---|---|---|
-| Boyd Coffee | Boyds Coffee | 88.9 | `same` | `merge` |
-| Fellow Coffee | Mellow Coffee | 83.3 | `neutral` | `split` |
-
-The `location_evidence` column is a useful guide:
-
-- `same`: both names share an address. Usually one company, but not always;
-  `Wei Chuan Foods` and `Tehmag Foods` share a city and are unrelated.
-- `neutral`: same region, different city. Usually different companies.
-- `unknown`: at least one name has no location. Judge on the names alone.
-
-**3. Record the verdicts and resolve again.**
+Fill in the `verdict` column of `data/roasters/review_queue.csv` (`merge` or
+`split`), then record the answers and resolve again:
 
 ```bash
 uv run resolve-roasters data/parsed/reviews.csv --accept-reviewed --decided-by "$USER"
 ```
 
-This adds your answers to `curated/roaster_decisions.csv` and resolves again with
-them applied. The new queue holds only the rows you left blank.
-
-Always follow step 2 with this step. A plain run regenerates the queue, which
-would discard answers not yet recorded, so the command refuses to run while the
-queue holds any and tells you to add `--accept-reviewed`.
-
-**4. Commit the three files.**
-
-After the next scrape and parse, start again at step 1. Pairs already decided stay
-decided, so the queue holds only new questions. If an answered pair reappears,
-check that `curated/roaster_decisions.csv` exists and that `--decisions` is not
-pointing elsewhere.
-
-### Checking the results
-
-Chain-risk clusters were joined only through a chain of similar names, which
-makes them the likeliest false merges. To list them:
-
-```bash
-uv run python -c "import pandas as pd; c=pd.read_csv('data/roasters/crosswalk.csv'); print(c[c.chain_risk][['raw_name','canonical_name','min_internal_score']].to_string(index=False))"
-```
-
-To find matches the name score misses, also queue lower-scoring pairs that share
-an address. This is how `Starbucks` and `Starbucks Reserve Roastery` (score 72)
-come to light. These pairs are only queued, never merged automatically. On the
-current data this adds 13 pairs:
-
-```bash
-uv run resolve-roasters data/parsed/reviews.csv --location-review 70
-```
-
-### When a split does not hold
-
-Clustering links names in chains, so two names you have split can still end up
-together through a third name that resembles both. The usual culprit is a
-collaboration:
-
-```
-RND                               -> key 'rnd'
-Red Rooster Coffee Roaster        -> key 'red rooster'
-RND & Red Rooster Coffee Roaster  -> key 'red rnd rooster'   superset of both
-```
-
-Blocking the direct link does not help, because the two names remain connected
-through the collaboration. The run warns when this happens:
-
-```
-!! 1 cluster(s) VIOLATE a split decision -- these names were kept together
-   despite your verdict:
-    RND  |  RND & Red Rooster Coffee Roaster  |  Red Rooster Coffee Roaster
-```
-
-To fix it, also record a split against the bridging name: here, `RND` against
-`RND & Red Rooster Coffee Roaster`. Affected rows are flagged in the crosswalk's
-`violates_decision` column.
-
-### Rules
-
-1. Never edit `data/roasters/crosswalk.csv` by hand; it is overwritten on every run. To
-   change a grouping, change the decision behind it.
-2. To reverse a decision, edit `curated/roaster_decisions.csv` directly.
-   `--accept-reviewed` never overwrites an existing verdict, so a change of mind
-   always shows up as a diff.
-
-## Notebooks
-
-| Notebook | Reads | Produces |
-|---|---|---|
-| `01-data-cleaning` | the parsed reviews and reference data | `data/cleaned/reviews.parquet`, using the same code as `clean-reviews` |
-| `02-data-EDA` | `data/cleaned/reviews.parquet` | exploratory charts |
-| `03-text-features` | `data/cleaned/reviews.parquet` | word clouds in `imgs/` |
-
-The cleaned dataset is not committed. On a fresh checkout, build it with
-`uv run clean-reviews` or by running notebook 01 before opening the others.
-
-Notebook 03 also needs NLTK corpora, which it downloads itself, and a spaCy
-model, installed once:
-
-```bash
-uv run python -m spacy download en_core_web_sm
-```
-
-Notebook outputs are stripped on commit by the `nbstripout` pre-commit hook,
-which keeps chart images out of git history.
-
-Figures worth keeping go in `imgs/`. Git cannot store a new version of an image
-as a small difference, so each changed PNG adds its full size to the history.
-Commit a figure when you mean to update it. The word clouds use a fixed random
-seed, so re-running notebook 03 on unchanged data rewrites them byte for byte
-and git sees no change.
+[`docs/roaster-resolution.md`](docs/roaster-resolution.md) covers the full
+workflow, how to check the results, and the design.
 
 ## Project layout
 
@@ -556,12 +422,11 @@ tests/        unit and integration tests, with saved review pages as fixtures
 data/         pipeline inputs and outputs; committed except downloaded/ and cleaned/
 curated/      files kept by hand that nothing can regenerate
 docs/         data dictionary, data flow, roaster resolution design, roadmap
-notebooks/    analysis
 notes/        background reading: how CoffeeReview scores, clustering methods
 ```
 
 The package lives under `src/`, so it can only be imported once installed. Tests,
-notebooks and the console commands therefore all run the same code.
+notebooks and the console commands therefore all import the same code.
 
 Each pipeline step has a module named after its command; the modules listed
 under a step are the helpers it uses.
@@ -592,10 +457,11 @@ under a step are the helpers it uses.
 - `clean.py` builds the cleaned layer.
 - `price_text.py` reads one free-text price into an amount, a currency, a
   quantity and a format.
-- `prices.py` handles currency conversion and inflation adjustment. It is
-  separate because it is the only part of cleaning that needs outside data.
-  Every step in both modules is a pure `DataFrame -> DataFrame` function that
-  takes its reference data as an argument.
+- `prices.py` converts prices to US dollars and attaches each review month's
+  CPI, the only part of cleaning that needs outside data. Its
+  `to_baseline_dollars` adjusts for inflation where prices are shown. Every
+  step in `clean.py` and `prices.py` is a pure `DataFrame -> DataFrame`
+  function that takes its reference data as an argument.
 - `exchange_rates.py` and `cpi.py` fetch the reference data.
 - `roasters/` resolves roaster names, one module per stage: `normalize`,
   `similarity`, `location`, `cluster`, `decisions` (the only one that touches
@@ -613,7 +479,7 @@ The [`docs/`](docs/) folder holds the reference material behind this README.
 |---|---|
 | [Data dictionary](docs/data-dictionary.md) | Every file the pipeline reads or writes, and every field in it, with its meaning. |
 | [Data flow](docs/data-flow.md) | Which command writes each file and which reads it, and what each file costs to rebuild. |
-| [Roaster name resolution](docs/roaster-resolution.md) | The design behind grouping roaster spellings: the cascade, the thresholds and the known limits. |
+| [Roaster name resolution](docs/roaster-resolution.md) | How to run and review roaster grouping, and the design behind it: the cascade, the thresholds and the known limits. |
 | [Roadmap](docs/roadmap.md) | What could come next, for the dataset and for the analysis built on it. |
 
 ## Development
@@ -629,8 +495,8 @@ marked `network`, and CI skips those.
 
 `tests/fixtures/html/` holds ten real review pages, and
 `tests/fixtures/parsed_reviews.json` records how each should parse, so a change
-in parsing fails a test. After a deliberate
-parser change, regenerate the file and review the diff:
+in parsing fails a test. After a deliberate parser change, regenerate the file
+and review the diff:
 
 ```bash
 uv run python -m tests.generate_golden
@@ -660,5 +526,5 @@ pull request and every push to `main`.
 
 - [OpenExchangeRates API](https://docs.openexchangerates.org/reference/api-introduction)
 - [BLS Consumer Price Index data](https://www.bls.gov/cpi/data.htm)
-- [How to Use t-SNE Effectively](https://distill.pub/2016/misread-tsne/), background for the embedding work in `03-text-features.ipynb`
+- [How to Use t-SNE Effectively](https://distill.pub/2016/misread-tsne/): background for embedding and clustering the review text
 - [`notes/how_coffee_review_works.md`](notes/how_coffee_review_works.md): how CoffeeReview scores coffees

@@ -198,7 +198,7 @@ fields; the processing and variety views wait for 1.3.
 **Tools.** A static site on GitHub Pages is free and stays up without a server:
 
 - Evidence.dev: pages written in SQL and Markdown, a good fit with DuckDB.
-- Quarto dashboards: Python, close to the existing notebooks.
+- Quarto dashboards: Python, like the rest of the project.
 - Observable Framework: the most flexible, in JavaScript.
 - Streamlit: Python and interactive, but it needs a host (Streamlit Community
   Cloud is free).
