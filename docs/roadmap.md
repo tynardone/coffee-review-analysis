@@ -182,6 +182,19 @@ API. Cache every lookup in a committed file, so each place is requested once.
 - Property-based tests for the price and quantity parser, using Hypothesis.
 - Support Python 3.14: widen `requires-python` and add it to the CI matrix.
 - Merge Dependabot's pull requests as they arrive.
+- **One `coffee` command with subcommands, built with Typer.** `coffee scrape`,
+  `coffee parse`, `coffee resolve-roasters`, `coffee fetch-rates`,
+  `coffee fetch-cpi`, `coffee clean` and `coffee refresh` replace the seven
+  separate commands, with one `coffee --help` listing them all. Typer builds
+  each command from the function's type hints, which fits the strictly typed
+  package and removes most of `cli.py`'s argument-parsing code.
+  - Defaults that come from the settings are applied inside each command, so
+    settings load only when a command runs. `--help` then works even when a
+    setting is invalid.
+  - `coffee refresh` calls the step functions directly, rather than passing
+    argument lists to the other commands.
+  - Tests use Typer's `CliRunner`. The README's usage section and command
+    options table change to the new names.
 
 ---
 
