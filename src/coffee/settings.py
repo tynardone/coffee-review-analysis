@@ -3,8 +3,8 @@
 Values fall into three kinds, kept apart:
 
 - **Config** that you might change without editing Python: where data lives,
-  the log level, scrape concurrency, the inflation baseline, the roaster
-  thresholds. Defaults are committed in ``config/settings.toml``.
+  the log level, scrape concurrency, the roaster thresholds. Defaults are
+  committed in ``config/settings.toml``.
 - **Secrets**: the OpenExchangeRates app ID. Only ever in the environment or
   ``.env``, never in a committed file.
 - **Constants** that are part of the code's logic: site URLs, timeouts, retry
@@ -34,7 +34,6 @@ call :func:`get_settings` and pass the values they need down.
 import os
 import tomllib
 from collections.abc import Mapping
-from datetime import date
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal, Self
@@ -106,22 +105,6 @@ class ScrapeSettings(_Section):
     lookback_hours: int = Field(default=24, ge=0)
 
 
-class PriceSettings(_Section):
-    baseline_date: date = date(2026, 1, 1)
-
-    @field_validator("baseline_date")
-    @classmethod
-    def _first_of_a_month(cls, value: date) -> date:
-        # CPI is published per month, keyed on its first day, so any other
-        # day would fail later with a misleading "no CPI for this date".
-        if value.day != 1:
-            raise ValueError(
-                f"must be the first day of a month, such as "
-                f"{value.replace(day=1).isoformat()}: CPI is monthly"
-            )
-        return value
-
-
 class RoasterSettings(_Section):
     auto_threshold: int = Field(default=92, ge=0, le=100)
     review_threshold: int = Field(default=82, ge=0, le=100)
@@ -155,7 +138,6 @@ class Settings(BaseSettings):
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
 
     scrape: ScrapeSettings = ScrapeSettings()
-    prices: PriceSettings = PriceSettings()
     roasters: RoasterSettings = RoasterSettings()
 
     # Optional here because only `fetch-exchange-rates` needs it; that command

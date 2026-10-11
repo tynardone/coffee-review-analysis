@@ -341,28 +341,9 @@ def test_clean_reviews_prices_when_reference_data_is_given():
         cpi=pd.DataFrame(
             [(150.0, "2000-01-01"), (300.0, "2026-01-01")], columns=["cpi", "date"]
         ).assign(date=lambda d: pd.to_datetime(d["date"])),
-        baseline_date="2026-01-01",
     )
     row = out.iloc[0]
     assert row["price_usd"] == 20.0
-    assert row["price_usd_adj"] == 40.0  # CPI 150 -> 300
-    assert row["price_usd_adj_per_lb"] == 40.0
-    assert row["price_status"] == "adjusted"
-
-
-def test_a_baseline_the_cpi_table_does_not_cover_is_refused():
-    """Adjusting to a different month would change every price."""
-    cpi = pd.DataFrame([(300.0, "2024-06-01")], columns=["cpi", "date"]).assign(
-        date=lambda d: pd.to_datetime(d["date"])
-    )
-    rates = pd.DataFrame(
-        [("2000-01-01", "USD", 1.0)],
-        columns=["review_date", "price_currency", "rate"],
-    ).assign(review_date=lambda d: pd.to_datetime(d["review_date"]))
-    with pytest.raises(ValueError, match="covers through 2024-06-01"):
-        clean_reviews(
-            _raw_row(),
-            exchange_rates=rates,
-            cpi=cpi,
-            baseline_date="2026-01-01",
-        )
+    assert row["price_usd_per_lb"] == 20.0  # 16 ounces
+    assert row["cpi"] == 150.0
+    assert row["price_status"] == "comparable"

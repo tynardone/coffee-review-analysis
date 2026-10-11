@@ -163,9 +163,6 @@ def test_the_old_unprefixed_key_name_still_works(tmp_path):
         ("COFFEE_SCRAPE__CONCURRENCY", "0"),
         ("COFFEE_SCRAPE__CONCURRENCY", "ten"),
         ("COFFEE_LOG_LEVEL", "LOUD"),
-        ("COFFEE_PRICES__BASELINE_DATE", "January"),
-        # CPI is monthly; mid-month would fail later, and misleadingly.
-        ("COFFEE_PRICES__BASELINE_DATE", "2026-01-15"),
         ("COFFEE_ROASTERS__AUTO_THRESHOLD", "101"),
     ],
 )
@@ -215,6 +212,13 @@ def test_a_misspelled_variable_is_reported():
     ]
 
 
+def test_the_retired_baseline_setting_is_reported():
+    """The baseline is chosen where prices are shown, not in the settings."""
+    assert unknown({"COFFEE_PRICES__BASELINE_DATE": "2026-01-01"}) == [
+        "COFFEE_PRICES__BASELINE_DATE in the environment"
+    ]
+
+
 def test_a_misspelled_dotenv_line_is_reported(tmp_path):
     env = tmp_path / ".env"
     env.write_text("COFFEE_DATADIR=/tmp/x\n")
@@ -235,7 +239,6 @@ def test_every_real_name_is_known(tmp_path):
         "COFFEE_CURATED_DIR": "/c",
         "COFFEE_SCRAPE__CONCURRENCY": "4",
         "COFFEE_SCRAPE__LOOKBACK_HOURS": "1",
-        "COFFEE_PRICES__BASELINE_DATE": "2026-01-01",
         "COFFEE_ROASTERS__AUTO_THRESHOLD": "92",
         "coffee_roasters__review_threshold": "82",  # names ignore case
         "COFFEE_OPENEXCHANGERATES_API_ID": "k",

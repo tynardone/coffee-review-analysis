@@ -5,12 +5,19 @@ per 225 grams, dollars per pound, Canadian dollars per 340 grams. Comparing thos
 takes two conversions and two reference tables the reviews do not carry -- historical
 exchange rates, and the CPI.
 
-:func:`add_comparable_prices` composes the steps; :func:`coffee.clean.clean_reviews`
-calls it when both tables are available.
+The conversions happen in two places:
+
+- :func:`add_comparable_prices` runs during cleaning. It converts each price to
+  US dollars at the review month's rate and attaches that month's CPI. These
+  are facts about the review, so they belong in the cleaned dataset.
+- :func:`to_baseline_dollars` runs wherever prices are shown. It expresses
+  prices in the dollars of a chosen month. The baseline is a choice about how
+  to show prices, not a fact about a review, so the cleaned dataset carries
+  none, and a notebook or dashboard can pick any month the CPI table covers.
 """
 
 import json
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 from typing import Final
 
@@ -21,21 +28,22 @@ __all__ = [
     "PRICE_STATUSES",
     "add_comparable_prices",
     "add_price_status",
+    "attach_cpi",
     "convert_currency",
-    "cpi_adjust_price",
     "load_cpi",
     "load_exchange_rates",
     "price_per_lb",
+    "to_baseline_dollars",
 ]
 
-# Why a review's inflation-adjusted price is or is not there, in pipeline
-# order: the first step that failed is the one recorded.
+# Whether a review's price can be put in a baseline month's dollars, and if
+# not, why: the first step that failed, in pipeline order.
 PRICE_STATUSES: Final = (
     "no_price",  # the page names no price
     "not_converted",  # cleaned without exchange rates and CPI
     "no_exchange_rate",  # no rate for the currency in the review month
     "no_cpi",  # no published CPI for the review month
-    "adjusted",  # price_usd_adj holds the price in baseline dollars
+    "comparable",  # has price_usd and cpi, so any baseline can be applied
 )
 
 # ==========================================================================
@@ -99,58 +107,28 @@ def convert_currency(df: pd.DataFrame, exchange_rates: pd.DataFrame) -> pd.DataF
     ).drop(columns="rate")
 
 
-def cpi_adjust_price(
-    df: pd.DataFrame, cpi: pd.DataFrame, baseline_date: str
-) -> pd.DataFrame:
-    """Express prices in `baseline_date` dollars using CPI-U.
+def attach_cpi(df: pd.DataFrame, cpi: pd.DataFrame) -> pd.DataFrame:
+    """Add ``cpi``: the CPI-U for each review's month.
 
-    Adds ``price_usd_adj`` and ``price_baseline_date``. The baseline travels
-    with the number because it is the number's unit: two files can hold the
-    same column in different dollars and look identical without it.
-
-    Where the review month has no published CPI, ``price_usd_adj`` and
-    ``price_baseline_date`` are left empty; ``price_usd`` keeps the converted
-    price, and :func:`add_price_status` marks the row ``no_cpi``.
+    Empty where the BLS has published no CPI for the month. Checks that the row
+    count survives the merge, since a duplicated month in the CPI table would
+    otherwise multiply reviews.
     """
-    baseline = cpi.loc[cpi["date"] == baseline_date, "cpi"]
-    if baseline.empty:
-        # Naming the range turns this into a one-step fix: either the baseline
-        # is a typo, or the CPI table needs a newer download from the BLS.
-        published = cpi.dropna(subset=["cpi"])["date"]
-        latest = published.max().date() if not published.empty else "none"
-        raise ValueError(
-            f"No CPI value for baseline date {baseline_date!r}. "
-            f"The CPI table covers through {latest}. Either pass a "
-            "--baseline-date within that range, or download a newer table "
-            "from https://www.bls.gov/cpi/data.htm."
-        )
-
     before = len(df)
     merged = df.merge(cpi, how="left", left_on="review_date", right_on="date")
     if len(merged) != before:
         raise ValueError(
-            f"CPI merge changed the row count ({before} -> {len(merged)})."
+            f"CPI merge changed the row count ({before} -> {len(merged)}); "
+            "the CPI table likely holds a month twice."
         )
-    adjusted = merged["cpi"].notna() & merged["price_usd"].notna()
-    return merged.assign(
-        price_usd_adj=lambda d: (d["price_usd"] * baseline.iloc[0] / d["cpi"]).round(2),
-        # .where keeps the baseline only where the adjustment actually ran: not
-        # on a month without CPI, and not on a review with no price at all.
-        price_baseline_date=lambda d: pd.Series(
-            baseline_date, index=d.index, dtype="string"
-        ).where(adjusted),
-        # The CPI table's own columns came in on the merge and have no business
-        # downstream: `date` duplicates review_date exactly, and `cpi` is the
-        # input to the calculation rather than part of its result.
-    ).drop(columns=["cpi", "date"])
+    # `date` came in on the merge and duplicates review_date exactly.
+    return merged.drop(columns="date")
 
 
 def price_per_lb(df: pd.DataFrame) -> pd.DataFrame:
-    """The comparable figure: inflation-adjusted USD per pound."""
+    """Add ``price_usd_per_lb``: US dollars per pound, for weight prices."""
     return df.assign(
-        price_usd_adj_per_lb=lambda d: np.round(
-            d["price_usd_adj"] / d["quantity_in_lbs"], 2
-        )
+        price_usd_per_lb=lambda d: np.round(d["price_usd"] / d["quantity_in_lbs"], 2)
     )
 
 
@@ -160,16 +138,16 @@ def price_per_lb(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def add_price_status(df: pd.DataFrame) -> pd.DataFrame:
-    """Add ``price_status``: why ``price_usd_adj`` is or is not filled.
+    """Add ``price_status``: whether a price can be put in baseline dollars.
 
     One of :data:`PRICE_STATUSES`. It answers the question for every review,
-    so a missing price can be told apart from one that could not be converted
-    or adjusted. Whether a price per pound exists is a separate question, which
+    so a missing price can be told apart from one that could not be converted.
+    Whether a price per pound exists is a separate question, which
     ``price_format`` answers: only ``weight`` prices have one.
     """
-    status = pd.Series("adjusted", index=df.index, dtype="string")
-    if "price_usd_adj" in df.columns:
-        status = status.mask(df["price_usd_adj"].isna(), "no_cpi")
+    status = pd.Series("comparable", index=df.index, dtype="string")
+    if "price_usd" in df.columns:
+        status = status.mask(df["cpi"].isna(), "no_cpi")
         status = status.mask(df["price_usd"].isna(), "no_exchange_rate")
     else:
         status[:] = "not_converted"
@@ -178,21 +156,67 @@ def add_price_status(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def add_comparable_prices(
-    cleaned: pd.DataFrame,
-    *,
-    exchange_rates: pd.DataFrame,
-    cpi: pd.DataFrame,
-    baseline_date: str,
+    cleaned: pd.DataFrame, *, exchange_rates: pd.DataFrame, cpi: pd.DataFrame
 ) -> pd.DataFrame:
-    """Cleaned reviews in, comparable prices out.
+    """Cleaned reviews in, prices ready for any baseline out.
 
-    Adds ``price_usd``, ``price_usd_adj`` and ``price_usd_adj_per_lb``. The
-    figures the cleaned layer already carries -- ``price_value``,
-    ``price_currency``, ``quantity_in_lbs`` -- are left untouched, so a
-    priced row stays traceable back to what the site printed.
+    Adds ``price_usd``, ``price_usd_per_lb`` and ``cpi``. The figures the
+    cleaned layer already carries -- ``price_value``, ``price_currency``,
+    ``quantity_in_lbs`` -- are left untouched, so a priced row stays traceable
+    back to what the site printed.
     """
     return (
         cleaned.pipe(convert_currency, exchange_rates)
-        .pipe(cpi_adjust_price, cpi, baseline_date)
+        .pipe(attach_cpi, cpi)
         .pipe(price_per_lb)
+    )
+
+
+# ==========================================================================
+# Baseline dollars, applied where prices are shown
+# ==========================================================================
+
+
+def to_baseline_dollars(
+    df: pd.DataFrame, cpi: pd.DataFrame, baseline: date
+) -> pd.DataFrame:
+    """Express prices in the dollars of the month ``baseline``.
+
+    Takes cleaned reviews, which carry ``price_usd``, ``price_usd_per_lb`` and
+    the review month's ``cpi``, and the CPI table from :func:`load_cpi`. Adds
+    ``price_usd_adj`` and ``price_usd_adj_per_lb``, each scaled by
+    ``CPI(baseline) / cpi``, and ``price_baseline_date``. The baseline travels
+    with the number because it is the number's unit.
+
+    A row without ``cpi`` or ``price_usd`` gets no adjusted price and no
+    baseline. ``baseline`` must be the first day of a month the CPI table
+    covers.
+    """
+    if baseline.day != 1:
+        raise ValueError(
+            f"Baseline {baseline.isoformat()} must be the first day of a month, "
+            f"such as {baseline.replace(day=1).isoformat()}: CPI is monthly."
+        )
+    baseline_cpi = cpi.loc[cpi["date"] == pd.Timestamp(baseline), "cpi"].dropna()
+    if baseline_cpi.empty:
+        # Naming the range turns this into a one-step fix: either the baseline
+        # is a typo, or the CPI table needs updating with `fetch-cpi`.
+        published = cpi.dropna(subset=["cpi"])["date"]
+        latest = published.max().date() if not published.empty else "none"
+        raise ValueError(
+            f"No CPI value for baseline {baseline.isoformat()}. The CPI table "
+            f"covers through {latest}. Choose a baseline within that range, or "
+            "update the table with `uv run fetch-cpi`."
+        )
+
+    factor = baseline_cpi.iloc[0] / df["cpi"]
+    adjusted = (df["price_usd"] * factor).round(2)
+    return df.assign(
+        price_usd_adj=adjusted,
+        price_usd_adj_per_lb=(df["price_usd_per_lb"] * factor).round(2),
+        # Only where the adjustment ran: not on a month without CPI, and not on
+        # a review with no price at all.
+        price_baseline_date=pd.Series(pd.Timestamp(baseline), index=df.index).where(
+            adjusted.notna()
+        ),
     )

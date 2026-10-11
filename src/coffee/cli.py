@@ -8,7 +8,7 @@ in the modules these import, so it stays importable from notebooks and tests.
 
 Each command loads the settings once, through
 :func:`~coffee.settings.get_settings`, and takes its defaults from them: file
-paths, the log level, concurrency, the baseline month, the roaster thresholds.
+paths, the log level, concurrency, the roaster thresholds.
 Command-line flags override those for a single run. Nothing below this layer
 reads the environment.
 """
@@ -18,7 +18,7 @@ import asyncio
 import inspect
 import logging
 from collections.abc import Callable
-from datetime import date, timedelta
+from datetime import timedelta
 from pathlib import Path
 
 import httpx
@@ -91,26 +91,6 @@ def _configure_logging(settings: Settings) -> None:
     # a line per page, so only its warnings and errors get through.
     for noisy in ("httpx", "httpcore"):
         logging.getLogger(noisy).setLevel(logging.WARNING)
-
-
-def _month_start(value: str) -> str:
-    """argparse type for a baseline month: an ISO date on the first of a month.
-
-    The same rule the settings apply to ``[prices] baseline_date``, so a flag
-    cannot slip past it. Returned as text, the form the price steps compare.
-    """
-    try:
-        parsed = date.fromisoformat(value)
-    except ValueError as exc:
-        raise argparse.ArgumentTypeError(
-            f"expected a date such as 2026-01-01, got {value!r}"
-        ) from exc
-    if parsed.day != 1:
-        raise argparse.ArgumentTypeError(
-            f"must be the first day of a month, such as "
-            f"{parsed.replace(day=1).isoformat()}: CPI is monthly"
-        )
-    return parsed.isoformat()
 
 
 def _positive_int(value: str) -> int:
@@ -423,15 +403,7 @@ def clean_reviews_command(argv: list[str] | None = None) -> None:
         "--cpi",
         type=Path,
         default=settings.cpi,
-        help="BLS CPI-U table; inflation adjustment is skipped if absent",
-    )
-    parser.add_argument(
-        "--baseline-date",
-        type=_month_start,
-        default=settings.prices.baseline_date.isoformat(),
-        help="the month whose dollars adjusted prices are expressed in "
-        "(default from settings: %(default)s). Must be the first day of a "
-        "month the CPI table covers.",
+        help="BLS CPI-U table; prices get no CPI if absent",
     )
     args = parser.parse_args(argv)
 
@@ -460,9 +432,8 @@ def clean_reviews_command(argv: list[str] | None = None) -> None:
             exchange_rates=rates,
             cpi=cpi,
             crosswalk=crosswalk,
-            baseline_date=args.baseline_date,
         )
-    except ValueError as exc:  # an unusable baseline is a user error
+    except ValueError as exc:  # a damaged reference table, not a bug
         raise SystemExit(str(exc)) from exc
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
@@ -472,8 +443,6 @@ def clean_reviews_command(argv: list[str] | None = None) -> None:
         f"{len(parsed)} parsed -> {len(cleaned)} cleaned "
         f"({dropped} dropped as agtron typos)"
     )
-    if rates is not None and cpi is not None:
-        print(f"prices in {args.baseline_date} dollars")
     print(f"wrote {args.output}")
 
 
@@ -542,13 +511,6 @@ def refresh_data(argv: list[str] | None = None) -> None:
         "Exchange rates and CPI stay incremental.",
     )
     parser.add_argument(
-        "--baseline-date",
-        type=_month_start,
-        default=settings.prices.baseline_date.isoformat(),
-        help="month whose dollars adjusted prices use (default from settings: "
-        "%(default)s)",
-    )
-    parser.add_argument(
         "--skip-scrape",
         action="store_true",
         help="make no review requests; parse and rebuild from saved pages",
@@ -565,10 +527,7 @@ def refresh_data(argv: list[str] | None = None) -> None:
         ("resolve roasters", lambda: resolve_roasters([str(parsed)])),
         ("fetch exchange rates", lambda: fetch_exchange_rates([])),
         ("fetch CPI", lambda: fetch_cpi_command([])),
-        (
-            "clean",
-            lambda: clean_reviews_command(["--baseline-date", args.baseline_date]),
-        ),
+        ("clean", lambda: clean_reviews_command([])),
     ]
 
     for number, (name, run) in enumerate(steps, start=1):

@@ -283,19 +283,33 @@ highest is over $10,000, for competition lots sold in small amounts.
 ### Comparable prices
 
 These columns are filled only when cleaning has exchange rates and CPI data.
+They are in each review month's own dollars; see
+[Baseline dollars](#baseline-dollars) for adjusting them for inflation.
 
 | Field | Type | Meaning |
 |---|---|---|
 | `price_usd` | float | The price in US dollars, at the rate for the review month. |
-| `price_usd_adj` | float | `price_usd` in `price_baseline_date` dollars, adjusted with CPI-U. Empty when the review month has no published CPI. |
-| `price_usd_adj_per_lb` | float | `price_usd_adj` per pound. Only for `weight` prices. |
-| `price_baseline_date` | text | The month whose dollars `price_usd_adj` is in, such as `2026-01-01`. Set only on adjusted rows. |
-| `price_status` | text | Why `price_usd_adj` is or is not filled; see below. Set on every row. |
+| `price_usd_per_lb` | float | `price_usd` per pound. Only for `weight` prices. |
+| `cpi` | float | The CPI-U for the review month. Empty when the BLS has published none. |
+| `price_status` | text | Whether the price can be adjusted for inflation, and if not, why; see below. Set on every row. |
 
 | `price_status` | Meaning |
 |---|---|
-| `adjusted` | `price_usd_adj` holds the price in baseline dollars. |
+| `comparable` | Has `price_usd` and `cpi`, so it can be put in any baseline month's dollars. |
 | `no_cpi` | Converted to dollars, but the BLS has published no CPI for the review month. |
 | `no_exchange_rate` | No exchange rate for the currency in the review month. |
 | `not_converted` | Cleaned without exchange rates and CPI. |
 | `no_price` | The review names no price. |
+
+### Baseline dollars
+
+The cleaned dataset carries no baseline month. `to_baseline_dollars` in
+`src/coffee/prices.py` adds these columns for a chosen month, which must be the
+first day of a month the CPI table covers. The README's
+[Comparable prices](../README.md#comparable-prices) section shows how to call it.
+
+| Field | Type | Meaning |
+|---|---|---|
+| `price_usd_adj` | float | `price_usd × CPI(baseline) ÷ cpi`: the price in baseline dollars. Empty where `cpi` or `price_usd` is. |
+| `price_usd_adj_per_lb` | float | `price_usd_per_lb`, scaled the same way. Only for `weight` prices. |
+| `price_baseline_date` | datetime | The baseline month. Set only on rows that were adjusted. |
