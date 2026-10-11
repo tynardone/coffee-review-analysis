@@ -2,8 +2,8 @@
 
 Raw rows record what the site published; cleaned rows are what the analysis
 consumes. This module owns that transition: coercing types, parsing the
-free-text price into a value, a currency and a quantity, and resolving origin
-and roaster locations to countries.
+free-text price into a value, a currency, a quantity and a format, and
+resolving origin and roaster locations to countries.
 
 The field-level work needs nothing but the parsed reviews. Putting prices in
 comparable money needs historical exchange rates and CPI; those steps live in
@@ -19,6 +19,7 @@ can be tested against a few hand-written rows.
 public because they are useful one at a time when exploring in a notebook.
 """
 
+import logging
 import re
 from collections.abc import Mapping
 from functools import cache
@@ -29,13 +30,14 @@ import pandas as pd
 import pycountry
 from unidecode import unidecode
 
-from coffee.prices import add_comparable_prices
+from coffee.price_text import parse_price_text
+from coffee.prices import add_comparable_prices, add_price_status
 from coffee.review_page import normalize_field_name
 
 __all__ = [
     "CURRENCY_MAP",
     "DEFAULT_MAX_AGTRON",
-    "NON_WHOLE_BEAN_TERMS",
+    "PRICE_FIELDS",
     "US_PRICE_UNITS",
     "apply_roaster_crosswalk",
     "check_raw_schema",
@@ -43,37 +45,22 @@ __all__ = [
     "clean_origin",
     "clean_reviews",
     "clean_roaster_location",
+    "coalesce_price_fields",
     "convert_to_lbs",
     "normalize_types",
     "split_price_and_quantity",
 ]
 
+logger = logging.getLogger(__name__)
+
 # Agtron readings above this are website typos, not measurements.
 DEFAULT_MAX_AGTRON: Final = 100
 
-# Formats that are not whole-bean coffee sold by weight. Their prices are not
-# comparable per pound, so the quantity is left unparsed rather than guessed.
-NON_WHOLE_BEAN_TERMS: Final[tuple[str, ...]] = (
-    "can",
-    "box",
-    "capsules",
-    "K-",
-    "cups",
-    "bags",
-    "concentrate",
-    "discs",
-    "bottle",
-    "pods",
-    "ml",
-    "pouch",
-    "packet|tin",
-    "instant",
-    "sachet",
-    "vue",
-    "single-serve",
-    "fluid",
-    "capsultes",
-)
+# The labels the site has used for a review's price, preferred first. The
+# parsed reviews keep each under its own name; cleaning reads them as one. Any
+# other column with "price" in its name is read too, after these, and logged,
+# so a new label is captured rather than lost.
+PRICE_FIELDS: Final[tuple[str, ...]] = ("est_price", "estimated_price")
 
 # Currency symbols and aliases the site uses, mapped to ISO 4217. Matched
 # against the whole value after stripping "$", since exact matching avoids the
@@ -95,6 +82,9 @@ CURRENCY_MAP: Final[Mapping[str, str]] = {
     "NT": "TWD",
     "NTD": "TWD",
     "HK": "HKD",
+    "AU": "AUD",
+    "CN¥": "CNY",
+    "KČ": "CZK",
 }
 
 US_PRICE_UNITS: Final[Mapping[str, float]] = {
@@ -260,76 +250,52 @@ def normalize_types(
     )
 
 
-def split_price_and_quantity(df: pd.DataFrame) -> pd.DataFrame:
-    """Parse ``est_price`` ("$19.00/16 ounces") into value, currency, quantity.
+def coalesce_price_fields(df: pd.DataFrame) -> pd.DataFrame:
+    """Read every price field the site has used into one ``price_text``.
 
-    Rows whose quantity names a non-whole-bean format, or that cannot be
-    parsed, keep every other field and receive no quantity. The result is
-    merged back on the index with a left join, so no review is removed.
+    Adds ``price_text``, the price exactly as the site wrote it, and
+    ``price_field``, the field it came from. The original columns are kept.
+    Where a review has more than one, the first in :data:`PRICE_FIELDS` wins.
     """
-    drop_terms = "|".join(NON_WHOLE_BEAN_TERMS)
-    parsed = (
-        df["est_price"]
-        .astype("string")
-        .str.split("/", n=1, expand=True)
-        # Both halves are guaranteed to exist: a batch with no "/" anywhere
-        # would otherwise yield one column and lose `quantity`.
-        .reindex(columns=[0, 1])
-        .astype("string")
-        .replace(",", "", regex=True)
-        .rename(columns={0: "price", 1: "quantity"})
-        .assign(
-            quantity=lambda d: (
-                d["quantity"]
-                .str.lower()
-                .str.strip()
-                .str.replace(r"\(.*?\)", "", regex=True)
-                .str.replace(r";.*", "", regex=True)
-                # Kilograms are expanded first. The ".g$" rule below is meant
-                # for "250g" but also matches "kg", which would read "1 kg" as
-                # 1 gram. Rows written "1 kg." escape only via the trailing
-                # period, so the ordering here is what makes the rule safe.
-                .str.replace("kilogram", "kilograms")
-                .str.replace("kg", "kilograms")
-                .str.replace(r".g$", " grams", regex=True)
-                .str.replace(r"\sg$", "grams", regex=True)
-                .str.replace(r"\bgram$", "grams", regex=True)
-                .str.replace(r"pound$", "1 pounds", regex=True)
-                .str.replace(r"oz|onces|ouncues|ounce$|ounces\*", "ounces", regex=True)
-                .str.replace("online", "")
-                .str.strip()
-            ),
-            price=lambda d: d["price"].str.replace("..", "."),
+    unknown = sorted(c for c in df.columns if "price" in c and c not in PRICE_FIELDS)
+    if unknown:
+        logger.warning(
+            "Reading unrecognized price field(s) %s; add them to PRICE_FIELDS",
+            unknown,
         )
-        .dropna()
-        .loc[lambda d: ~d["quantity"].str.contains(drop_terms, case=False)]
-        .assign(
-            quantity_value=lambda d: (
-                d["quantity"].str.extract(r"(\d+(?:\.\d+)?)").astype(float)
-            ),
-            quantity_unit=lambda d: (
-                d["quantity"]
-                .str.replace(r"(\d+)", "", regex=True)
-                .replace(r"\.", "", regex=True)
-                .str.strip()
-                .mask(lambda s: s == "g", "grams")
-                .mask(lambda s: s == "kilo", "kilograms")
-                .str.strip()
-            ),
-            price_value=lambda d: (
-                d["price"].str.extract(r"(\d+\.\d+|\d+)").astype(float)
-            ),
-            price_currency=lambda d: (
-                d["price"]
-                .str.replace(",", "")
-                .str.replace(r"(\d+\.\d+|\d+)", "", regex=True)
-                .str.strip()
-            ),
-        )
-        .drop(columns=["price", "quantity"])
-        .loc[lambda d: ~d["quantity_unit"].str.contains(r"\(", regex=True)]
+    fields = [c for c in PRICE_FIELDS if c in df.columns] + unknown
+
+    text = pd.Series(pd.NA, index=df.index, dtype="string")
+    field = pd.Series(pd.NA, index=df.index, dtype="string")
+    for name in fields:
+        value = df[name].astype("string").str.strip().replace("", pd.NA)
+        take = text.isna() & value.notna()
+        text = text.mask(take, value)
+        field = field.mask(take, name)
+    return df.assign(price_text=text, price_field=field)
+
+
+def split_price_and_quantity(df: pd.DataFrame) -> pd.DataFrame:
+    """Parse ``price_text`` into a value, a currency, a quantity and a format.
+
+    Every price keeps its value and currency, whatever it buys.
+    ``price_format`` says what that is (see :mod:`coffee.price_text`), and only
+    a ``weight`` price gets a quantity, since a price per pound means nothing
+    for a capsule or a can. No review is removed.
+    """
+    texts = df["price_text"].astype("string")
+    parsed = {text: parse_price_text(text) for text in texts.dropna().unique()}
+
+    def part(name: str) -> list[object]:
+        return [getattr(parsed[t], name) if not pd.isna(t) else None for t in texts]
+
+    return df.assign(
+        price_value=pd.to_numeric(pd.Series(part("value"), index=df.index)),
+        price_currency=pd.Series(part("currency"), index=df.index, dtype="string"),
+        quantity_value=pd.to_numeric(pd.Series(part("quantity_value"), index=df.index)),
+        quantity_unit=pd.Series(part("quantity_unit"), index=df.index, dtype="string"),
+        price_format=pd.Series(part("format"), index=df.index, dtype="string"),
     )
-    return df.merge(parsed, how="left", left_index=True, right_index=True)
 
 
 def convert_to_lbs(df: pd.DataFrame) -> pd.DataFrame:
@@ -451,6 +417,7 @@ def clean_reviews(
     cleaned = (
         raw.pipe(check_raw_schema)
         .pipe(normalize_types, max_agtron=max_agtron)
+        .pipe(coalesce_price_fields)
         .pipe(split_price_and_quantity)
         .pipe(convert_to_lbs)
         .pipe(clean_currency)
@@ -471,4 +438,4 @@ def clean_reviews(
             cpi=cpi,
             baseline_date=baseline_date,
         )
-    return cleaned
+    return cleaned.pipe(add_price_status)

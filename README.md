@@ -193,7 +193,8 @@ Two quirks of the series are handled explicitly:
 - Period `M13` is the annual average, not a month, and is discarded.
 - A month the BLS never published appears as `-` and is left blank. October 2025
   is one: the index was not produced during that year's lapse in federal
-  appropriations. Prices from such a month are left unadjusted, not dropped.
+  appropriations. Prices from such a month are kept but not adjusted or
+  estimated, and are marked `no_cpi` (see [Comparable prices](#comparable-prices)).
 
 ## Data files
 
@@ -241,16 +242,42 @@ naming any unnormalized columns, instead of failing several steps later.
 `uv run clean-reviews` builds the cleaned layer. The logic lives in
 `src/coffee/clean.py`, not in a notebook, so it is covered by tests. Cleaning:
 
-- parses `est_price` into an amount, an ISO 4217 currency and a quantity
+- reads every price field the site has used into one `price_text`, and parses
+  it into an amount, an ISO 4217 currency, a quantity and a format
 - converts quantities to pounds
 - resolves origins and roaster locations to countries, and US roasters to states
 - adds `roaster_canonical` from the roaster crosswalk, alongside the original
   spelling
 
 Reviews with an Agtron reading above 100 are typos on the site. They are dropped,
-and each run reports how many. Products that are not whole-bean coffee sold by
-weight, such as capsules and pods, keep their reviews but get no quantity, since
-a price per pound would be meaningless.
+and each run reports how many.
+
+### Prices as the site wrote them
+
+The site has labeled the price "Est. Price" and, on some pages from 2022 to
+2025, "Estimated Price". The parse step keeps each under its own name
+(`est_price`, `estimated_price`), and cleaning reads both into `price_text`,
+recording which one in `price_field`. Any other column with "price" in its name
+is read too, with a warning to add it to `PRICE_FIELDS` in `clean.py`.
+
+`src/coffee/price_text.py` reads the roughly two hundred ways the price is
+written: `$19.00/16 ounces`, `NT $500/227 grams`, `£6.50 for 250g`, `$47.30/kg`,
+typos such as `8 ouces`, and asides such as `(sold as a set of 3/$101.75`. Every
+price keeps its amount and currency, whatever it buys. `price_format` says what
+that is:
+
+| `price_format` | Examples | Price per pound? |
+|---|---|---|
+| `weight` | `12 ounces`, `250 grams`, `1 kg`, `150-gram tin` | Yes |
+| `single_serve` | K-Cups, capsules, pods, brew bags | No |
+| `ready_to_drink` | cans, bottles, cartons, concentrate | No |
+| `instant` | instant, sticks, tubes, sachets, packets | No |
+| `other` | a boxed set | No |
+| `unspecified` | a price with no quantity, such as `$15.00` | No |
+
+Only `weight` prices get `quantity_value`, `quantity_unit` and
+`quantity_in_lbs`, since a price per pound means nothing for a capsule. Prices
+started appearing on the site in 2010; no earlier review has one.
 
 ### Comparable prices
 
@@ -258,20 +285,37 @@ When exchange rates and CPI data are available, cleaning also applies
 `src/coffee/prices.py`, which adds:
 
 - `price_usd`: the price in US dollars at the review month's rate
-- `price_usd_adj`: that price in a baseline month's dollars, so a 1997 price can
+- `price_usd_adj`: that price in a baseline month's dollars, so a 2010 price can
   be compared with a 2026 one
-- `price_usd_adj_per_lb`: the adjusted price per pound
+- `price_usd_adj_per_lb`: the adjusted price per pound, for `weight` prices
 - `price_baseline_date`: the baseline month
+- `price_status`: why `price_usd_adj` is or is not filled
 
 The original `price_value`, `price_currency` and `quantity_in_lbs` are kept.
+Every price is converted and adjusted, whatever its format.
+
+`price_status` is set on every review, with or without reference data, and
+names the first step that failed:
+
+| `price_status` | Meaning |
+|---|---|
+| `adjusted` | `price_usd_adj` holds the price in baseline dollars |
+| `no_cpi` | converted to dollars, but the BLS has published no CPI for the review month |
+| `no_exchange_rate` | no exchange rate for the currency in the review month |
+| `not_converted` | cleaned without exchange rates and CPI |
+| `no_price` | the page names no price |
 
 The baseline is January 2026 by default. Change it for good with `baseline_date`
 in `config/settings.toml`, or for one run with `--baseline-date`. It must be a
 month the CPI table covers; any other month is refused. The baseline is
 stored on every row because it is the unit of the adjusted price: the same coffee
-costs $77.64 in January 2026 dollars and $61.58 in January 2020 dollars. Rows
-from a month the CPI does not cover keep their unadjusted USD price and have no
-baseline, which makes them easy to find.
+costs $77.64 in January 2026 dollars and $61.58 in January 2020 dollars.
+
+A month the CPI does not cover is never estimated. Its prices keep `price_usd`,
+but `price_usd_adj`, `price_usd_adj_per_lb` and `price_baseline_date` stay
+empty and `price_status` is `no_cpi`. That covers October 2025, which the BLS
+never published, and the latest month or two, until the BLS releases them and
+`fetch-cpi` picks them up.
 
 Both reference files are optional. Without them, `clean-reviews` still builds
 the cleaned layer, leaves prices in their original currencies, and prints a
@@ -461,7 +505,7 @@ under a step are the helpers it uses.
 | `resolve-roasters` | `roasters/` | |
 | `fetch-exchange-rates` | `exchange_rates.py` | `http_client.py` |
 | `fetch-cpi` | `cpi.py` | `http_client.py` |
-| `clean-reviews` | `clean.py` | `prices.py` |
+| `clean-reviews` | `clean.py` | `price_text.py`, `prices.py` |
 
 - `scrape.py` discovers review URLs and downloads the pages that are new or
   changed. It never parses.
@@ -479,6 +523,8 @@ under a step are the helpers it uses.
   on the `ReviewStore` interface, so a database could replace `CsvReviewStore`
   without changes to the parse.
 - `clean.py` builds the cleaned layer.
+- `price_text.py` reads one free-text price into an amount, a currency, a
+  quantity and a format.
 - `prices.py` handles currency conversion and inflation adjustment. It is
   separate because it is the only part of cleaning that needs outside data.
   Every step in both modules is a pure `DataFrame -> DataFrame` function that
