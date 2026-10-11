@@ -72,7 +72,7 @@ def test_pending_dates_keep_their_order():
 
 
 def test_an_empty_result_never_displaces_a_populated_one():
-    """The regression test for the bug this change exists to fix."""
+    """A failed fetch for a date never replaces rates already held."""
     held = {"2000-01-01": WITH_EUR}
     assert merge_rates(held, {"2000-01-01": {}}) == held
 
@@ -152,7 +152,7 @@ def test_held_dates_are_not_requested(tmp_path, recording_fetch):
 
 
 def test_a_second_run_requests_nothing(tmp_path, recording_fetch):
-    """Idempotence is the whole point: re-running must not spend quota."""
+    """Re-running against an up-to-date file makes no requests."""
     requested, _ = recording_fetch
     path = tmp_path / "rates.json"
 

@@ -1,9 +1,7 @@
 """What a resolution run says about itself.
 
-Kept out of the command so it can be tested: the summary reports how much was
-merged, how much manual work is outstanding, and whether the clustering did
-anything that needs looking at. Those are judgments about the result, not
-about argument parsing.
+The summary printed after a resolution run: how much merged, how much manual
+work is outstanding, and which clusters need inspection.
 """
 
 from collections.abc import Sequence
@@ -29,8 +27,8 @@ def format_resolution_report(
 ) -> str:
     """Four lines: what merged, what is applied, what is left, what to inspect.
 
-    The order is the order they are worth reading in, ending with the chain
-    risk, which is the one that can be silently wrong.
+    Chain risk comes last: it is the line most likely to point at a wrong
+    merge.
     """
     n_raw = crosswalk.raw_name.nunique()
     n_canonical = crosswalk.canonical_name.nunique()

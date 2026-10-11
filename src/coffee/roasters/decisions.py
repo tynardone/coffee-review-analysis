@@ -163,8 +163,8 @@ def promote_reviewed(
     limits each question to being asked once.
 
     Blank rows are left alone, so a partially filled queue is valid. A value
-    that cannot be parsed raises rather than being skipped, since dropping
-    answers silently is indistinguishable from the tool not working.
+    that cannot be parsed raises rather than being skipped, since a dropped
+    answer would look the same as the tool not working.
 
     Returns the number of new decisions recorded.
     """

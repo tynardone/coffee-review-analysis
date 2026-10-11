@@ -6,8 +6,8 @@ cleaned ones keeps the order of the pipeline acyclic: cleaning consumes these
 rates, so it cannot also be what produces the list of months to fetch.
 
 Runs incrementally. Rates for a past date do not change, so a month already
-held is never re-fetched. This matters because free-tier accounts are limited
-to 1000 requests per month and the current corpus spans 323 distinct months.
+held is never re-fetched. The free tier allows 1,000 requests a month, and a
+full fetch needs one per review month since 1999.
 
 Two properties protect the stored file, which is the only copy:
 

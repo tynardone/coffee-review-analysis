@@ -73,7 +73,7 @@ def resolve(
     strings settles that they are different companies.
 
         score >= auto_threshold      merge automatically
-        review..auto                 honest uncertainty -> review queue
+        review..auto                 uncertain: queued for review
         score <  review_threshold    leave alone
 
     The defaults of 92 and 82 are tuned on a small sample; see

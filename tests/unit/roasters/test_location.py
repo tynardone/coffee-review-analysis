@@ -1,7 +1,7 @@
 """The location signal, and the asymmetry it is used with.
 
 A region conflict vetoes a merge; a matching location only surfaces a pair.
-Merging on a matching location was tried and is unsafe -- the score does not
+Merging on a matching location is unsafe: the score does not
 separate a true match at 82.1 from unrelated companies sharing a city at 82.9.
 """
 
@@ -55,20 +55,17 @@ def test_compare_locations(a, b, expected):
 
 
 def test_a_relocated_roaster_is_not_a_conflict():
-    """Names carry a SET of locations because roasters move.
+    """Names carry a set of locations because roasters move.
 
-    155 of 1,591 roasters in the real data appear at more than one address.
-    Any overlap has to withhold the veto, or every relocation reads as two
-    different companies.
+    A roaster can appear at more than one address over the years. Any overlap has to
+    withhold the veto, or every relocation reads as two different companies.
     """
     moved = ["Portland, Oregon", "Taipei, Taiwan"]
     assert compare_locations(moved, ["Taipei, Taiwan"]) is LocationEvidence.SAME
 
 
 def test_region_conflict_blocks_a_merge_the_name_score_would_allow():
-    """THE PRECISION WIN.
-
-    'Heart Coffee Roasters' and 'Heat Coffee' score 88.9 on name alone. One is
+    """'Heart Coffee Roasters' and 'Heat Coffee' score 88.9 on name alone. One is
     in Portland, the other in Taipei.
     """
     names = ["Heart Coffee Roasters", "Heat Coffee"]
@@ -83,10 +80,10 @@ def test_region_conflict_blocks_a_merge_the_name_score_would_allow():
 
 
 def test_location_veto_also_applies_to_exact_key_collisions():
-    """Two names can stopword down to the SAME key and still be different.
+    """Two names can stopword down to the same key and still be different.
 
     'Direct Coffee' and 'Coffee Bean Direct' both reduce to 'direct'. No string
-    evidence can separate them, which is why the veto has to reach Stage A.
+    evidence can separate them, which is why the veto applies to exact-key matches too.
     """
     names = ["Direct Coffee", "Coffee Bean Direct"]
     assert core_key(names[0]) == core_key(names[1])

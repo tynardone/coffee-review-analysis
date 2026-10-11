@@ -63,7 +63,7 @@ def compare_locations(
     """Weigh two names' location sets against each other.
 
     Each name carries a set of locations rather than one, because a roaster can
-    appear at several over the years; 155 of 1,591 in the current data do.
+    appear at several over the years.
     Comparing sets keeps a relocation from reading as a conflict, since any
     overlap withholds the veto.
     """

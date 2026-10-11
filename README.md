@@ -10,11 +10,10 @@ A dataset and analysis of the roughly 9,300 blind-tasting reviews that
 [CoffeeReview.com](https://www.coffeereview.com/) has published since 1997.
 
 The project scrapes every review, cleans the results into a single table, and
-analyzes how price and quality have changed over time. Two problems make this
-more than a scrape. Prices are quoted in a dozen currencies across three
-decades, so comparing them requires historical exchange rates and inflation
-data. Roaster names are spelled inconsistently, so comparing roasters requires
-entity resolution.
+analyzes how price and quality have changed over time. Prices are quoted in
+about twenty currencies since 2010, so comparing them requires historical
+exchange rates and inflation data. Roaster names are spelled inconsistently, so
+comparing roasters requires entity resolution.
 
 - [Installation](#installation)
 - [Usage](#usage)
@@ -67,11 +66,11 @@ underscore for a value inside a TOML table: `COFFEE_OPENEXCHANGERATES_API_ID`,
 `COFFEE_SCRAPE__CONCURRENCY`. Settings are checked when a command starts, so a
 bad value stops it immediately with a message naming the setting.
 
-Three rules catch mistakes that would otherwise pass silently:
+Settings are checked strictly:
 
 - A name that matches no setting is an error. A typo such as
   `COFFEE_SCRAPE__CONCURENCY`, or a TOML table written `[roaster]`, stops the
-  command instead of leaving the default quietly in place. Lines in `.env`
+  command. Lines in `.env`
   without the `COFFEE_` prefix are left alone, since they may belong to
   another tool.
 - A relative `COFFEE_DATA_DIR` or `COFFEE_CURATED_DIR` is relative to the
@@ -81,7 +80,7 @@ Three rules catch mistakes that would otherwise pass silently:
 
 The settings file and the data live in the repository, so the package must be
 installed from a checkout in editable mode, which `uv sync` does. Installed
-anywhere else, it stops with an error rather than guessing where the data is.
+any other way, it stops with an error.
 
 Values that are part of the code's logic rather than a choice, such as site
 URLs, timeouts and parsing rules, are constants next to the code that uses
@@ -166,19 +165,16 @@ reads and writes.
 
 ### CoffeeReview.com
 
-Review URLs come from the site's `sitemap_index.xml`, not its paginated
-listings. The sitemap is more complete (9,333 review URLs against 9,054 from
-pagination, with nothing found only in the listings) and takes about 17 requests
-instead of several hundred.
+Review URLs come from the site's `sitemap_index.xml`, which lists every review
+in about 17 requests.
 
 Each sitemap entry carries a `<lastmod>` timestamp: when the site last changed
 the review. A run fetches a review when it is new, when either time is unknown,
-or when it was changed after the saved copy was downloaded. Comparing with the
-download time rather than the date alone means an edit made later on the same
-day is still caught. A 24-hour lookback (`[scrape] lookback_hours`) also
-re-fetches, once, any page edited shortly before it was downloaded, in case the
-site's cache served the old version. That is usually a handful of pages and
-about a second of work; a full pass is some 9,300 pages and half an hour.
+or when it was changed after the saved copy was downloaded. A 24-hour lookback
+(`[scrape] lookback_hours`) also re-fetches, once, any page edited shortly
+before it was downloaded, in case the site's cache served the old version. That
+is usually a handful of pages and about a second of work; a full pass is some
+9,300 pages and half an hour.
 
 Scraping and parsing are separate steps. `scrape-reviews` saves each page's
 HTML, gzipped, to `data/downloaded/pages/`, and records it in
@@ -215,10 +211,10 @@ the review months from the parsed reviews and requests only those missing from
 `data/reference/exchange_rates.json`. It reads the parsed reviews rather than
 the cleaned ones because cleaning depends on these rates.
 
-A past month's rate never changes, so each month is fetched once. The corpus
-spans 323 months, about a third of the free tier's monthly allowance, and
-re-running against an up-to-date file costs nothing. The file is protected in
-two ways:
+A past month's rate never changes, so each month is fetched once. A full fetch
+takes one request per review month since 1999, about a third of the free tier's
+monthly allowance, and re-running against an up-to-date file costs nothing. The
+file is protected in two ways:
 
 - A failed request is never written, so a rate-limited run cannot blank out
   months already held. Failed months are retried on the next run.
@@ -274,15 +270,15 @@ curated/
   roaster_decisions.csv  your judgments; nothing regenerates it  committed
 ```
 
-The formats are deliberate. `downloaded/` keeps the HTML so that parsing can be
-redone without downloading anything. `parsed/reviews.csv` is committed and kept
+`downloaded/` keeps the HTML so that parsing can be redone without downloading
+anything. `parsed/reviews.csv` is committed and kept
 as plain text that any tool can read, because a review removed from the site
 survives only there. `cleaned/reviews.parquet` is rebuilt by a single command
 and read only by code, so it is Parquet: about a third of the size, and it
 preserves column types that CSV would lose.
 
-Every path comes from `Settings` in `src/coffee/settings.py`, so moving a file
-means changing one line there.
+Every path is defined in `Settings` in `src/coffee/settings.py`, relative to
+`COFFEE_DATA_DIR` or `COFFEE_CURATED_DIR`.
 
 ### Field names
 
@@ -294,7 +290,7 @@ naming any unnormalized columns, instead of failing several steps later.
 ### Cleaning
 
 `uv run clean-reviews` builds the cleaned layer. The logic lives in
-`src/coffee/clean.py`, not in a notebook, so it is covered by tests. Cleaning:
+`src/coffee/clean.py`. Cleaning:
 
 - reads every price field the site has used into one `price_text`, and parses
   it into an amount, an ISO 4217 currency, a quantity and a format
@@ -420,7 +416,7 @@ the `verdict` column. Leave every other column alone.
 - Different companies: `split`, `no`, `n`, `s`, `different` or `0`
 
 Rows left blank come back on the next run. Any other value is reported as an
-error, so a typo cannot quietly lose an answer.
+error.
 
 | name_a | name_b | score | location_evidence | verdict |
 |---|---|---|---|---|
@@ -523,9 +519,8 @@ model, installed once:
 uv run python -m spacy download en_core_web_sm
 ```
 
-Notebook outputs are stripped automatically when you commit, by the
-`nbstripout` pre-commit hook. Embedded chart images once pushed the notebooks
-past 13 MB, and every re-run stored another copy in git history.
+Notebook outputs are stripped on commit by the `nbstripout` pre-commit hook,
+which keeps chart images out of git history.
 
 Figures worth keeping go in `imgs/`. Git cannot store a new version of an image
 as a small difference, so each changed PNG adds its full size to the history.
@@ -567,8 +562,7 @@ under a step are the helpers it uses.
   `SitemapError` instead of returning a partial list.
 - `http_client.py` is the one place that talks HTTP, built on httpx: shared
   clients for the scrape (async) and the reference APIs (sync), one retry
-  policy for transient errors, and a User-Agent that names the project rather
-  than posing as a browser.
+  policy for transient errors, and a User-Agent naming the project.
 - `page_store.py` saves and reads the downloaded pages and their manifest.
 - `parse.py` turns saved pages into rows of `reviews.csv`. It never touches the
   network.
@@ -604,8 +598,8 @@ directory. The suite makes no network requests; a test that needs one must be
 marked `network`, and CI skips those.
 
 `tests/fixtures/html/` holds ten real review pages, and
-`tests/fixtures/parsed_reviews.json` records how each should parse, so a parser
-regression fails a test instead of quietly emptying a column. After a deliberate
+`tests/fixtures/parsed_reviews.json` records how each should parse, so a change
+in parsing fails a test. After a deliberate
 parser change, regenerate the file and review the diff:
 
 ```bash

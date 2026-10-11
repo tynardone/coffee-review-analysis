@@ -1,7 +1,7 @@
 """Sitemap discovery tests.
 
 The invariant throughout is that discovery is complete or loud: a short URL
-list yields a dataset that looks fine and is quietly missing rows, so every
+list yields a dataset that looks fine and is missing rows, so every
 partial-failure path is asserted to raise rather than return what it got.
 """
 
@@ -166,7 +166,7 @@ def test_non_review_sitemaps_are_fetched_but_their_urls_dropped(monkeypatch):
 
 
 def test_a_failed_child_sitemap_raises_rather_than_returning_a_short_list(monkeypatch):
-    """THE REGRESSION THAT MATTERS: silent partial discovery."""
+    """A failed child sitemap raises rather than returning a partial list."""
     docs = dict(DOCS)
     docs["https://x.test/review-sitemap.xml"] = None
     with pytest.raises(SitemapError, match="Could not fetch"):

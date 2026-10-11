@@ -1,7 +1,7 @@
 """Tests for reading the site's free-text prices.
 
 Every case below is a shape the site has really used. A misread quantity does
-not raise; it quietly puts a price per pound off by a factor of ten.
+not raise; it puts a price per pound off by a factor of ten.
 """
 
 import pytest
@@ -32,7 +32,7 @@ def test_weight_prices_are_read(text, value, currency, qty_value, qty_unit):
 
 
 def test_a_gram_figure_keeps_every_digit():
-    """The old parser read "200g" as 20 grams, a per-pound price 10x too high."""
+    """A unit written straight after the number keeps every digit."""
     assert parse_price_text("NT $520/200g").quantity_value == 200.0
     assert parse_price_text("HK $108/200g").quantity_value == 200.0
 

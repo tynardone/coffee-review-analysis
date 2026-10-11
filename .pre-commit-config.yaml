@@ -1,13 +1,10 @@
 # Files the hooks must never rewrite.
 #
-# `trailing-whitespace` and `end-of-file-fixer` operate line-by-line with no
-# idea what the file means. Run against a CSV whose quoted fields contain
-# newlines — which every scraped review does — they edit the DATA: an
-# `--all-files` run silently stripped a trailing space from inside a
-# blind_assessment value in the parsed reviews CSV. The saved review
-# pages under tests/fixtures/ are golden-test inputs and equally must not be
-# touched, or the parse they pin stops matching what the site actually served.
-# curated/ holds hand-kept CSVs under the same hazard as data/.
+# `trailing-whitespace` and `end-of-file-fixer` edit files line by line, which
+# would change the contents of a CSV whose quoted fields span several lines,
+# such as the parsed reviews. data/ and curated/ hold the pipeline's CSVs. The
+# saved review pages under tests/fixtures/ are golden-test inputs and must stay
+# exactly as the site served them.
 exclude: |
   (?x)^(
     data/.*|
@@ -31,9 +28,8 @@ repos:
 -   repo: https://github.com/kynan/nbstripout
     rev: 0.9.1
     hooks:
-    # Strip outputs and execution counts from notebooks on commit. Embedded
-    # chart images once took the notebooks past 13 MB each, and every re-run
-    # stored a fresh copy in history; clearing outputs by hand was not enough.
+    # Strip outputs and execution counts from notebooks on commit, so chart
+    # images never enter git history.
     -   id: nbstripout
 # ruff and mypy run from the project's own environment, at the versions locked
 # in uv.lock, rather than from copies pre-commit installs on its own. A copy

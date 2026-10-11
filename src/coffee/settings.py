@@ -22,8 +22,8 @@ A value inside a table is set with a double underscore, so
 ``COFFEE_SCRAPE__CONCURRENCY=4`` overrides ``[scrape] concurrency``.
 Command-line flags override all of these for a single run.
 
-A name that matches no setting is an error, not ignored, so a typo such as
-``COFFEE_SCRAPE__CONCURENCY`` cannot leave the default quietly in place. Lines in
+A name that matches no setting is an error, so a typo such as
+``COFFEE_SCRAPE__CONCURENCY`` stops the command. Lines in
 ``.env`` without the ``COFFEE_`` prefix are left alone; they may belong to
 another tool.
 
@@ -97,7 +97,7 @@ class UnknownSettingError(ValueError):
 
 class _Section(BaseModel):
     # A misspelled key inside a table, such as `[scrape] concurency`, is an
-    # error rather than a value silently dropped.
+    # error rather than ignored.
     model_config = ConfigDict(extra="forbid")
 
 

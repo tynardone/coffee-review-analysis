@@ -110,7 +110,7 @@ def fingerprint(name: str) -> str:
 
 
 def core_key(name: str) -> str:
-    """Fingerprint with domain stopwords removed. The workhorse.
+    """Fingerprint with domain stopwords removed.
 
         "Stumptown"                 -> "stumptown"
         "Stumptown Coffee"          -> "stumptown"

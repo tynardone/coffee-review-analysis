@@ -19,7 +19,7 @@ resolve = partial(_resolve, auto_threshold=92, review_threshold=82)
 
 
 def test_generic_head_does_not_fuse_unrelated_roasters():
-    """Reproduces the 'Dallis Bros.' cluster that swallowed every 'Brothers'."""
+    """A generic word such as 'Bros.' does not join unrelated roasters."""
     names = [
         "Dallis Bros. Coffee",
         "Dunn Brothers",
@@ -61,7 +61,7 @@ def test_canonical_name_is_the_most_frequent_spelling():
 
 
 def test_uncertain_pairs_land_in_the_review_queue_not_in_a_merge():
-    """The middle band must be surfaced for judgment, not silently decided."""
+    """The middle band is queued for judgment, not decided automatically."""
     names = ["Black Oak Coffee Roasters", "Black Mountain Coffee Roasters"]
     crosswalk, review = resolve(names, auto_threshold=92, review_threshold=50)
     assert crosswalk.canonical_name.nunique() == 2
@@ -89,7 +89,7 @@ def test_a_split_can_be_defeated_by_a_bridging_name():
 
     A collaboration name is a superset of both partners' keys, so single
     linkage rejoins them through it. This is accepted behavior — the point of
-    the next test is that it must not be SILENT.
+    the next test is that it is reported.
     """
     decisions = [Decision(COLLAB[0], COLLAB[1], Verdict.SPLIT)]
     crosswalk, _ = resolve(COLLAB, decisions=decisions)
@@ -98,8 +98,8 @@ def test_a_split_can_be_defeated_by_a_bridging_name():
 
 
 def test_a_defeated_split_is_reported():
-    """THE ALARM. A decision accepted and then ignored is worse than one
-    refused outright, so the crosswalk has to say so."""
+    """A decision accepted and then ignored is worse than one refused
+    outright, so the crosswalk has to say so."""
     decisions = [Decision(COLLAB[0], COLLAB[1], Verdict.SPLIT)]
     crosswalk, _ = resolve(COLLAB, decisions=decisions)
     assert crosswalk.violates_decision.any()
