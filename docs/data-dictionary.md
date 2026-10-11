@@ -225,6 +225,8 @@ dropped as typos.
 | Field | Type | Meaning |
 |---|---|---|
 | `review_date` | datetime | The month the review was published, as its first day. |
+| `sitemap_lastmod` | datetime | When the site last changed the review, as a date. |
+| `scraped_at` | datetime (UTC) | When the saved page the row came from was downloaded. |
 | `rating` | float | The overall score, out of 100. Ranges from 52 to 98, with half of all reviews from 90 to 94. Scores have risen over time: the median was 81 in the late 1990s and is 94 now. |
 | `aroma`, `body`, `flavor`, `aftertaste` | float | Sub-scores, 1–10. Some early reviews used a different scale and hold fractional values such as 4.3. |
 | `acidity` | float | Acidity, 1–10, taken from `acidity` or, when that is empty, `acidity/structure`. |
