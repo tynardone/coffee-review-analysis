@@ -9,7 +9,9 @@ import pandas as pd
 import pytest
 
 from coffee.prices import (
+    PRICE_STATUSES,
     add_comparable_prices,
+    add_price_status,
     convert_currency,
     cpi_adjust_price,
     price_per_lb,
@@ -83,13 +85,15 @@ def test_inflation_adjustment_uses_the_baseline_month():
     assert out["price_usd_adj"].iloc[0] == pytest.approx(20.0)
 
 
-def test_a_month_without_cpi_keeps_the_unadjusted_price():
+def test_a_month_without_cpi_is_left_unadjusted_not_estimated():
+    """price_usd_adj holds baseline dollars only; price_usd keeps the price."""
     df = pd.DataFrame(
         {"review_date": pd.to_datetime(["2026-09-01"]), "price_usd": [25.0]}
     )
     cpi = cpi_table([(300.0, "2024-06-01")])
     out = cpi_adjust_price(df, cpi, baseline_date="2024-06-01")
-    assert out["price_usd_adj"].iloc[0] == 25.0
+    assert pd.isna(out["price_usd_adj"].iloc[0])
+    assert out["price_usd"].iloc[0] == 25.0
 
 
 def test_an_unknown_baseline_date_is_an_error():
@@ -175,8 +179,48 @@ def test_a_month_without_cpi_gets_no_baseline():
     )
     cpi = cpi_table([(300.0, "2024-06-01")])
     out = cpi_adjust_price(df, cpi, baseline_date="2024-06-01")
-    assert out["price_usd_adj"].iloc[0] == 25.0  # unadjusted
+    assert pd.isna(out["price_usd_adj"].iloc[0])
     assert pd.isna(out["price_baseline_date"].iloc[0])
+
+
+def test_a_review_without_a_price_gets_no_baseline():
+    """2,374 unpriced reviews once carried a baseline for a price they lacked."""
+    df = pd.DataFrame(
+        {"review_date": pd.to_datetime(["2000-01-01"]), "price_usd": [float("nan")]}
+    )
+    cpi = cpi_table([(150.0, "2000-01-01"), (300.0, "2024-06-01")])
+    out = cpi_adjust_price(df, cpi, baseline_date="2024-06-01")
+    assert pd.isna(out["price_baseline_date"].iloc[0])
+
+
+# --------------------------------------------------------------------------
+# Why a price is or is not adjusted
+# --------------------------------------------------------------------------
+
+
+def test_price_status_names_the_first_step_that_failed():
+    nan = float("nan")
+    df = pd.DataFrame(
+        {
+            "price_value": [nan, 10.0, 10.0, 10.0],
+            "price_usd": [nan, nan, 10.0, 10.0],
+            "price_usd_adj": [nan, nan, nan, 12.0],
+        }
+    )
+    out = add_price_status(df)
+    assert out["price_status"].tolist() == [
+        "no_price",
+        "no_exchange_rate",
+        "no_cpi",
+        "adjusted",
+    ]
+
+
+def test_price_status_without_reference_data():
+    df = pd.DataFrame({"price_value": [float("nan"), 10.0]})
+    out = add_price_status(df)
+    assert out["price_status"].tolist() == ["no_price", "not_converted"]
+    assert set(out["price_status"]) <= set(PRICE_STATUSES)
 
 
 def test_the_baseline_follows_the_argument():

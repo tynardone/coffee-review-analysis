@@ -12,18 +12,31 @@ calls it when both tables are available.
 import json
 from datetime import datetime
 from pathlib import Path
+from typing import Final
 
 import numpy as np
 import pandas as pd
 
 __all__ = [
+    "PRICE_STATUSES",
     "add_comparable_prices",
+    "add_price_status",
     "convert_currency",
     "cpi_adjust_price",
     "load_cpi",
     "load_exchange_rates",
     "price_per_lb",
 ]
+
+# Why a review's inflation-adjusted price is or is not there, in pipeline
+# order: the first step that failed is the one recorded.
+PRICE_STATUSES: Final = (
+    "no_price",  # the page names no price
+    "not_converted",  # cleaned without exchange rates and CPI
+    "no_exchange_rate",  # no rate for the currency in the review month
+    "no_cpi",  # no published CPI for the review month
+    "adjusted",  # price_usd_adj holds the price in baseline dollars
+)
 
 # ==========================================================================
 # Reference data
@@ -95,9 +108,11 @@ def cpi_adjust_price(
     with the number because it is the number's unit: two files can hold the
     same column in different dollars and look identical without it.
 
-    Where the review month has no published CPI, the unadjusted USD price is
-    kept rather than dropped, and ``price_baseline_date`` is left empty. Those
-    rows are not in baseline dollars, and stamping them would say they were.
+    Where the review month has no published CPI, ``price_usd_adj`` is left
+    empty rather than filled with the unadjusted price or an estimate, so the
+    column holds baseline dollars and nothing else. ``price_usd`` still holds
+    the converted price, and :func:`add_price_status` records why. The
+    baseline is stamped only on rows that were adjusted.
     """
     baseline = cpi.loc[cpi["date"] == baseline_date, "cpi"]
     if baseline.empty:
@@ -118,15 +133,11 @@ def cpi_adjust_price(
         raise ValueError(
             f"CPI merge changed the row count ({before} -> {len(merged)})."
         )
-    adjusted = merged["cpi"].notna()
+    adjusted = merged["cpi"].notna() & merged["price_usd"].notna()
     return merged.assign(
-        price_usd_adj=lambda d: np.where(
-            d["cpi"].isna(),
-            d["price_usd"],
-            (d["price_usd"] * baseline.iloc[0] / d["cpi"]).round(2),
-        ),
-        # .where keeps the baseline only where the adjustment actually ran,
-        # leaving NA on the rows that kept their unadjusted price.
+        price_usd_adj=lambda d: (d["price_usd"] * baseline.iloc[0] / d["cpi"]).round(2),
+        # .where keeps the baseline only where the adjustment actually ran: not
+        # on a month without CPI, and not on a review with no price at all.
         price_baseline_date=lambda d: pd.Series(
             baseline_date, index=d.index, dtype="string"
         ).where(adjusted),
@@ -148,6 +159,24 @@ def price_per_lb(df: pd.DataFrame) -> pd.DataFrame:
 # ==========================================================================
 # The layer
 # ==========================================================================
+
+
+def add_price_status(df: pd.DataFrame) -> pd.DataFrame:
+    """Add ``price_status``: why ``price_usd_adj`` is or is not filled.
+
+    One of :data:`PRICE_STATUSES`. It answers the question for every review,
+    so a missing price can be told apart from one that could not be converted
+    or adjusted. Whether a price per pound exists is a separate question, which
+    ``price_format`` answers: only ``weight`` prices have one.
+    """
+    status = pd.Series("adjusted", index=df.index, dtype="string")
+    if "price_usd_adj" in df.columns:
+        status = status.mask(df["price_usd_adj"].isna(), "no_cpi")
+        status = status.mask(df["price_usd"].isna(), "no_exchange_rate")
+    else:
+        status[:] = "not_converted"
+    status = status.mask(df["price_value"].isna(), "no_price")
+    return df.assign(price_status=status)
 
 
 def add_comparable_prices(

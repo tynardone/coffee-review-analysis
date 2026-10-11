@@ -17,6 +17,7 @@ from coffee.clean import (
     clean_origin,
     clean_reviews,
     clean_roaster_location,
+    coalesce_price_fields,
     convert_to_lbs,
     normalize_types,
     split_price_and_quantity,
@@ -110,31 +111,65 @@ def test_qualitative_scores_become_missing_not_an_error():
     ],
 )
 def test_price_and_quantity_are_split_out(raw, value, currency, qty_value, qty_unit):
-    out = split_price_and_quantity(pd.DataFrame({"est_price": [raw]}))
+    out = split_price_and_quantity(pd.DataFrame({"price_text": [raw]}))
     assert out["price_value"].iloc[0] == value
     assert out["price_currency"].iloc[0] == currency
     assert out["quantity_value"].iloc[0] == qty_value
     assert out["quantity_unit"].iloc[0] == qty_unit
+    assert out["price_format"].iloc[0] == "weight"
 
 
-def test_non_whole_bean_formats_keep_the_row_but_lose_the_quantity():
-    """THE ROW-COUNT INVARIANT.
+def test_prices_not_by_weight_keep_their_price_but_no_quantity():
+    """THE ROW-COUNT INVARIANT, and nothing the site printed is thrown away.
 
-    Capsules and pods are not sold by weight, so their price per pound is
-    meaningless — but the review itself is still data. The merge is a LEFT
-    join precisely so this never removes a review.
+    Capsules are not sold by weight, so a price per pound would be meaningless.
+    Their price and currency are still data, and the review is still a review.
     """
-    df = pd.DataFrame({"est_price": ["$19.00/16 ounces", "$30.00/10 capsules"]})
+    df = pd.DataFrame({"price_text": ["$19.00/16 ounces", "NT $280/10 capsules"]})
     out = split_price_and_quantity(df)
     assert len(out) == 2
     assert out["quantity_value"].iloc[0] == 16.0
-    assert pd.isna(out["quantity_value"].iloc[1])
+    capsules = out.iloc[1]
+    assert capsules["price_value"] == 280.0
+    assert capsules["price_currency"] == "NT $"
+    assert capsules["price_format"] == "single_serve"
+    assert pd.isna(capsules["quantity_value"])
 
 
 def test_an_unparseable_price_keeps_the_row():
-    out = split_price_and_quantity(pd.DataFrame({"est_price": [np.nan]}))
-    assert len(out) == 1
-    assert pd.isna(out["price_value"].iloc[0])
+    out = split_price_and_quantity(pd.DataFrame({"price_text": [pd.NA, "See notes"]}))
+    assert len(out) == 2
+    assert out["price_value"].isna().all()
+    assert out["price_format"].isna().all()
+
+
+def test_every_price_field_is_read():
+    """The site relabeled the field "Estimated Price" on some 2022-25 pages."""
+    df = pd.DataFrame(
+        {
+            "est_price": ["$19.00/16 ounces", np.nan, np.nan],
+            "estimated_price": [np.nan, "$47.30/kg", np.nan],
+        }
+    )
+    out = coalesce_price_fields(df)
+    assert out["price_text"].tolist()[:2] == ["$19.00/16 ounces", "$47.30/kg"]
+    assert pd.isna(out["price_text"].iloc[2])
+    assert out["price_field"].tolist()[:2] == ["est_price", "estimated_price"]
+    assert "est_price" in out.columns  # the originals are kept
+
+
+def test_the_first_known_price_field_wins():
+    df = pd.DataFrame({"est_price": ["$10/12 ounces"], "estimated_price": ["$99/kg"]})
+    assert coalesce_price_fields(df)["price_field"].iloc[0] == "est_price"
+
+
+def test_an_unrecognized_price_field_is_read_and_reported(caplog):
+    """A new label is captured, not lost, and the log says to add it."""
+    df = pd.DataFrame({"est_price": [np.nan], "retail_price": ["$12.00/12 ounces"]})
+    out = coalesce_price_fields(df)
+    assert out["price_text"].iloc[0] == "$12.00/12 ounces"
+    assert out["price_field"].iloc[0] == "retail_price"
+    assert "retail_price" in caplog.text
 
 
 @pytest.mark.parametrize("code", sorted(set(CURRENCY_MAP.values())))
@@ -288,6 +323,8 @@ def test_clean_reviews_runs_the_whole_chain():
     assert row["roaster_us_state"] == "oregon"
     assert row["roaster_canonical"] == "Boyds Coffee"
     assert row["agtron_external"] == 57
+    assert row["price_format"] == "weight"
+    assert row["price_status"] == "not_converted"
     # Without reference data the field-level layer is still produced, which is
     # what lets this run before any rates have been fetched.
     assert "price_usd" not in out.columns
@@ -310,6 +347,7 @@ def test_clean_reviews_prices_when_reference_data_is_given():
     assert row["price_usd"] == 20.0
     assert row["price_usd_adj"] == 40.0  # CPI 150 -> 300
     assert row["price_usd_adj_per_lb"] == 40.0
+    assert row["price_status"] == "adjusted"
 
 
 def test_a_baseline_the_cpi_table_does_not_cover_is_refused():

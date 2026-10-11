@@ -22,7 +22,7 @@ The figures below were measured on the cleaned dataset in October 2026.
 | Sub-scores (aroma, body, flavor, aftertaste, acidity) | 84–99% complete |
 | Agtron roast reading | 95% |
 | Roast level | 94% |
-| Price, converted and inflation-adjusted per pound | 74%, and only from 2010 on |
+| Price | none before 2010; since then 99% have one, and 98% of those sold by weight have an inflation-adjusted price per pound |
 | Processing method, variety, harvest | 33 reviews: fields the site added recently |
 | Priced in a currency other than US dollars | 25% of priced reviews; 1,443 in Taiwanese dollars |
 | Ten most-reviewed roasters | 23% of all reviews |
@@ -57,13 +57,16 @@ items below.
    176 coffees cost more than $200 a pound and the highest more than $10,000:
    competition lots, sold in small amounts. Use medians and log scales.
 9. **Recent months lack inflation data.** The BLS publishes CPI with a lag, and
-   October 2025 was never published, so 22% of 2026 prices are unadjusted.
+   October 2025 was never published. Those prices are kept in dollars but not
+   adjusted or estimated, and `price_status` marks them `no_cpi`: 157 reviews
+   as of October 2026.
 10. **The reviews are not a random sample of the market.** CoffeeReview picks
     what it reviews, roasters send in their coffees, and a few roasters account
     for much of the data. Findings describe reviewed coffees, not all coffee.
 11. **Blends.** 8% of reviews name more than one origin country.
-12. **A bug:** 2,374 reviews have a `price_baseline_date` but no price. The
-    baseline should be empty wherever `price_usd_adj` is empty.
+12. **Not every price is by weight.** Since 2010, 210 prices are for capsules,
+    pods, cans, bottles or instant coffee. They are kept, converted and
+    adjusted, and `price_format` marks them, but they have no price per pound.
 
 ---
 
@@ -92,10 +95,6 @@ style.
 
 ### 1.2 Fixes to the current pipeline (Next)
 
-- **Fix the baseline-date bug** (known issue 12), with a test.
-- **Count unparsed prices.** 77% of reviews have an `est_price` but 75% end up
-  with a parsed price. List the roughly 2% that fail and fix the common
-  patterns.
 - **Flag the sub-score scale.** Add a column for the scale a review was scored
   on, so the analysis can filter or rescale.
 - **Decide how espresso is defined.** `is_espresso` currently matches the title
@@ -145,7 +144,7 @@ Considerations:
 ### 1.5 Documentation (Next)
 
 - **Data dictionary:** every column's type, meaning, units, completeness and
-  caveats (known issues 1–11). Generated from the schema in 1.1 where possible,
+  caveats (known issues 1–12). Generated from the schema in 1.1 where possible,
   so it cannot drift from the code.
 - **Dataset card:** what the dataset covers, how it was built, its known
   biases, and how to cite it.
