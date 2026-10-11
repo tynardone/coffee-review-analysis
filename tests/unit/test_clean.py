@@ -20,6 +20,7 @@ from coffee.clean import (
     coalesce_price_fields,
     convert_to_lbs,
     normalize_types,
+    parse_timestamps,
     split_price_and_quantity,
 )
 
@@ -94,6 +95,43 @@ def test_qualitative_scores_become_missing_not_an_error():
     """A few rows carry text like 'Very Low' where a number belongs."""
     out = normalize_types(base_frame(acidity="Very Low"))
     assert pd.isna(out["acidity"].iloc[0])
+
+
+# --------------------------------------------------------------------------
+# Provenance timestamps
+# --------------------------------------------------------------------------
+
+
+def test_provenance_columns_become_dates_and_times():
+    df = pd.DataFrame(
+        {
+            "sitemap_lastmod": ["2026-03-10"],
+            "scraped_at": ["2026-09-27T19:46:00+00:00"],
+        }
+    )
+    out = parse_timestamps(df)
+    assert out["sitemap_lastmod"].iloc[0] == pd.Timestamp("2026-03-10")
+    assert out["scraped_at"].iloc[0] == pd.Timestamp("2026-09-27 19:46", tz="UTC")
+    assert str(out["scraped_at"].dt.tz) == "UTC"
+
+
+def test_a_missing_timestamp_stays_missing():
+    df = pd.DataFrame({"sitemap_lastmod": [np.nan], "scraped_at": [np.nan]})
+    out = parse_timestamps(df)
+    assert out["sitemap_lastmod"].isna().all()
+    assert out["scraped_at"].isna().all()
+
+
+def test_absent_provenance_columns_are_skipped():
+    """A parsed file from before a column existed still cleans."""
+    df = pd.DataFrame({"title": ["Ethiopia Natural"]})
+    assert parse_timestamps(df).columns.tolist() == ["title"]
+
+
+def test_a_damaged_timestamp_raises():
+    """The pipeline writes these columns, so a bad value means a damaged file."""
+    with pytest.raises(ValueError):
+        parse_timestamps(pd.DataFrame({"sitemap_lastmod": ["March 2026"]}))
 
 
 # --------------------------------------------------------------------------

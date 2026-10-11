@@ -33,6 +33,7 @@ from unidecode import unidecode
 from coffee.price_text import parse_price_text
 from coffee.prices import add_comparable_prices, add_price_status
 from coffee.review_page import normalize_field_name
+from coffee.review_store import SCRAPED_AT_COLUMN, SITEMAP_LASTMOD_COLUMN
 
 __all__ = [
     "CURRENCY_MAP",
@@ -48,6 +49,7 @@ __all__ = [
     "coalesce_price_fields",
     "convert_to_lbs",
     "normalize_types",
+    "parse_timestamps",
     "split_price_and_quantity",
 ]
 
@@ -249,6 +251,33 @@ def normalize_types(
     )
 
 
+def parse_timestamps(df: pd.DataFrame) -> pd.DataFrame:
+    """Turn the provenance columns from text into dates and times.
+
+    ``sitemap_lastmod`` becomes a date (at midnight, like ``review_date``) and
+    ``scraped_at`` a UTC timestamp. Both are written by the pipeline itself, so
+    a value that does not parse means the file is damaged, and raises. A
+    column that is absent, as in a file from before it existed, is skipped.
+    """
+    if SITEMAP_LASTMOD_COLUMN in df.columns:
+        df = df.assign(
+            **{
+                SITEMAP_LASTMOD_COLUMN: pd.to_datetime(
+                    df[SITEMAP_LASTMOD_COLUMN], format="%Y-%m-%d"
+                )
+            }
+        )
+    if SCRAPED_AT_COLUMN in df.columns:
+        df = df.assign(
+            **{
+                SCRAPED_AT_COLUMN: pd.to_datetime(
+                    df[SCRAPED_AT_COLUMN], format="ISO8601", utc=True
+                )
+            }
+        )
+    return df
+
+
 def coalesce_price_fields(df: pd.DataFrame) -> pd.DataFrame:
     """Read every price field the site has used into one ``price_text``.
 
@@ -416,6 +445,7 @@ def clean_reviews(
     cleaned = (
         raw.pipe(check_raw_schema)
         .pipe(normalize_types, max_agtron=max_agtron)
+        .pipe(parse_timestamps)
         .pipe(coalesce_price_fields)
         .pipe(split_price_and_quantity)
         .pipe(convert_to_lbs)
