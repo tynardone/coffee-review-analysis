@@ -142,7 +142,7 @@ again next time.
 
 Every path defaults to its place in [Data files](#data-files), and the other
 defaults come from the [settings](#configuration). A flag overrides them for a
-single run.
+single run. `DATE` is the first day of a month, such as `2026-01-01`.
 
 | Command | Options |
 |---|---|

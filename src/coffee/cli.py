@@ -430,8 +430,8 @@ def clean_reviews_command(argv: list[str] | None = None) -> None:
         type=_month_start,
         default=settings.prices.baseline_date.isoformat(),
         help="the month whose dollars adjusted prices are expressed in "
-        "(default from settings: %(default)s). Must be a month the CPI table "
-        "covers.",
+        "(default from settings: %(default)s). Must be the first day of a "
+        "month the CPI table covers.",
     )
     args = parser.parse_args(argv)
 
