@@ -135,3 +135,21 @@ def test_the_api_key_never_reaches_the_log(dirs, caplog):
         assert fetch_rate(client, date(2020, 1, 1), "sk-secret-app-id")
 
     assert "sk-secret-app-id" not in caplog.text
+
+
+@pytest.mark.parametrize("flag", ["2026-01-15", "January"])
+def test_a_baseline_flag_must_name_the_first_of_a_month(dirs, flag, capsys):
+    """The flag is held to the same rule as the setting it overrides."""
+    with pytest.raises(SystemExit) as exit_info:
+        cli.clean_reviews_command(["--baseline-date", flag])
+    assert exit_info.value.code == 2  # argparse's usage error
+    assert "--baseline-date" in capsys.readouterr().err
+
+
+def test_an_unknown_setting_name_stops_the_command(monkeypatch):
+    def refuse():
+        raise cli.UnknownSettingError("COFFEE_LOGLEVEL in the environment")
+
+    monkeypatch.setattr(cli, "get_settings", refuse)
+    with pytest.raises(SystemExit, match="COFFEE_LOGLEVEL"):
+        cli.parse_reviews([])

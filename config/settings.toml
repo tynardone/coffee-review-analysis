@@ -7,7 +7,8 @@
 #     COFFEE_LOG_LEVEL=DEBUG
 #     COFFEE_SCRAPE__CONCURRENCY=4
 #
-# Command-line flags override everything, for that one run.
+# A name that matches no setting stops the command, so a typo cannot pass
+# unnoticed. Command-line flags override everything, for that one run.
 
 # DEBUG, INFO, WARNING or ERROR.
 log_level = "INFO"
@@ -20,8 +21,8 @@ concurrency = 10
 lookback_hours = 24
 
 [prices]
-# Adjusted prices are expressed in this month's dollars. It must be a month the
-# CPI table covers.
+# Adjusted prices are expressed in this month's dollars. Give the first day of
+# a month the CPI table covers.
 baseline_date = 2026-01-01
 
 [roasters]

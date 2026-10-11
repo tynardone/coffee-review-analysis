@@ -18,7 +18,7 @@ import asyncio
 import inspect
 import logging
 from collections.abc import Callable
-from datetime import timedelta
+from datetime import date, timedelta
 from pathlib import Path
 
 import httpx
@@ -46,7 +46,7 @@ from coffee.roasters import (
     unpromoted_verdicts,
 )
 from coffee.scrape import scrape_all_reviews
-from coffee.settings import Settings, get_settings
+from coffee.settings import Settings, UnknownSettingError, get_settings
 
 __all__ = [
     "clean_reviews_command",
@@ -77,6 +77,8 @@ def _settings() -> Settings:
             "Invalid settings (config/settings.toml, .env or COFFEE_* "
             f"variables):\n{problems}"
         ) from exc
+    except UnknownSettingError as exc:
+        raise SystemExit(str(exc)) from exc
 
 
 def _configure_logging(settings: Settings) -> None:
@@ -89,6 +91,26 @@ def _configure_logging(settings: Settings) -> None:
     # a line per page, so only its warnings and errors get through.
     for noisy in ("httpx", "httpcore"):
         logging.getLogger(noisy).setLevel(logging.WARNING)
+
+
+def _month_start(value: str) -> str:
+    """argparse type for a baseline month: an ISO date on the first of a month.
+
+    The same rule the settings apply to ``[prices] baseline_date``, so a flag
+    cannot slip past it. Returned as text, the form the price steps compare.
+    """
+    try:
+        parsed = date.fromisoformat(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError(
+            f"expected a date such as 2026-01-01, got {value!r}"
+        ) from exc
+    if parsed.day != 1:
+        raise argparse.ArgumentTypeError(
+            f"must be the first day of a month, such as "
+            f"{parsed.replace(day=1).isoformat()}: CPI is monthly"
+        )
+    return parsed.isoformat()
 
 
 def _positive_int(value: str) -> int:
@@ -393,6 +415,7 @@ def clean_reviews_command(argv: list[str] | None = None) -> None:
     )
     parser.add_argument(
         "--baseline-date",
+        type=_month_start,
         default=settings.prices.baseline_date.isoformat(),
         help="the month whose dollars adjusted prices are expressed in "
         "(default from settings: %(default)s). Must be a month the CPI table "
@@ -504,6 +527,7 @@ def refresh_data(argv: list[str] | None = None) -> None:
     )
     parser.add_argument(
         "--baseline-date",
+        type=_month_start,
         default=settings.prices.baseline_date.isoformat(),
         help="month whose dollars adjusted prices use (default from settings: "
         "%(default)s)",
