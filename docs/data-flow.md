@@ -23,14 +23,14 @@ flowchart TD
     CPICMD(["5 · fetch-cpi"]):::cmd
     CLEAN(["6 · clean-reviews"]):::cmd
 
-    DOWNLOADED["data/downloaded/<br/><i>saved HTML + manifest · ~240 MB · gitignored</i>"]:::data
-    PARSED["data/parsed/reviews.csv<br/><i>10.4 MB · committed</i>"]:::data
+    DOWNLOADED["data/downloaded/<br/><i>saved HTML + manifest · about 250 MB · gitignored</i>"]:::data
+    PARSED["data/parsed/reviews.csv<br/><i>committed</i>"]:::data
     DEC["curated/roaster_decisions.csv<br/><i>hand-edited · irreplaceable</i>"]:::human
     QUEUE["data/roasters/review_queue.csv<br/><i>you fill the verdict column</i>"]:::human
     XWALK["data/roasters/crosswalk.csv<br/><i>derived every run</i>"]:::ref
     FX["data/reference/exchange_rates.json"]:::ref
     CPI["data/reference/cpi.csv"]:::ref
-    CLEANED["data/cleaned/reviews.parquet<br/><i>3.8 MB · gitignored</i>"]:::out
+    CLEANED["data/cleaned/reviews.parquet<br/><i>gitignored</i>"]:::out
     NB["notebooks 01 · 02 · 03"]:::out
 
     SITE --> SCRAPE --> DOWNLOADED
@@ -74,8 +74,8 @@ and the review queue feeds back into the decisions file when you pass
 | `curated/roaster_decisions.csv` | **nothing rebuilds it** | every pair re-adjudicated by hand |
 | `roasters/crosswalk.csv` | `resolve-roasters` | seconds |
 | `roasters/review_queue.csv` | `resolve-roasters` | seconds |
-| `reference/exchange_rates.json` | `fetch-exchange-rates --refetch` | 323 calls — a third of the monthly free tier |
-| `reference/cpi.csv` | `fetch-cpi --start-year 1990 --end-year 1999`, four times | four free calls |
+| `reference/exchange_rates.json` | `fetch-exchange-rates --refetch` | one call per review month since 1999, about a third of the monthly free tier |
+| `reference/cpi.csv` | `fetch-cpi` four times, ten years each: `--start-year 1990 --end-year 1999`, then 2000, 2010 and 2020 | four free calls |
 | `cleaned/reviews.parquet` | `clean-reviews` | seconds |
 
 The two ends of that table are why the formats differ. `roaster_decisions.csv`
@@ -92,5 +92,6 @@ The commands are not interchangeable:
 - `fetch-exchange-rates` reads its months from the **parsed** reviews, not the cleaned
   ones — cleaning consumes the rates, so it cannot also be what produces the list
   of months to fetch
-- `clean-reviews` needs all three reference files, though it runs without them
-  and warns, leaving prices in their original currency
+- `clean-reviews` uses the crosswalk, the exchange rates and the CPI table, but
+  runs without any of them and warns: roaster names stay unresolved, and prices
+  stay in their original currency
