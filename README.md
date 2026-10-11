@@ -67,6 +67,22 @@ underscore for a value inside a TOML table: `COFFEE_OPENEXCHANGERATES_API_ID`,
 `COFFEE_SCRAPE__CONCURRENCY`. Settings are checked when a command starts, so a
 bad value stops it immediately with a message naming the setting.
 
+Three rules catch mistakes that would otherwise pass silently:
+
+- A name that matches no setting is an error. A typo such as
+  `COFFEE_SCRAPE__CONCURENCY`, or a TOML table written `[roaster]`, stops the
+  command instead of leaving the default quietly in place. Lines in `.env`
+  without the `COFFEE_` prefix are left alone, since they may belong to
+  another tool.
+- A relative `COFFEE_DATA_DIR` or `COFFEE_CURATED_DIR` is relative to the
+  project root, not to the folder a command is run from, and `~` is expanded.
+- The baseline month is given as its first day, such as `2026-01-01`, since
+  CPI is monthly.
+
+The settings file and the data live in the repository, so the package must be
+installed from a checkout in editable mode, which `uv sync` does. Installed
+anywhere else, it stops with an error rather than guessing where the data is.
+
 Values that are part of the code's logic rather than a choice, such as site
 URLs, timeouts and parsing rules, are constants next to the code that uses
 them, not settings.
@@ -344,8 +360,8 @@ names the first step that failed:
 | `no_price` | the page names no price |
 
 The baseline is January 2026 by default. Change it for good with `baseline_date`
-in `config/settings.toml`, or for one run with `--baseline-date`. It must be a
-month the CPI table covers; any other month is refused. The baseline is
+in `config/settings.toml`, or for one run with `--baseline-date`. It must be
+the first day of a month the CPI table covers; any other date is refused. The baseline is
 stored on every row because it is the unit of the adjusted price: the same coffee
 costs $77.64 in January 2026 dollars and $61.58 in January 2020 dollars.
 
