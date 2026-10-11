@@ -83,8 +83,8 @@ uv run refresh-data
 uv run jupyter lab
 ```
 
-`refresh-data` runs six steps in dependency order and reports on each. Every
-step is also a command in its own right:
+`refresh-data` runs six steps in dependency order, or five with `--skip-scrape`,
+and reports on each. Every step is also a command in its own right:
 
 | Step | Command | Writes |
 |---|---|---|
@@ -103,6 +103,44 @@ Each command documents its options under `--help`. The most useful options on
 - `--skip-scrape` makes no requests to the review site; it parses and rebuilds
   from the pages already saved.
 - `--baseline-date` sets the month whose dollars adjusted prices are expressed in.
+
+`refresh-data` stops at the first step that fails, and the steps after it do
+not run. The usual causes:
+
+- No OpenExchangeRates key (step 4). Add it to `.env`, or run the steps
+  around it on their own: `clean-reviews` builds the cleaned dataset without
+  exchange rates, leaving prices in their original currencies.
+- Answers in the roaster review queue that are not recorded yet (step 3). Run
+  `resolve-roasters` with `--accept-reviewed`, as in
+  [Resolving roaster names](#resolving-roaster-names).
+- The site's sitemap cannot be read (step 1), so the list of reviews would be
+  incomplete. Run again later, or pass `--skip-scrape`.
+- The BLS API is unreachable (step 5). Run again later; the CPI table keeps
+  what it holds.
+
+Smaller failures do not stop the run. A review page that fails to download or
+parse, or a month whose exchange rate fails to arrive, is reported and tried
+again next time.
+
+### Command options
+
+Every path defaults to its place in [Data files](#data-files), and the other
+defaults come from the [settings](#configuration). A flag overrides them for a
+single run.
+
+| Command | Options |
+|---|---|
+| `refresh-data` | `--full`, `--skip-scrape`, `--baseline-date DATE` |
+| `scrape-reviews` | `--full`, `--limit N`, `-c`/`--concurrency N` |
+| `parse-reviews` | `--full`, `--limit N` |
+| `resolve-roasters INFILE` | `--column` (default `roaster`), `--location-column` (default `roaster_location`; `''` turns locations off), `--outdir`, `--decisions`, `--auto N`, `--review N`, `--location-review N`, `--accept-reviewed`, `--decided-by NAME` (default `manual`) |
+| `fetch-exchange-rates` | `-i`/`--input`, `-o`/`--output`, `--refetch` |
+| `fetch-cpi` | `-o`/`--output`, `--start-year YEAR` with `--end-year YEAR` |
+| `clean-reviews` | `-i`/`--input`, `-o`/`--output`, `--crosswalk`, `--rates`, `--cpi`, `--baseline-date DATE` |
+
+`resolve-roasters` is the only command with a required argument: the reviews
+file whose roaster names it groups, normally `data/parsed/reviews.csv`.
+`refresh-data` passes it for you.
 
 The pipeline ends at the cleaned dataset; charts and aggregates live in the
 notebooks. [`docs/data-flow.md`](docs/data-flow.md) maps every file the pipeline
@@ -184,7 +222,7 @@ year and one column per month.
 
 The keyless API returns the last three years and allows 25 requests a day, which
 covers routine updates. To rebuild an older range, pass `--start-year` and
-`--end-year`, up to ten years per request. Published figures do not change, so
+`--end-year` together, up to ten years per request. Published figures do not change, so
 months already in the table are never overwritten, and the three-year window
 cannot shrink a table that goes back to 1990.
 
@@ -353,7 +391,7 @@ uv run resolve-roasters data/parsed/reviews.csv
 The summary answers four questions:
 
 ```
-1687 distinct spellings -> 1496 roasters (191 merged)      did it do anything?
+1688 distinct spellings -> 1497 roasters (191 merged)      did it do anything?
 18 decisions applied from …/roaster_decisions.csv          are past calls applied?
 0 pairs queued for review -> …/review_queue.csv    how much is left to judge?
 11 rows in chain-risk clusters  <-- INSPECT THESE          did clustering misbehave?

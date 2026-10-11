@@ -371,8 +371,20 @@ def clean_reviews_command(argv: list[str] | None = None) -> None:
     """Build the cleaned dataset from the parsed reviews."""
     settings = _settings()
     parser = argparse.ArgumentParser(description=clean_reviews_command.__doc__)
-    parser.add_argument("-i", "--input", type=Path, default=settings.parsed_reviews)
-    parser.add_argument("-o", "--output", type=Path, default=settings.cleaned_reviews)
+    parser.add_argument(
+        "-i",
+        "--input",
+        type=Path,
+        default=settings.parsed_reviews,
+        help="parsed reviews to clean",
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        type=Path,
+        default=settings.cleaned_reviews,
+        help="where the cleaned dataset is written, as Parquet",
+    )
     parser.add_argument(
         "--crosswalk",
         type=Path,
@@ -459,7 +471,11 @@ def fetch_cpi_command(argv: list[str] | None = None) -> None:
         help="rebuild a specific range instead of the recent window; the "
         "unkeyed API allows spans of up to ten years",
     )
-    parser.add_argument("--end-year", type=int)
+    parser.add_argument(
+        "--end-year",
+        type=int,
+        help="last year of the range; give it with --start-year",
+    )
     args = parser.parse_args(argv)
 
     _configure_logging(settings)
