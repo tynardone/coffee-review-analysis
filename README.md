@@ -502,7 +502,8 @@ and review the diff:
 uv run python -m tests.generate_golden
 ```
 
-Ruff (linting and formatting), mypy and nbstripout run as pre-commit hooks.
+Ruff (linting and formatting), mypy, nbstripout and `uv lock` run as pre-commit
+hooks; the last keeps `uv.lock` in step with `pyproject.toml`.
 Install them once after cloning:
 
 ```bash
