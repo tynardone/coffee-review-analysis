@@ -102,6 +102,25 @@ def test_upsert_unions_columns_across_page_vintages(csv_path):
     assert held.set_index("url").loc["old", "acidity"] == 8
 
 
+def test_rows_carried_forward_keep_their_text_exactly(csv_path):
+    """A score column with blanks must not be read back as floats: the kept
+    row's "9" would be rewritten as "9.0". Text that looks like a missing
+    value, such as "NA", stays as the site printed it."""
+    seed(
+        csv_path,
+        [
+            {"url": "old", "aftertaste": "9", "agtron": "NA"},
+            {"url": "blank", "aftertaste": "", "agtron": ""},
+        ],
+    )
+    CsvReviewStore(csv_path).upsert([{"url": "new", "aftertaste": "8"}])
+
+    held = pd.read_csv(csv_path, dtype=str, keep_default_na=False).set_index("url")
+    assert held.loc["old", "aftertaste"] == "9"
+    assert held.loc["old", "agtron"] == "NA"
+    assert held.loc["blank", "aftertaste"] == ""
+
+
 def test_upsert_of_nothing_leaves_the_corpus_alone(csv_path):
     seed(csv_path, [{"url": "u1", "rating": "90"}])
     assert CsvReviewStore(csv_path).upsert([]) == 1

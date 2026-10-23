@@ -71,7 +71,7 @@ def _parse_notes_section(soup: BeautifulSoup) -> str | None:
     """
     notes = soup.find("h2", string=re.compile("Notes"))
     if notes:
-        notes_text: str = ""
+        parts: list[str] = []
         # Accumulate text until the next h2 heading.
         for element in notes.find_next_siblings():
             # find_next_siblings() yields only Tags, but the type is narrowed
@@ -81,8 +81,10 @@ def _parse_notes_section(soup: BeautifulSoup) -> str | None:
                 continue
             if element.name == "h2":
                 break
-            notes_text += element.get_text().strip()
-        return re.sub(r"\s+", " ", notes_text)
+            parts.append(element.get_text().strip())
+        # Joined with a space: each part is a paragraph, and joining them with
+        # nothing would run one's last sentence into the next one's first.
+        return re.sub(r"\s+", " ", " ".join(part for part in parts if part))
     else:
         logger.warning("No notes section found.")
         return None
