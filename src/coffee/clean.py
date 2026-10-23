@@ -327,10 +327,15 @@ def split_price_and_quantity(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def convert_to_lbs(df: pd.DataFrame) -> pd.DataFrame:
-    """Express every quantity in pounds so prices can be compared per unit."""
+    """Express every quantity in pounds so prices can be compared per unit.
+
+    Not rounded: the price per pound divides by this, and rounding first
+    magnifies the error. 20 grams rounded to 0.04 lb would overstate its price
+    per pound by a tenth. Only the price itself is rounded.
+    """
     return df.assign(
-        quantity_in_lbs=lambda d: np.round(
-            d["quantity_value"] * d["quantity_unit"].map(US_PRICE_UNITS), 2
+        quantity_in_lbs=lambda d: (
+            d["quantity_value"] * d["quantity_unit"].map(US_PRICE_UNITS)
         )
     )
 

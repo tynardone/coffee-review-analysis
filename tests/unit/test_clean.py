@@ -237,6 +237,13 @@ def test_quantities_convert_to_pounds(unit, value, lbs):
     assert convert_to_lbs(df)["quantity_in_lbs"].iloc[0] == pytest.approx(lbs, abs=0.01)
 
 
+def test_small_quantities_are_not_rounded_before_the_price_divides_by_them():
+    """20 grams is 0.0441 lb. Rounded to 0.04, its price per pound would come
+    out a tenth too high."""
+    df = pd.DataFrame({"quantity_value": [20], "quantity_unit": ["grams"]})
+    assert convert_to_lbs(df)["quantity_in_lbs"].iloc[0] == pytest.approx(0.0440924)
+
+
 def test_an_unknown_unit_yields_no_weight_rather_than_a_wrong_one():
     df = pd.DataFrame({"quantity_value": [1], "quantity_unit": ["furlongs"]})
     assert pd.isna(convert_to_lbs(df)["quantity_in_lbs"].iloc[0])

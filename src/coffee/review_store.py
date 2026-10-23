@@ -79,7 +79,12 @@ class CsvReviewStore:
         return dict(zip(frame[URL_COLUMN], frame[SCRAPED_AT_COLUMN], strict=True))
 
     def _load(self) -> pd.DataFrame:
-        return pd.read_csv(self.csv_path) if self.csv_path.exists() else pd.DataFrame()
+        # Every cell is read as text. Inferred types would turn a score column
+        # with blanks into floats, so carrying a row forward would rewrite its
+        # "9" as "9.0" and change rows this run never parsed.
+        if not self.csv_path.exists():
+            return pd.DataFrame()
+        return pd.read_csv(self.csv_path, dtype=str, keep_default_na=False)
 
     # -- writing -----------------------------------------------------------
 

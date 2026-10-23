@@ -92,6 +92,15 @@ def test_notes_section_stops_at_the_next_heading():
     assert "Should not appear" not in notes
 
 
+def test_notes_paragraphs_are_separated_by_a_space():
+    """Each paragraph's last sentence must not run into the next one's first."""
+    html = """
+    <h2>Notes</h2><p>Reverted to jungle.</p><div></div><p>Call for details.</p>
+    <h2>Bottom Line</h2>
+    """
+    assert parse_html(html)["notes"] == "Reverted to jungle. Call for details."
+
+
 # --------------------------------------------------------------------------
 # Whitespace
 # --------------------------------------------------------------------------
